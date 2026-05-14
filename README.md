@@ -120,6 +120,92 @@ WoodStore/
 3. Navigate to **Admin > Plugins** and enable the **WoodStore** plugin
 4. The plugin will create the necessary database tables automatically
 
+## Development & Production Workflow
+
+You can keep a **sandbox** (development) install and a **production** install on the same server, both managed through this GitHub repository.
+
+### Overview
+
+```
+┌──────────┐   git push    ┌──────────┐   git pull    ┌────────────┐
+│ Sandbox  │ ────────────► │  GitHub  │ ────────────► │ Production │
+│ (develop)│               │   repo   │               │  (live)    │
+└──────────┘               └──────────┘               └────────────┘
+```
+
+1. **Sandbox** — your development FacturaScripts install where you make and test changes.
+2. **GitHub** — the central repository (this repo) that holds validated code.
+3. **Production** — your live FacturaScripts install that serves real customers.
+
+### Directory Layout
+
+Each FacturaScripts install has its own root directory with a `Plugins/` folder. Clone the repository into both:
+
+```
+/var/www/sandbox/Plugins/ecommerce/    ← development clone
+/var/www/production/Plugins/ecommerce/ ← production clone
+```
+
+### Initial Setup
+
+#### 1. Sandbox (development)
+
+```bash
+cd /var/www/sandbox/Plugins
+git clone https://github.com/yevea/ecommerce.git
+```
+
+Work on a feature branch in the sandbox:
+
+```bash
+cd /var/www/sandbox/Plugins/ecommerce
+git checkout -b my-feature
+# make changes, test in the sandbox admin panel / storefront
+git add .
+git commit -m "Describe your change"
+git push origin my-feature
+```
+
+Once validated, merge the feature branch into `main` on GitHub (via pull request or locally).
+
+#### 2. Production
+
+```bash
+cd /var/www/production/Plugins
+git clone -b main https://github.com/yevea/ecommerce.git
+```
+
+Production always tracks the `main` branch, which only contains validated code.
+
+### Deploying a Validated Change
+
+After a change has been tested in the sandbox and merged to `main` on GitHub:
+
+```bash
+cd /var/www/production/Plugins/ecommerce
+git pull origin main
+```
+
+Then open the FacturaScripts admin panel and navigate to **Admin > Plugins** to trigger any pending database updates for the **ecommerce** plugin.
+
+### Stripe Key Separation
+
+Use **test** keys on the sandbox and **live** keys on production. Each FacturaScripts install has its own database, so the settings are independent:
+
+| Environment | Stripe Secret Key | Stripe Public Key |
+|---|---|---|
+| Sandbox | `sk_test_…` | `pk_test_…` |
+| Production | `sk_live_…` | `pk_live_…` |
+
+Configure each via **Admin → Settings → E-Commerce** in the respective install (see [Configuration](#configuration) below).
+
+### Tips
+
+- **Never edit code directly on production.** Always develop in the sandbox, push to GitHub, and pull to production.
+- **Use feature branches** for each change so `main` always reflects a working state.
+- **Back up the production database** before pulling plugin updates that modify table definitions (`Table/` or `Extension/Table/` XML files).
+- Both installs share the same plugin code but each has its own database, uploaded files, and settings — they are fully independent.
+
 ## Configuration
 
 ### Stripe Payment Gateway
