@@ -1,4 +1,24 @@
 {# Fixed site header – edit this single file to update the header on all pages #}
+<script>
+(function() {
+    document.querySelectorAll("link[rel*='icon'], link[rel='apple-touch-icon']").forEach(function(el) {
+        el.parentNode.removeChild(el);
+    });
+    [
+        { rel: 'apple-touch-icon', href: 'https://yevea.com/001-vectores/favicon-180x180.png', sizes: '180x180' },
+        { rel: 'icon', href: 'https://yevea.com/001-vectores/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+        { rel: 'icon', href: 'https://yevea.com/001-vectores/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+        { rel: 'icon', href: 'https://yevea.com/001-vectores/favicon.ico' }
+    ].forEach(function(f) {
+        var link = document.createElement('link');
+        link.rel = f.rel;
+        link.href = f.href;
+        if (f.sizes) link.setAttribute('sizes', f.sizes);
+        if (f.type) link.type = f.type;
+        document.head.appendChild(link);
+    });
+})();
+</script>
 <header id="yeveastore-header">
     <div class="container d-flex align-items-center justify-content-between">
         <a href="/"><img style="width:100px;height:25px;" src="https://yevea.com/001-vectores/logo-yevea-white.svg" alt="madera olivo - logo"><sup>®</sup></a>
