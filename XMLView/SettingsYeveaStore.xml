@@ -8,6 +8,9 @@
             <column name="stripe-public-key" numcolumns="6">
                 <widget type="text" fieldname="stripe_public_key" />
             </column>
+            <column name="noindex" numcolumns="6">
+                <widget type="checkbox" fieldname="noindex" />
+            </column>
         </group>
     </columns>
 </view>
