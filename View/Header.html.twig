@@ -90,4 +90,15 @@ if (langSwitcher) {
         toggle.setAttribute('aria-expanded', 'false');
     });
 }
+
+// Close hamburger menu when clicking outside of it
+document.addEventListener('click', function (e) {
+    var toggle = document.getElementById('hamburger-toggle');
+    var menu = document.getElementById('hamburger-menu');
+    if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+        toggle.classList.remove('open');
+        menu.classList.remove('show');
+        toggle.setAttribute('aria-expanded', 'false');
+    }
+});
 </script>
