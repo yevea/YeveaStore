@@ -1,5 +1,5 @@
 {
-    "woodstore": "WoodStore",
+    "yeveastore": "YeveaStore",
     "storefront": "Boutique",
     "all": "Tous",
     "shopping-cart": "Panier",
@@ -80,7 +80,7 @@
     "codpedido": "Commande Native FS",
     "stripe-secret-key": "Clé Secrète Stripe (sk_...)",
     "stripe-public-key": "Clé Publique Stripe (pk_...)",
-    "settings-woodstore": "Paramètres WoodStore",
+    "settings-yeveastore": "Paramètres YeveaStore",
     "publica": "Publique (visible en boutique)",
     "family-type": "Type de Famille",
     "mercancia": "Marchandise",

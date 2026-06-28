@@ -1,5 +1,5 @@
 /*
- * WoodStore storefront grey theme
+ * YeveaStore storefront grey theme
  * Palette (light → dark):
  *   #f8f9fa  #e9ecef  #dee2e6  #ced4da
  *   #adb5bd  #6c757d  #495057  #343a40  #212529
@@ -8,7 +8,7 @@
  */
 
 /* ── Fixed Header ──────────────────────────────────────────── */
-#woodstore-header {
+#yeveastore-header {
     position: fixed;
     top: 0;
     left: 0;
@@ -20,14 +20,14 @@
     display: flex;
     align-items: center;
 }
-#woodstore-header .woodstore-header-inner {
+#yeveastore-header .yeveastore-header-inner {
     width: 100%;
     padding: 0 1rem;
 }
-#woodstore-header a {
+#yeveastore-header a {
     text-decoration: none;
 }
-#woodstore-header a:hover {
+#yeveastore-header a:hover {
     color: #adb5bd;
 }
 
@@ -368,17 +368,17 @@ a:hover {
 }
 
 /* ── Footer ─────────────────────────────────────────────────── */
-#woodstore-footer {
+#yeveastore-footer {
     background-color: #000;
     color: #dee2e6;
     padding: 2.5rem 0 1.5rem;
     margin-top: 3rem;
 }
-#woodstore-footer a {
+#yeveastore-footer a {
     color: #dee2e6;
     text-decoration: none;
 }
-#woodstore-footer a:hover {
+#yeveastore-footer a:hover {
     color: #fff;
 }
 .footer-heading {

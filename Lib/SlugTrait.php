@@ -1,5 +1,5 @@
 <?php
-namespace FacturaScripts\Plugins\WoodStore\Lib;
+namespace FacturaScripts\Plugins\YeveaStore\Lib;
 
 /**
  * Reusable slug-generation methods for URL-friendly identifiers.

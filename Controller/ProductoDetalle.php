@@ -1,5 +1,5 @@
 <?php
-namespace FacturaScripts\Plugins\WoodStore\Controller;
+namespace FacturaScripts\Plugins\YeveaStore\Controller;
 
 use FacturaScripts\Core\Model\Familia;
 use FacturaScripts\Core\Model\Producto;

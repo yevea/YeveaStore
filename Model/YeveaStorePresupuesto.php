@@ -4,7 +4,7 @@ namespace Model;
 
 use FacturaScripts\Core\Template\ModelClass;
 
-class WoodstorePresupuesto extends ModelClass {
+class YeveaStorePresupuesto extends ModelClass {
     protected $id;
     protected $codigo;
     protected $fecha_creacion;
@@ -27,7 +27,7 @@ class WoodstorePresupuesto extends ModelClass {
     }
 
     public function tableName() {
-        return 'woodstore_presupuestos';
+        return 'yeveastore_presupuestos';
     }
 
     public function clear() {

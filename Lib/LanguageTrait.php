@@ -1,5 +1,5 @@
 <?php
-namespace FacturaScripts\Plugins\WoodStore\Lib;
+namespace FacturaScripts\Plugins\YeveaStore\Lib;
 
 use FacturaScripts\Core\Tools;
 
@@ -48,8 +48,8 @@ trait LanguageTrait
         }
 
         // 2. Persisted cookie from a previous visit
-        if ($langCode === null && isset($_COOKIE['woodstore_lang'])) {
-            $cookieLang = $_COOKIE['woodstore_lang'];
+        if ($langCode === null && isset($_COOKIE['yeveastore_lang'])) {
+            $cookieLang = $_COOKIE['yeveastore_lang'];
             if (in_array($cookieLang, $validLangs, true)) {
                 $langCode = $cookieLang;
             }
@@ -62,7 +62,7 @@ trait LanguageTrait
 
         // Persist the choice in a cookie (1 year, functional cookie — no consent needed)
         if (!headers_sent()) {
-            setcookie('woodstore_lang', $langCode, [
+            setcookie('yeveastore_lang', $langCode, [
                 'expires' => time() + 365 * 24 * 3600,
                 'path' => '/',
                 'samesite' => 'Lax',

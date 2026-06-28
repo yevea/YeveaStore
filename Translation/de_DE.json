@@ -1,5 +1,5 @@
 {
-    "woodstore": "WoodStore",
+    "yeveastore": "YeveaStore",
     "storefront": "Shop",
     "all": "Alle",
     "shopping-cart": "Warenkorb",
@@ -80,7 +80,7 @@
     "codpedido": "Native FS-Bestellung",
     "stripe-secret-key": "Stripe Geheimer Schlüssel (sk_...)",
     "stripe-public-key": "Stripe Öffentlicher Schlüssel (pk_...)",
-    "settings-woodstore": "WoodStore-Einstellungen",
+    "settings-yeveastore": "YeveaStore-Einstellungen",
     "publica": "Öffentlich (im Shop sichtbar)",
     "family-type": "Familientyp",
     "mercancia": "Ware",

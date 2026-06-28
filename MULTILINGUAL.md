@@ -172,7 +172,7 @@ This tells Google and other search engines that the pages are translations of ea
 
 ### Possible Approach
 
-Store the customer's preferred language (from the session/cookie at checkout time) in `woodstore_orders.langcode`. When sending emails, use that language to select the appropriate template and translation keys.
+Store the customer's preferred language (from the session/cookie at checkout time) in `yeveastore_orders.langcode`. When sending emails, use that language to select the appropriate template and translation keys.
 
 ---
 
@@ -558,7 +558,7 @@ The language dropdown is placed **to the left of** the hamburger icon, maintaini
 #### Proposed Twig Code for Header.html.twig
 
 ```twig
-<header id="woodstore-header">
+<header id="yeveastore-header">
     <div class="container d-flex align-items-center justify-content-between">
         <a href="/"><img ... alt="logo"><sup>(R)</sup></a>
         <div class="d-flex align-items-center gap-2">
@@ -632,8 +632,8 @@ protected function detectAndSetLanguage(): void
     }
 
     // 2. Check cookie (persisted preference)
-    if ($langCode === null && isset($_COOKIE['woodstore_lang'])) {
-        $cookieLang = $_COOKIE['woodstore_lang'];
+    if ($langCode === null && isset($_COOKIE['yeveastore_lang'])) {
+        $cookieLang = $_COOKIE['yeveastore_lang'];
         if (in_array($cookieLang, $validLangs, true)) {
             $langCode = $cookieLang;
         }
@@ -646,7 +646,7 @@ protected function detectAndSetLanguage(): void
 
     // Persist choice in cookie (1 year, SameSite=Lax, path=/)
     if (!headers_sent()) {
-        setcookie('woodstore_lang', $langCode, [
+        setcookie('yeveastore_lang', $langCode, [
             'expires' => time() + 365 * 24 * 3600,
             'path' => '/',
             'samesite' => 'Lax',
@@ -720,7 +720,7 @@ public function langSwitchUrl(string $langCode): string
 | Privacy | Requires consent in EU (GDPR) | Same |
 | Implementation | `setcookie()` + `$_COOKIE` | `$_SESSION['lang']` |
 
-**Recommendation:** Use a **cookie** (`woodstore_lang`) with a 1-year expiry. The session already exists (for the cart) but session-based language would be lost when the session expires.
+**Recommendation:** Use a **cookie** (`yeveastore_lang`) with a 1-year expiry. The session already exists (for the cart) but session-based language would be lost when the session expires.
 
 #### GDPR Consideration
 
@@ -782,7 +782,7 @@ Or inject via the controller using `AssetManager::addCustom('head', ...)` to kee
 | File | Change | Effort |
 |---|---|---|
 | `View/Header.html.twig` | Add language dropdown next to hamburger | 15-20 lines |
-| `Assets/CSS/woodstore.css` | Style the language dropdown (minimal, Bootstrap handles most) | 5-10 lines |
+| `Assets/CSS/yeveastore.css` | Style the language dropdown (minimal, Bootstrap handles most) | 5-10 lines |
 | `Controller/StoreFront.php` | Add `detectAndSetLanguage()`, `langSwitchUrl()`, `localizedAsset()`, new properties | 40-60 lines |
 | `Controller/ProductoDetalle.php` | Inherits from StoreFront — no additional changes needed | 0 |
 | `Controller/Tableros.php` | Inherits from StoreFront — no additional changes needed | 0 |
@@ -921,7 +921,7 @@ However, if a Spanish admin views the order in the admin panel, they should see 
 | 6 | `View/Tableros.html.twig` | Update internal links to use `localizedAsset()` | 3 |
 | 7 | `View/ProductoDetalle.html.twig` | Update internal links to use `localizedAsset()` | 3 |
 | 8 | `View/Presupuesto.html.twig` | Update internal links to use `localizedAsset()` | 3 |
-| 9 | `Assets/CSS/woodstore.css` | Style language dropdown (minimal) | 3 |
+| 9 | `Assets/CSS/yeveastore.css` | Style language dropdown (minimal) | 3 |
 | 10 | `Translation/es_ES.json` | Add `product-*-name`, `product-*-desc`, `family-*-name/intro/outro` keys | 1, 2 |
 | 11 | `Translation/en_EN.json` | Add same keys with English translations | 1, 2 |
 | 12 | `Translation/fr_FR.json` | Add same keys with French translations | 1, 2 |

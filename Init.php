@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of WoodStore plugin for FacturaScripts.
+ * This file is part of YeveaStore plugin for FacturaScripts.
  * Copyright (C) 2024 FacturaScripts Community
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-namespace FacturaScripts\Plugins\WoodStore;
+namespace FacturaScripts\Plugins\YeveaStore;
 
 use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Template\InitClass;
@@ -42,7 +42,7 @@ class Init extends InitClass
     }
 
     /**
-     * Migrate data from the old "ecommerce" plugin to the new "woodstore" plugin.
+     * Migrate data from the old "ecommerce" plugin to the new "yeveastore" plugin.
      * Copies settings from fs_settings and data from old ecommerce_* tables.
      * Safe to run multiple times (idempotent).
      */
@@ -54,13 +54,13 @@ class Init extends InitClass
         $this->migrateSettings($db);
 
         // migrate table data
-        $this->migrateTableData($db, 'ecommerce_orders', 'woodstore_orders');
-        $this->migrateTableData($db, 'ecommerce_order_lines', 'woodstore_order_lines');
-        $this->migrateTableData($db, 'ecommerce_cart_items', 'woodstore_cart_items');
+        $this->migrateTableData($db, 'ecommerce_orders', 'yeveastore_orders');
+        $this->migrateTableData($db, 'ecommerce_order_lines', 'yeveastore_order_lines');
+        $this->migrateTableData($db, 'ecommerce_cart_items', 'yeveastore_cart_items');
     }
 
     /**
-     * Copy settings row from old 'ecommerce' group to new 'woodstore' group
+     * Copy settings row from old 'ecommerce' group to new 'yeveastore' group
      * in the fs_settings table, if old exists and new doesn't.
      */
     private function migrateSettings(DataBase $db): void
@@ -74,13 +74,13 @@ class Init extends InitClass
             return;
         }
 
-        $new = $db->select("SELECT * FROM fs_settings WHERE name = 'woodstore'");
+        $new = $db->select("SELECT * FROM fs_settings WHERE name = 'yeveastore'");
         if (!empty($new)) {
             return;
         }
 
         $properties = $db->var2str($old[0]['properties'] ?? '');
-        $db->exec("INSERT INTO fs_settings (name, properties) VALUES ('woodstore', " . $properties . ")");
+        $db->exec("INSERT INTO fs_settings (name, properties) VALUES ('yeveastore', " . $properties . ")");
     }
 
     /**

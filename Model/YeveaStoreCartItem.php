@@ -1,11 +1,11 @@
 <?php
-namespace FacturaScripts\Plugins\WoodStore\Model;
+namespace FacturaScripts\Plugins\YeveaStore\Model;
 
 use FacturaScripts\Core\Template\ModelClass;
 use FacturaScripts\Core\Template\ModelTrait;
 use FacturaScripts\Core\Tools;
 
-class WoodstoreCartItem extends ModelClass
+class YeveaStoreCartItem extends ModelClass
 {
     use ModelTrait;
 
@@ -37,7 +37,7 @@ class WoodstoreCartItem extends ModelClass
 
     public static function tableName(): string
     {
-        return 'woodstore_cart_items';
+        return 'yeveastore_cart_items';
     }
 
     public function clear(): void

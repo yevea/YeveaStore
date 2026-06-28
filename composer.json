@@ -1,6 +1,6 @@
 {
-    "name": "facturascripts/woodstore",
-    "description": "Simple WoodStore / shopping cart plugin for FacturaScripts",
+    "name": "facturascripts/yeveastore",
+    "description": "Simple YeveaStore / shopping cart plugin for FacturaScripts",
     "type": "facturascripts-plugin",
     "license": "LGPL-3.0-or-later",
     "require": {
@@ -8,7 +8,7 @@
     },
     "autoload": {
         "psr-4": {
-            "FacturaScripts\\Plugins\\WoodStore\\": ""
+            "FacturaScripts\\Plugins\\YeveaStore\\": ""
         }
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace FacturaScripts\Plugins\WoodStore\Controller;
+namespace FacturaScripts\Plugins\YeveaStore\Controller;
 
 use FacturaScripts\Core\Lib\AssetManager;
 use FacturaScripts\Core\Model\Familia;
@@ -7,11 +7,11 @@ use FacturaScripts\Core\Model\Producto;
 use FacturaScripts\Core\Template\Controller;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Core\Where;
-use FacturaScripts\Plugins\WoodStore\Lib\LanguageTrait;
-use FacturaScripts\Plugins\WoodStore\Lib\SlugTrait;
-use FacturaScripts\Plugins\WoodStore\Model\WoodstoreCartItem;
-use FacturaScripts\Plugins\WoodStore\Model\WoodstoreOrder;
-use FacturaScripts\Plugins\WoodStore\Model\WoodstoreOrderLine;
+use FacturaScripts\Plugins\YeveaStore\Lib\LanguageTrait;
+use FacturaScripts\Plugins\YeveaStore\Lib\SlugTrait;
+use FacturaScripts\Plugins\YeveaStore\Model\YeveaStoreCartItem;
+use FacturaScripts\Plugins\YeveaStore\Model\YeveaStoreOrder;
+use FacturaScripts\Plugins\YeveaStore\Model\YeveaStoreOrderLine;
 
 class Presupuesto extends Controller
 {
@@ -56,7 +56,7 @@ class Presupuesto extends Controller
     public function getPageData(): array
     {
         $pageData = parent::getPageData();
-        $pageData['menu'] = 'woodstore';
+        $pageData['menu'] = 'yeveastore';
         $pageData['title'] = 'presupuesto';
         $pageData['icon'] = 'fa-solid fa-file-invoice';
         $pageData['showonmenu'] = false;
@@ -68,9 +68,9 @@ class Presupuesto extends Controller
         parent::run();
         $this->detectAndSetLanguage();
 
-        $cssPath = FS_FOLDER . '/Plugins/WoodStore/Assets/CSS/woodstore.css';
+        $cssPath = FS_FOLDER . '/Plugins/YeveaStore/Assets/CSS/yeveastore.css';
         if (file_exists($cssPath)) {
-            AssetManager::addCss(FS_ROUTE . '/Plugins/WoodStore/Assets/CSS/woodstore.css');
+            AssetManager::addCss(FS_ROUTE . '/Plugins/YeveaStore/Assets/CSS/yeveastore.css');
         }
 
         $stripeCallback = $this->request()->query->get('stripe', '');
@@ -115,7 +115,7 @@ class Presupuesto extends Controller
         $cartItemId = (int) $this->request()->request->get('cart_item_id', 0);
         $quantity = (int) $this->request()->request->get('quantity', 1);
 
-        $cartItem = new WoodstoreCartItem();
+        $cartItem = new YeveaStoreCartItem();
         if ($cartItem->loadFromCode($cartItemId)) {
             if ($cartItem->session_id === $this->getSessionId()) {
                 $cartItem->quantity = max(1, $quantity);
@@ -128,7 +128,7 @@ class Presupuesto extends Controller
     {
         $cartItemId = (int) $this->request()->request->get('cart_item_id', 0);
 
-        $cartItem = new WoodstoreCartItem();
+        $cartItem = new YeveaStoreCartItem();
         if ($cartItem->loadFromCode($cartItemId)) {
             if ($cartItem->session_id === $this->getSessionId()) {
                 $cartItem->delete();
@@ -140,7 +140,7 @@ class Presupuesto extends Controller
     {
         $sessionId = $this->getSessionId();
 
-        $cartItem = new WoodstoreCartItem();
+        $cartItem = new YeveaStoreCartItem();
         $where = [Where::eq('session_id', $sessionId)];
         $items = $cartItem->all($where);
 
@@ -170,14 +170,14 @@ class Presupuesto extends Controller
             return;
         }
 
-        $secretKey = Tools::settings('woodstore', 'stripe_secret_key', '');
+        $secretKey = Tools::settings('yeveastore', 'stripe_secret_key', '');
         if (empty($secretKey)) {
             Tools::log()->error('stripe-not-configured');
             return;
         }
 
         // Store pending order data in session to retrieve after Stripe callback
-        $_SESSION['pending_woodstore_order'] = [
+        $_SESSION['pending_yeveastore_order'] = [
             'customer_name' => $customerName,
             'customer_email' => $customerEmail,
             'customer_phone' => $customerPhone,
@@ -206,7 +206,7 @@ class Presupuesto extends Controller
             return;
         }
 
-        $secretKey = Tools::settings('woodstore', 'stripe_secret_key', '');
+        $secretKey = Tools::settings('yeveastore', 'stripe_secret_key', '');
         if (empty($secretKey)) {
             return;
         }
@@ -217,7 +217,7 @@ class Presupuesto extends Controller
         }
 
         $sessionId = $this->getSessionId();
-        $pendingOrder = $_SESSION['pending_woodstore_order'] ?? null;
+        $pendingOrder = $_SESSION['pending_yeveastore_order'] ?? null;
         if (empty($pendingOrder)) {
             // Session expired or order was already processed; show a generic success page
             $this->orderSuccess = true;
@@ -225,11 +225,11 @@ class Presupuesto extends Controller
             return;
         }
 
-        $cartItem = new WoodstoreCartItem();
+        $cartItem = new YeveaStoreCartItem();
         $where = [Where::eq('session_id', $sessionId)];
         $items = $cartItem->all($where);
 
-        $order = new WoodstoreOrder();
+        $order = new YeveaStoreOrder();
         $order->customer_name = $pendingOrder['customer_name'];
         $order->customer_email = $pendingOrder['customer_email'];
         $order->customer_phone = $pendingOrder['customer_phone'] ?? '';
@@ -261,7 +261,7 @@ class Presupuesto extends Controller
                 }
                 $total += $subtotal;
 
-                $line = new WoodstoreOrderLine();
+                $line = new YeveaStoreOrderLine();
                 $line->product_referencia = $info->referencia;
                 $line->product_name = $info->name;
                 $line->quantity = $item->quantity;
@@ -288,7 +288,7 @@ class Presupuesto extends Controller
                 $item->delete();
             }
 
-            unset($_SESSION['pending_woodstore_order']);
+            unset($_SESSION['pending_yeveastore_order']);
             $this->orderSuccess = true;
             $this->orderCode = $order->code;
         } else {
@@ -297,10 +297,10 @@ class Presupuesto extends Controller
     }
 
     /**
-     * Creates a native FacturaScripts Cliente and PedidoCliente from the WoodStore order.
+     * Creates a native FacturaScripts Cliente and PedidoCliente from the YeveaStore order.
      * Gracefully skips if the required FS models are not available.
      */
-    private function createNativeFsOrder(WoodstoreOrder $order, array $orderLines, array $pendingOrder): void
+    private function createNativeFsOrder(YeveaStoreOrder $order, array $orderLines, array $pendingOrder): void
     {
         if (!class_exists(self::CLIENTE_CLASS) || !class_exists(self::PEDIDO_CLASS) || !class_exists(self::LINEA_CLASS)) {
             return;
@@ -347,21 +347,21 @@ class Presupuesto extends Controller
             // Build lines using getNewLine() so tax defaults are applied correctly,
             // then use Calculator::calculate() to compute proper totals and persist everything.
             $lines = [];
-            foreach ($orderLines as $woodstoreLine) {
-                $info = $this->resolveProductInfoByRef($woodstoreLine->product_referencia);
+            foreach ($orderLines as $yeveastoreLine) {
+                $info = $this->resolveProductInfoByRef($yeveastoreLine->product_referencia);
                 if ($info === null) {
-                    Tools::log()->warning('product-not-found', ['referencia' => $woodstoreLine->product_referencia]);
+                    Tools::log()->warning('product-not-found', ['referencia' => $yeveastoreLine->product_referencia]);
                     continue;
                 }
 
                 $linea = $pedido->getNewLine();
-                $linea->referencia = $woodstoreLine->product_referencia;
-                $linea->descripcion = $woodstoreLine->product_name;
+                $linea->referencia = $yeveastoreLine->product_referencia;
+                $linea->descripcion = $yeveastoreLine->product_name;
                 $linea->pvpunitario = $info->price;
 
                 // For Tableros: adjust price by area
-                $largoCm = $woodstoreLine->largo_cm ?? null;
-                $anchoCm = $woodstoreLine->ancho_cm ?? null;
+                $largoCm = $yeveastoreLine->largo_cm ?? null;
+                $anchoCm = $yeveastoreLine->ancho_cm ?? null;
                 $area = $this->calculateTablerosArea($largoCm, $anchoCm);
                 if ($area !== null) {
                     $linea->pvpunitario = $info->price * $area;
@@ -371,7 +371,7 @@ class Presupuesto extends Controller
                 // For Tablones: append product dimensions to description
                 $linea->descripcion = $this->appendTablonesDimensions($linea->descripcion, $info);
 
-                $linea->cantidad = $woodstoreLine->quantity;
+                $linea->cantidad = $yeveastoreLine->quantity;
                 $lines[] = $linea;
             }
 
@@ -435,7 +435,7 @@ class Presupuesto extends Controller
         }
 
         $sessionId = $this->getSessionId();
-        $cartItem = new WoodstoreCartItem();
+        $cartItem = new YeveaStoreCartItem();
         $where = [Where::eq('session_id', $sessionId)];
         $items = $cartItem->all($where);
 
@@ -635,7 +635,7 @@ class Presupuesto extends Controller
         $this->cartNeto = 0;
         $this->cartImpuestos = 0;
 
-        $cartItem = new WoodstoreCartItem();
+        $cartItem = new YeveaStoreCartItem();
         $where = [Where::eq('session_id', $sessionId)];
         $items = $cartItem->all($where);
 

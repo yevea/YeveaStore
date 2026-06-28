@@ -1,5 +1,5 @@
 {# Fixed site header – edit this single file to update the header on all pages #}
-<header id="woodstore-header">
+<header id="yeveastore-header">
     <div class="container d-flex align-items-center justify-content-between">
         <a href="/"><img style="width:100px;height:25px;" src="https://yevea.com/001-vectores/logo-yevea-white.svg" alt="madera olivo - logo"><sup>®</sup></a>
         <div class="d-flex align-items-center gap-2">
@@ -30,9 +30,9 @@
             <li><a href="#placeholder-home">Home</a></li>
 
         {% if fsc.categories is defined and fsc.categories is not empty %}
-            <li><a href="{{ asset('Tableros') }}">{{ trans('all') }}</a></li>
+            <li><a href="{{ asset('Productos') }}">{{ trans('all') }}</a></li>
             {% for cat in fsc.categories %}
-            <li><a href="{{ asset('Tableros') }}?cat={{ fsc.slugMap[cat.codfamilia] | default(cat.codfamilia) }}">{{ fsc.categoryNames[cat.codfamilia] | default(cat.descripcion) }}</a></li>
+            <li><a href="{{ asset('Productos') }}?category={{ cat.codfamilia }}">{{ fsc.categoryNames[cat.codfamilia] | default(cat.descripcion) }}</a></li>
             {% endfor %}
         {% endif %}
 

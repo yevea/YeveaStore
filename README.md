@@ -1,10 +1,10 @@
-# WoodStore Plugin for FacturaScripts
+# YeveaStore Plugin for FacturaScripts
 
 **Minimal version of FacturaScripts:** 2025.71  
 **License:** LGPL v3  
 **Web:** [facturascripts.com](https://facturascripts.com)
 
-A WoodStore / shopping cart plugin for FacturaScripts, built for a Spanish olive wood sawmill. The plugin manages a product catalogue of olive wood products—planks, custom-cut boards, rustic bathroom countertops, kitchen countertops, cutting boards and handcrafted olive wood items—with full support for customers across the European Union.
+A YeveaStore / shopping cart plugin for FacturaScripts, built for a Spanish olive wood sawmill. The plugin manages a product catalogue of olive wood products—planks, custom-cut boards, rustic bathroom countertops, kitchen countertops, cutting boards and handcrafted olive wood items—with full support for customers across the European Union.
 
 ## Product Categories
 
@@ -54,17 +54,17 @@ The storefront and product detail pages include:
 ## Plugin Structure
 
 ```
-WoodStore/
+YeveaStore/
 ├── Assets/
 │   └── JS/
 │       └── EditFamilia.js           # Dynamic family-type UI
 ├── Controller/
-│   ├── EditWoodstoreOrder.php       # Edit order (admin)
-│   ├── ListWoodstoreOrder.php       # List orders (admin)
+│   ├── EditYeveaStoreOrder.php       # Edit order (admin)
+│   ├── ListYeveaStoreOrder.php       # List orders (admin)
 │   ├── Presupuesto.php              # Quote/checkout (frontend)
 │   ├── ProductoDetalle.php          # Product detail (frontend)
 │   ├── Tableros.php                 # Product catalogue (frontend)
-│   ├── SettingsWoodstore.php        # Stripe settings (admin)
+│   ├── SettingsYeveaStore.php        # Stripe settings (admin)
 │   ├── ShoppingCartView.php         # Shopping cart redirect
 │   └── StoreFront.php               # Storefront catalogue (frontend)
 ├── Extension/
@@ -82,13 +82,13 @@ WoodStore/
 │       ├── ListFamilia.xml          # Family list extensions
 │       └── ListProducto.xml         # Product list extensions
 ├── Model/
-│   ├── WoodstoreCartItem.php        # Cart item model
-│   ├── WoodstoreOrder.php           # Order model
-│   └── WoodstoreOrderLine.php       # Order line model
+│   ├── YeveaStoreCartItem.php        # Cart item model
+│   ├── YeveaStoreOrder.php           # Order model
+│   └── YeveaStoreOrderLine.php       # Order line model
 ├── Table/
-│   ├── woodstore_cart_items.xml     # Cart items table
-│   ├── woodstore_order_lines.xml    # Order lines table
-│   ├── woodstore_orders.xml         # Orders table
+│   ├── yeveastore_cart_items.xml     # Cart items table
+│   ├── yeveastore_order_lines.xml    # Order lines table
+│   ├── yeveastore_orders.xml         # Orders table
 │   └── productos_imagenes.xml       # Product images table
 ├── Translation/
 │   ├── de_DE.json                   # German translations
@@ -102,10 +102,10 @@ WoodStore/
 │   ├── ShoppingCartView.html.twig   # Cart redirect template
 │   └── StoreFront.html.twig         # Storefront template (with Schema.org)
 ├── XMLView/
-│   ├── EditWoodstoreOrder.xml       # Order editor view
-│   ├── EditWoodstoreOrderLine.xml   # Order line editor view
-│   ├── ListWoodstoreOrder.xml       # Order list view
-│   └── SettingsWoodstore.xml        # Settings view
+│   ├── EditYeveaStoreOrder.xml       # Order editor view
+│   ├── EditYeveaStoreOrderLine.xml   # Order line editor view
+│   ├── ListYeveaStoreOrder.xml       # Order list view
+│   └── SettingsYeveaStore.xml        # Settings view
 ├── Init.php                         # Plugin initialisation
 ├── composer.json                    # PHP dependencies
 ├── facturascripts.ini               # Plugin metadata
@@ -115,9 +115,9 @@ WoodStore/
 
 ## Installation
 
-1. Copy the `WoodStore` folder into your FacturaScripts `Plugins/` directory
+1. Copy the `YeveaStore` folder into your FacturaScripts `Plugins/` directory
 2. Go to the FacturaScripts admin panel
-3. Navigate to **Admin > Plugins** and enable the **WoodStore** plugin
+3. Navigate to **Admin > Plugins** and enable the **YeveaStore** plugin
 4. The plugin will create the necessary database tables automatically
 
 ## Configuration
@@ -130,7 +130,7 @@ Stripe is the payment gateway used during checkout.  You need a **Stripe Secret 
 
 1. Log in to the FacturaScripts admin panel.
 2. Navigate to **Admin → Settings** and click the **E-Commerce** tab  
-   (direct URL: `/SettingsWoodstore`).
+   (direct URL: `/SettingsYeveaStore`).
 3. Enter your **Stripe Secret Key** (`sk_live_…` or `sk_test_…` for testing) and optionally the **Stripe Public Key** (`pk_live_…` / `pk_test_…`).
 4. Click **Save**.
 
@@ -144,9 +144,9 @@ If you prefer to configure the keys directly in the database (e.g. via **cPanel 
 
 1. Open phpMyAdmin and select the FacturaScripts database.
 2. Browse the `fs_settings` table.
-3. Look for a row where `name = 'woodstore'`.  
+3. Look for a row where `name = 'yeveastore'`.  
    • If it exists, open the row for editing.  
-   • If it does not exist yet, insert a new row with `name = 'woodstore'`.
+   • If it does not exist yet, insert a new row with `name = 'yeveastore'`.
 4. In the `properties` column (a JSON string), add or update the Stripe keys:
 
    ```json
@@ -167,14 +167,14 @@ When a customer completes a payment via Stripe, the plugin automatically:
 
 1. **Finds or creates a `Cliente`** — searches for an existing client by email address; if none is found, a new client is created with all the submitted contact details.
 2. **Creates a `PedidoCliente`** — a native FacturaScripts sales order is created and linked to the client. The order appears in **Ventas > Pedidos** like any manually entered order.
-3. **Links back to the WoodStore order** — the `WoodstoreOrder` record stores the `codcliente` and `codpedido` values so you can navigate directly to the native records from **Ventas > Pedidos (WoodStore) > Edit**.
+3. **Links back to the YeveaStore order** — the `YeveaStoreOrder` record stores the `codcliente` and `codpedido` values so you can navigate directly to the native records from **Ventas > Pedidos (YeveaStore) > Edit**.
 
 > This integration requires the FacturaScripts **Ventas** (Facturación) plugin to be installed. The plugin gracefully skips the native order creation if the required models are not available.
 
 ## Usage
 
 ### Admin Panel
-- Access the **WoodStore** menu in the admin panel to manage categories, products, and orders
+- Access the **YeveaStore** menu in the admin panel to manage categories, products, and orders
 - Create categories first, then add products assigned to those categories
 - Orders are created automatically when customers complete the checkout process
 

@@ -1,10 +1,10 @@
 <?php
-namespace FacturaScripts\Plugins\WoodStore\Model;
+namespace FacturaScripts\Plugins\YeveaStore\Model;
 
 use FacturaScripts\Core\Template\ModelClass;
 use FacturaScripts\Core\Template\ModelTrait;
 
-class WoodstoreOrderLine extends ModelClass
+class YeveaStoreOrderLine extends ModelClass
 {
     use ModelTrait;
 
@@ -42,7 +42,7 @@ class WoodstoreOrderLine extends ModelClass
 
     public static function tableName(): string
     {
-        return 'woodstore_order_lines';
+        return 'yeveastore_order_lines';
     }
 
     public function clear(): void

@@ -1,16 +1,16 @@
 <?php
-namespace FacturaScripts\Plugins\WoodStore\Controller;
+namespace FacturaScripts\Plugins\YeveaStore\Controller;
 
 use FacturaScripts\Core\Controller\EditSettings;
 use FacturaScripts\Core\Model\Settings;
 
-class SettingsWoodstore extends EditSettings
+class SettingsYeveaStore extends EditSettings
 {
     public function getPageData(): array
     {
         $data = parent::getPageData();
         $data['menu'] = 'admin';
-        $data['title'] = 'settings-woodstore';
+        $data['title'] = 'settings-yeveastore';
         $data['icon'] = 'fa-solid fa-store';
         return $data;
     }
@@ -18,11 +18,11 @@ class SettingsWoodstore extends EditSettings
     protected function execPreviousAction($action)
     {
         if ($action === 'insert'
-            && $this->active === 'SettingsWoodstore'
+            && $this->active === 'SettingsYeveaStore'
             && isset($this->views[$this->active])
             && $this->views[$this->active]->model instanceof Settings
             && empty($this->views[$this->active]->model->name)) {
-            $this->views[$this->active]->model->name = 'woodstore';
+            $this->views[$this->active]->model->name = 'yeveastore';
         }
 
         return parent::execPreviousAction($action);
@@ -32,10 +32,10 @@ class SettingsWoodstore extends EditSettings
     {
         parent::loadData($viewName, $view);
 
-        if ($viewName === 'SettingsWoodstore'
+        if ($viewName === 'SettingsYeveaStore'
             && $view->model instanceof Settings
             && empty($view->model->name)) {
-            $view->model->name = 'woodstore';
+            $view->model->name = 'yeveastore';
         }
     }
 }

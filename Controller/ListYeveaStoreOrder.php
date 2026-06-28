@@ -1,23 +1,23 @@
 <?php
-namespace FacturaScripts\Plugins\WoodStore\Controller;
+namespace FacturaScripts\Plugins\YeveaStore\Controller;
 
 use FacturaScripts\Core\Lib\ExtendedController\ListController;
 
-class ListWoodstoreOrder extends ListController
+class ListYeveaStoreOrder extends ListController
 {
     public function getPageData(): array
     {
         $pageData = parent::getPageData();
-        $pageData['menu'] = 'woodstore';
+        $pageData['menu'] = 'yeveastore';
         $pageData['title'] = 'orders';
         $pageData['icon'] = 'fa-solid fa-shopping-bag';
         $pageData['showonmenu'] = false;
         return $pageData;
     }
 
-    protected function createViews($viewName = 'ListWoodstoreOrder')
+    protected function createViews($viewName = 'ListYeveaStoreOrder')
     {
-        $this->addView($viewName, 'WoodstoreOrder', 'orders', 'fa-solid fa-shopping-bag')
+        $this->addView($viewName, 'YeveaStoreOrder', 'orders', 'fa-solid fa-shopping-bag')
             ->addSearchFields(['code', 'customer_name', 'customer_email'])
             ->addFilterSelect('status', 'status', 'status', [
                 ['code' => 'pending', 'description' => 'pending'],

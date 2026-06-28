@@ -6,13 +6,17 @@
         <null>NO</null>
     </column>
     <column>
-        <name>session_id</name>
-        <type>character varying(100)</type>
+        <name>order_id</name>
+        <type>integer</type>
         <null>NO</null>
     </column>
     <column>
         <name>product_referencia</name>
         <type>character varying(30)</type>
+    </column>
+    <column>
+        <name>product_name</name>
+        <type>character varying(200)</type>
         <null>NO</null>
     </column>
     <column>
@@ -21,18 +25,14 @@
         <default>1</default>
     </column>
     <column>
-        <name>creation_date</name>
-        <type>timestamp</type>
+        <name>price</name>
+        <type>double precision</type>
+        <default>0</default>
     </column>
     <column>
-        <name>idproducto</name>
-        <type>integer</type>
-        <null>YES</null>
-    </column>
-    <column>
-        <name>product_id</name>
-        <type>integer</type>
-        <null>YES</null>
+        <name>subtotal</name>
+        <type>double precision</type>
+        <default>0</default>
     </column>
     <column>
         <name>largo_cm</name>
@@ -45,15 +45,15 @@
         <null>YES</null>
     </column>
     <constraint>
-        <name>pk_woodstore_cart_items</name>
+        <name>pk_yeveastore_order_lines</name>
         <type>PRIMARY KEY (id)</type>
     </constraint>
-    <index>
-        <name>idx_woodstore_cart_items_session</name>
-        <columns>session_id</columns>
-    </index>
     <constraint>
-        <name>fk_woodstore_cart_items_product</name>
-        <type>FOREIGN KEY (product_referencia) REFERENCES productos (referencia) ON DELETE CASCADE ON UPDATE CASCADE</type>
+        <name>fk_yeveastore_order_lines_order</name>
+        <type>FOREIGN KEY (order_id) REFERENCES yeveastore_orders (id) ON DELETE CASCADE ON UPDATE CASCADE</type>
+    </constraint>
+    <constraint>
+        <name>fk_yeveastore_order_lines_product</name>
+        <type>FOREIGN KEY (product_referencia) REFERENCES productos (referencia) ON DELETE SET NULL ON UPDATE CASCADE</type>
     </constraint>
 </table>

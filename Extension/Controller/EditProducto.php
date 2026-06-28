@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of WoodStore plugin for FacturaScripts.
+ * This file is part of YeveaStore plugin for FacturaScripts.
  * Copyright (C) 2024 FacturaScripts Community
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace FacturaScripts\Plugins\WoodStore\Extension\Controller;
+namespace FacturaScripts\Plugins\YeveaStore\Extension\Controller;
 
 use Closure;
 use FacturaScripts\Core\Model\Familia;

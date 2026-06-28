@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <view>
     <columns>
-        <group name="woodstore" icon="fa-solid fa-store" numcolumns="12">
+        <group name="yeveastore" icon="fa-solid fa-store" numcolumns="12">
             <column name="stripe-secret-key" numcolumns="6">
                 <widget type="password" fieldname="stripe_secret_key" />
             </column>

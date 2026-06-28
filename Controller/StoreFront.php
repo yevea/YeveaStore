@@ -1,5 +1,5 @@
 <?php
-namespace FacturaScripts\Plugins\WoodStore\Controller;
+namespace FacturaScripts\Plugins\YeveaStore\Controller;
 
 use FacturaScripts\Core\Lib\AssetManager;
 use FacturaScripts\Core\Model\Familia;
@@ -7,9 +7,9 @@ use FacturaScripts\Core\Model\Producto;
 use FacturaScripts\Core\Template\Controller;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Core\Where;
-use FacturaScripts\Plugins\WoodStore\Lib\LanguageTrait;
-use FacturaScripts\Plugins\WoodStore\Lib\SlugTrait;
-use FacturaScripts\Plugins\WoodStore\Model\WoodstoreCartItem;
+use FacturaScripts\Plugins\YeveaStore\Lib\LanguageTrait;
+use FacturaScripts\Plugins\YeveaStore\Lib\SlugTrait;
+use FacturaScripts\Plugins\YeveaStore\Model\YeveaStoreCartItem;
 
 class StoreFront extends Controller
 {
@@ -48,7 +48,7 @@ class StoreFront extends Controller
     public function getPageData(): array
     {
         $pageData = parent::getPageData();
-        $pageData['menu'] = 'woodstore';
+        $pageData['menu'] = 'yeveastore';
         $pageData['title'] = 'storefront';
         $pageData['icon'] = 'fa-solid fa-store';
         $pageData['showonmenu'] = false;
@@ -60,9 +60,9 @@ class StoreFront extends Controller
         parent::run();
         $this->detectAndSetLanguage();
 
-        $cssPath = FS_FOLDER . '/Plugins/WoodStore/Assets/CSS/woodstore.css';
+        $cssPath = FS_FOLDER . '/Plugins/YeveaStore/Assets/CSS/yeveastore.css';
         if (file_exists($cssPath)) {
-            AssetManager::addCss(FS_ROUTE . '/Plugins/WoodStore/Assets/CSS/woodstore.css');
+            AssetManager::addCss(FS_ROUTE . '/Plugins/YeveaStore/Assets/CSS/yeveastore.css');
         }
 
         $action = $this->request()->request->get('action', $this->request()->query->get('action', ''));
@@ -144,7 +144,7 @@ class StoreFront extends Controller
 
         $sessionId = $this->getSessionId();
 
-        $cartItem = new WoodstoreCartItem();
+        $cartItem = new YeveaStoreCartItem();
         $where = [
             Where::eq('session_id', $sessionId),
             Where::eq('product_referencia', $productReferencia),
@@ -189,7 +189,7 @@ class StoreFront extends Controller
             return;
         }
 
-        $secretKey = Tools::settings('woodstore', 'stripe_secret_key', '');
+        $secretKey = Tools::settings('yeveastore', 'stripe_secret_key', '');
         if (empty($secretKey)) {
             Tools::log()->error('stripe-not-configured');
             return;
@@ -454,7 +454,7 @@ class StoreFront extends Controller
 
     protected function loadCartItemCount(): void
     {
-        $cartItem = new WoodstoreCartItem();
+        $cartItem = new YeveaStoreCartItem();
         $where = [Where::eq('session_id', $this->getSessionId())];
         $items = $cartItem->all($where);
         $this->cartItemCount = 0;
