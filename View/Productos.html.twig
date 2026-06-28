@@ -1,8 +1,10 @@
 {% extends "StoreFront.html.twig" %}
 
-{% block title %}{{ fsc.seoTitle }}{% endblock %}
-
-{% block metas %}
-<meta name="description" content="{{ fsc.seoDescription }}">
-<meta name="robots" content="{{ fsc.noindex ? 'noindex' : 'index, follow' }}">
+{% block meta %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>{{ fsc.seoTitle }}</title>
+    <meta name="description" content="{{ fsc.seoDescription }}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="generator" content="FacturaScripts"/>
+    <meta name="robots" content="{{ fsc.noindex ? 'noindex' : 'index, follow' }}"/>
 {% endblock %}
