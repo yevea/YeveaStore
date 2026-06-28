@@ -4,7 +4,7 @@
         <div class="row g-4">
             {# Contact channels #}
             <div class="col-12 col-md-4">
-                <h6 class="footer-heading">{{ trans('footer-contact') }}</h6>
+                <h6 class="footer-heading">{{ fsc.t('footer-contact') }}</h6>
                 <ul class="footer-list">
                     <li>
                         <i class="fa-solid fa-phone"></i>
@@ -23,7 +23,7 @@
 
             {# Address #}
             <div class="col-12 col-md-4">
-                <h6 class="footer-heading">{{ trans('footer-address') }}</h6>
+                <h6 class="footer-heading">{{ fsc.t('footer-address') }}</h6>
                 <address class="footer-address">
                     <i class="fa-solid fa-location-dot"></i>
                     Calle Ejemplo 123<br>
@@ -34,10 +34,10 @@
 
             {# Quick links #}
             <div class="col-12 col-md-4">
-                <h6 class="footer-heading">{{ trans('footer-links') }}</h6>
+                <h6 class="footer-heading">{{ fsc.t('footer-links') }}</h6>
                 <ul class="footer-list">
-                    <li><a href="{{ asset('Productos') }}">{{ trans('products') }}</a></li>
-                    <li><a href="{{ asset('Presupuesto') }}">{{ trans('presupuesto') }}</a></li>
+                    <li><a href="{{ asset('Productos') }}">{{ fsc.t('products') }}</a></li>
+                    <li><a href="{{ asset('Presupuesto') }}">{{ fsc.t('presupuesto') }}</a></li>
                 </ul>
             </div>
         </div>
@@ -45,7 +45,7 @@
         <hr class="footer-divider">
 
         <div class="text-center small footer-copy">
-            &copy; {{ "now" | date("Y") }} Yevea. {{ trans('footer-rights') }}
+            &copy; {{ "now" | date("Y") }} Yevea. {{ fsc.t('footer-rights') }}
         </div>
     </div>
 </footer>

@@ -16,20 +16,20 @@
         "name": "{% if fsc.defaultVariant and fsc.defaultVariant.description is not empty %}{{ fsc.product.name | e('js') }} – {{ fsc.defaultVariant.description | e('js') }}{% else %}{{ fsc.product.name | e('js') }}{% endif %}",
         "description": "{{ fsc.product.description | e('js') }}",
         "sku": "{{ fsc.product.referencia }}",
-        "material": "{{ trans('olive-wood') }}",
+        "material": "{{ fsc.t('olive-wood') }}",
         {% if fsc.currentLang is defined %}"inLanguage": "{{ fsc.currentLang[:2] }}",{% endif %}
         "url": "{{ asset('ProductoDetalle') }}?url={{ fsc.product.slug }}",
         {% if fsc.productImages is not empty %}"image": "{{ fsc.productImages[0].url }}",{% endif %}
         "brand": {
             "@type": "Brand",
-            "name": "{{ trans('sawmill') }}"
+            "name": "{{ fsc.t('sawmill') }}"
         },
         "manufacturer": {
             "@type": "Organization",
-            "name": "{{ trans('sawmill') }}",
-            "description": "{{ trans('sawmill-desc') }}"
+            "name": "{{ fsc.t('sawmill') }}",
+            "description": "{{ fsc.t('sawmill-desc') }}"
         },
-        "category": "{% if fsc.familyType == 'tableros' %}{{ trans('olive-wood-boards') }}{% elseif fsc.familyType == 'tablones' %}{{ trans('wood-planks') }}{% elseif fsc.familyType == 'artesania' %}{{ trans('olive-wood-crafts') }}{% else %}{{ trans('olive-wood') }}{% endif %}",
+        "category": "{% if fsc.familyType == 'tableros' %}{{ fsc.t('olive-wood-boards') }}{% elseif fsc.familyType == 'tablones' %}{{ fsc.t('wood-planks') }}{% elseif fsc.familyType == 'artesania' %}{{ fsc.t('olive-wood-crafts') }}{% else %}{{ fsc.t('olive-wood') }}{% endif %}",
         "offers": {
             "@type": "Offer",
             "price": "{{ fsc.defaultVariant ? fsc.defaultVariant.price : fsc.product.price }}",
@@ -73,7 +73,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
             <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                <a href="{{ asset('Tableros') }}" itemprop="item"><span itemprop="name">{{ trans('tableros') }}</span></a>
+                <a href="{{ asset('Tableros') }}" itemprop="item"><span itemprop="name">{{ fsc.t('tableros') }}</span></a>
                 <meta itemprop="position" content="1">
             </li>
             <li class="breadcrumb-item active" aria-current="page" id="breadcrumb-product-name" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
@@ -118,18 +118,18 @@
                 </button>
             </div>
             {# Lightbox modal for full-size image viewing #}
-            <div class="modal fade" id="imageLightbox" tabindex="-1" aria-label="{{ trans('image') }}" aria-hidden="true">
+            <div class="modal fade" id="imageLightbox" tabindex="-1" aria-label="{{ fsc.t('image') }}" aria-hidden="true">
                 <div class="modal-dialog modal-fullscreen">
                     <div class="modal-content bg-dark bg-opacity-75" onclick="handleLightboxBackdropClick(event)">
                         <div class="modal-header border-0 position-absolute w-100" style="z-index:1;">
-                            <button type="button" class="btn-close btn-close-white ms-auto" aria-label="{{ trans('close') }}" onclick="closeLightbox()"></button>
+                            <button type="button" class="btn-close btn-close-white ms-auto" aria-label="{{ fsc.t('close') }}" onclick="closeLightbox()"></button>
                         </div>
                         <div class="modal-body d-flex align-items-center justify-content-center p-0">
-                            <button type="button" class="lightbox-nav lightbox-prev" aria-label="{{ trans('previous') }}" onclick="lightboxNavigate(-1)">
+                            <button type="button" class="lightbox-nav lightbox-prev" aria-label="{{ fsc.t('previous') }}" onclick="lightboxNavigate(-1)">
                                 <i class="fa-solid fa-chevron-left fa-2x"></i>
                             </button>
                             <img id="lightboxImage" src="" alt="" class="lightbox-img">
-                            <button type="button" class="lightbox-nav lightbox-next" aria-label="{{ trans('next') }}" onclick="lightboxNavigate(1)">
+                            <button type="button" class="lightbox-nav lightbox-next" aria-label="{{ fsc.t('next') }}" onclick="lightboxNavigate(1)">
                                 <i class="fa-solid fa-chevron-right fa-2x"></i>
                             </button>
                         </div>
@@ -163,19 +163,19 @@
                     {% endif %}
                 </span>
                 {% if (fsc.familyType == 'artesania' or fsc.familyType == 'tablones') and fsc.product.isSold %}
-                <span id="variant-stock-badge" class="badge bg-warning text-dark fs-6">{{ trans('sold') }}</span>
+                <span id="variant-stock-badge" class="badge bg-warning text-dark fs-6">{{ fsc.t('sold') }}</span>
                 {% elseif fsc.product.nostock %}
                 <span id="variant-stock-badge"></span>
                 {% elseif currentStock > 0 %}
-                <span id="variant-stock-badge" class="badge bg-success fs-6">{{ trans('in-stock') }}</span>
+                <span id="variant-stock-badge" class="badge bg-success fs-6">{{ fsc.t('in-stock') }}</span>
                 {% else %}
-                <span id="variant-stock-badge" class="badge bg-danger fs-6">{{ trans('out-of-stock') }}</span>
+                <span id="variant-stock-badge" class="badge bg-danger fs-6">{{ fsc.t('out-of-stock') }}</span>
                 {% endif %}
             </div>
 
             {% if fsc.product.description is not empty %}
             <div class="mb-4">
-                <h5>{{ trans('description') }}</h5>
+                <h5>{{ fsc.t('description') }}</h5>
                 <p class="text-muted">{{ fsc.product.description | nl2br }}</p>
             </div>
             {% endif %}
@@ -183,17 +183,17 @@
             {# Tablones: Show product dimensions (non-editable) #}
             {% if fsc.familyType == 'tablones' %}
             <div class="mb-3" id="tablones-dimensions">
-                <h6>{{ trans('dimensions') }}</h6>
+                <h6>{{ fsc.t('dimensions') }}</h6>
                 {% if fsc.product.largo is not null or fsc.product.ancho is not null or fsc.product.espesor is not null %}
                 <table class="table table-sm table-bordered" style="max-width: 300px;" id="dimensions-table">
                     {% if fsc.product.largo is not null %}
-                    <tr><td class="fw-semibold">{{ trans('largo') }}</td><td>{{ fsc.product.largo }}</td></tr>
+                    <tr><td class="fw-semibold">{{ fsc.t('largo') }}</td><td>{{ fsc.product.largo }}</td></tr>
                     {% endif %}
                     {% if fsc.product.ancho is not null %}
-                    <tr><td class="fw-semibold">{{ trans('ancho') }}</td><td>{{ fsc.product.ancho }}</td></tr>
+                    <tr><td class="fw-semibold">{{ fsc.t('ancho') }}</td><td>{{ fsc.product.ancho }}</td></tr>
                     {% endif %}
                     {% if fsc.product.espesor is not null %}
-                    <tr><td class="fw-semibold">{{ trans('espesor') }}</td><td>{{ fsc.product.espesor }}</td></tr>
+                    <tr><td class="fw-semibold">{{ fsc.t('espesor') }}</td><td>{{ fsc.product.espesor }}</td></tr>
                     {% endif %}
                 </table>
                 {% endif %}
@@ -220,7 +220,7 @@
             {% elseif fsc.productVariants is not empty %}
             {# Fallback: simple dropdown when variants have no attribute data #}
             <div class="mb-4">
-                <h5>{{ trans('variants') }}</h5>
+                <h5>{{ fsc.t('variants') }}</h5>
                 <select id="variant-selector" class="form-select" onchange="updateVariant(this)">
                     {% for variant in fsc.productVariants %}
                     <option value="{{ variant.referencia }}" data-price="{{ variant.price }}" data-stock="{{ variant.stock }}"
@@ -240,7 +240,7 @@
             {# === ARTESANÍA / TABLONES: sold overlay === #}
             {% if (fsc.familyType == 'artesania' or fsc.familyType == 'tablones') and fsc.product.isSold %}
             <div class="alert alert-warning">
-                <i class="fa-solid fa-tag"></i> {{ trans('sold') }}
+                <i class="fa-solid fa-tag"></i> {{ fsc.t('sold') }}
             </div>
 
             {# === TABLEROS: custom dimension input === #}
@@ -253,28 +253,28 @@
                     value="{{ fsc.defaultVariant ? fsc.defaultVariant.referencia : fsc.product.referencia }}">
                 <input type="hidden" name="multireqtoken" value="{{ fsc.multiRequestProtection.newToken() }}">
 
-                <h5>{{ trans('enter-dimensions') }}</h5>
+                <h5>{{ fsc.t('enter-dimensions') }}</h5>
                 {% if fsc.familyData %}
                 <p class="text-muted small">
                     {% if fsc.familyData.largo_min > 0 or fsc.familyData.largo_max > 0 %}
-                    {{ trans('largo') }}: {{ fsc.familyData.largo_min }} - {{ fsc.familyData.largo_max }} cm<br>
+                    {{ fsc.t('largo') }}: {{ fsc.familyData.largo_min }} - {{ fsc.familyData.largo_max }} cm<br>
                     {% endif %}
                     {% if fsc.familyData.ancho_min > 0 or fsc.familyData.ancho_max > 0 %}
-                    {{ trans('ancho') }}: {{ fsc.familyData.ancho_min }} - {{ fsc.familyData.ancho_max }} cm
+                    {{ fsc.t('ancho') }}: {{ fsc.familyData.ancho_min }} - {{ fsc.familyData.ancho_max }} cm
                     {% endif %}
                 </p>
                 {% endif %}
 
                 <div class="row g-2 mb-3">
                     <div class="col-auto">
-                        <label class="form-label" for="largo_cm">{{ trans('largo') }}</label>
+                        <label class="form-label" for="largo_cm">{{ fsc.t('largo') }}</label>
                         <input type="number" id="largo_cm" name="largo_cm" class="form-control" step="0.01"
                             min="{{ fsc.familyData and fsc.familyData.largo_min > 0 ? fsc.familyData.largo_min : '0.01' }}"
                             {% if fsc.familyData and fsc.familyData.largo_max > 0 %}max="{{ fsc.familyData.largo_max }}"{% endif %}
                             required oninput="calculateTablerosPrice()">
                     </div>
                     <div class="col-auto">
-                        <label class="form-label" for="ancho_cm">{{ trans('ancho') }}</label>
+                        <label class="form-label" for="ancho_cm">{{ fsc.t('ancho') }}</label>
                         <input type="number" id="ancho_cm" name="ancho_cm" class="form-control" step="0.01"
                             min="{{ fsc.familyData and fsc.familyData.ancho_min > 0 ? fsc.familyData.ancho_min : '0.01' }}"
                             {% if fsc.familyData and fsc.familyData.ancho_max > 0 %}max="{{ fsc.familyData.ancho_max }}"{% endif %}
@@ -283,17 +283,17 @@
                 </div>
 
                 <div class="mb-3" id="tableros-calc" style="display:none;">
-                    <p class="mb-1"><strong>{{ trans('area') }}:</strong> <span id="tableros-area">0</span> m²</p>
-                    <p class="mb-1"><strong>{{ trans('calculated-price') }}:</strong> <span id="tableros-total-price">0,00 €</span></p>
+                    <p class="mb-1"><strong>{{ fsc.t('area') }}:</strong> <span id="tableros-area">0</span> m²</p>
+                    <p class="mb-1"><strong>{{ fsc.t('calculated-price') }}:</strong> <span id="tableros-total-price">0,00 €</span></p>
                 </div>
 
                 <button type="submit" id="add-to-cart-btn" class="btn btn-primary btn-lg">
-                    <i class="fa-solid fa-cart-plus"></i> {{ trans('add-to-presupuesto') }}
+                    <i class="fa-solid fa-cart-plus"></i> {{ fsc.t('add-to-presupuesto') }}
                 </button>
             </form>
             {% else %}
             <button class="btn btn-secondary btn-lg" disabled>
-                <i class="fa-solid fa-ban"></i> {{ trans('out-of-stock') }}
+                <i class="fa-solid fa-ban"></i> {{ fsc.t('out-of-stock') }}
             </button>
             {% endif %}
 
@@ -309,12 +309,12 @@
                 <input type="hidden" name="quantity" value="1">
 
                 <button type="submit" id="add-to-cart-btn" class="btn btn-primary btn-lg">
-                    <i class="fa-solid fa-cart-plus"></i> {{ trans('add-to-presupuesto') }}
+                    <i class="fa-solid fa-cart-plus"></i> {{ fsc.t('add-to-presupuesto') }}
                 </button>
             </form>
             {% else %}
             <button class="btn btn-secondary btn-lg" disabled>
-                <i class="fa-solid fa-ban"></i> {{ trans('out-of-stock') }}
+                <i class="fa-solid fa-ban"></i> {{ fsc.t('out-of-stock') }}
             </button>
             {% endif %}
 
@@ -330,7 +330,7 @@
 
                 {% if fsc.familyType != 'artesania' %}
                 <div class="input-group mb-3" style="max-width: 200px;">
-                    <label class="input-group-text" for="qty">{{ trans('quantity') }}</label>
+                    <label class="input-group-text" for="qty">{{ fsc.t('quantity') }}</label>
                     <input type="number" id="qty" name="quantity" value="1" min="1" {% if fsc.product.nostock %}max="999"{% else %}max="{{ currentStock }}"{% endif %} class="form-control">
                 </div>
                 {% else %}
@@ -339,12 +339,12 @@
 
                 <button type="submit" id="add-to-cart-btn" class="btn btn-primary btn-lg"
                     {% if not fsc.product.nostock and currentStock <= 0 %}disabled{% endif %}>
-                    <i class="fa-solid fa-cart-plus"></i> {{ trans('add-to-presupuesto') }}
+                    <i class="fa-solid fa-cart-plus"></i> {{ fsc.t('add-to-presupuesto') }}
                 </button>
             </form>
             {% else %}
             <button class="btn btn-secondary btn-lg" disabled>
-                <i class="fa-solid fa-ban"></i> {{ trans('out-of-stock') }}
+                <i class="fa-solid fa-ban"></i> {{ fsc.t('out-of-stock') }}
             </button>
             {% endif %}
             {% endif %}
@@ -353,10 +353,10 @@
 
     {% else %}
     <div class="alert alert-warning">
-        <i class="fa-solid fa-exclamation-triangle"></i> {{ trans('product-not-found') }}
+        <i class="fa-solid fa-exclamation-triangle"></i> {{ fsc.t('product-not-found') }}
     </div>
     <a href="{{ asset('Tableros') }}" class="btn btn-primary">
-        <i class="fa-solid fa-arrow-left"></i> {{ trans('tableros') }}
+        <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('tableros') }}
     </a>
     {% endif %}
 
@@ -364,7 +364,7 @@
     <div class="sticky-cart-btn me-3 text-end d-none d-md-block">
         <a href="{{ asset('Presupuesto') }}" class="btn btn-success shadow">
             <i class="fa-solid fa-file-invoice"></i>
-            {{ trans('view-presupuesto') }} ({{ fsc.cartItemCount }})
+            {{ fsc.t('view-presupuesto') }} ({{ fsc.cartItemCount }})
         </a>
     </div>
     {% endif %}
@@ -375,9 +375,9 @@ var variantData = {{ fsc.productVariants | json_encode | raw }};
 var variantImages = {{ fsc.variantImages | json_encode | raw }};
 var allImages = {{ fsc.productImages | json_encode | raw }};
 var productBaseName = {{ fsc.product.name | json_encode | raw }};
-var inStockLabel = {{ trans('in-stock') | json_encode | raw }};
-var outOfStockLabel = {{ trans('out-of-stock') | json_encode | raw }};
-var soldLabel = {{ trans('sold') | json_encode | raw }};
+var inStockLabel = {{ fsc.t('in-stock') | json_encode | raw }};
+var outOfStockLabel = {{ fsc.t('out-of-stock') | json_encode | raw }};
+var soldLabel = {{ fsc.t('sold') | json_encode | raw }};
 var familyType = {{ fsc.familyType | json_encode | raw }};
 
 function formatMoney(amount) {

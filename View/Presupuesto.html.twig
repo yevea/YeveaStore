@@ -7,18 +7,18 @@
 {% include 'Hreflang.html.twig' %}
 <div class="container mt-4" id="presupuesto-content">
     <h1 class="mb-4">
-        <i class="fa-solid fa-file-invoice"></i> {{ trans('presupuesto') }}
+        <i class="fa-solid fa-file-invoice"></i> {{ fsc.t('presupuesto') }}
     </h1>
 
     {% if fsc.orderSuccess %}
     <div class="alert alert-success text-center py-5">
         <i class="fa-solid fa-circle-check fa-3x mb-3 d-block"></i>
-        <h3>{{ trans('order-placed-successfully') }}</h3>
+        <h3>{{ fsc.t('order-placed-successfully') }}</h3>
         {% if fsc.orderCode is not empty %}
-        <p class="lead">{{ trans('order-code') }}: <strong>{{ fsc.orderCode }}</strong></p>
+        <p class="lead">{{ fsc.t('order-code') }}: <strong>{{ fsc.orderCode }}</strong></p>
         {% endif %}
         <a href="{{ asset('Tableros') }}" class="btn btn-primary mt-3">
-            <i class="fa-solid fa-arrow-left"></i> {{ trans('go-to-store') }}
+            <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('go-to-store') }}
         </a>
     </div>
 
@@ -29,12 +29,12 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>{{ trans('reference') }} - {{ trans('description') }}</th>
-                            <th class="text-center" style="width: 100px;">{{ trans('quantity') }}</th>
-                            <th class="text-end">{{ trans('price') }}</th>
-                            <th class="text-end">{{ trans('neto') }}</th>
-                            <th class="text-end">{{ trans('impuesto') }}</th>
-                            <th class="text-end">{{ trans('subtotal') }}</th>
+                            <th>{{ fsc.t('reference') }} - {{ fsc.t('description') }}</th>
+                            <th class="text-center" style="width: 100px;">{{ fsc.t('quantity') }}</th>
+                            <th class="text-end">{{ fsc.t('price') }}</th>
+                            <th class="text-end">{{ fsc.t('neto') }}</th>
+                            <th class="text-end">{{ fsc.t('impuesto') }}</th>
+                            <th class="text-end">{{ fsc.t('subtotal') }}</th>
                             <th class="text-center no-print" style="width: 80px;"></th>
                         </tr>
                     </thead>
@@ -45,8 +45,8 @@
                                 {{ item.referencia }} - {{ item.product_name }}
                                 {% if item.isTableros is defined and item.isTableros %}
                                 <br><small class="text-muted">
-                                    {{ trans('largo') }}: {{ item.largo_cm }} cm ×
-                                    {{ trans('ancho') }}: {{ item.ancho_cm }} cm
+                                    {{ fsc.t('largo') }}: {{ item.largo_cm }} cm ×
+                                    {{ fsc.t('ancho') }}: {{ item.ancho_cm }} cm
                                     ({{ (item.largo_cm * item.ancho_cm / 10000) | number_format(4, ',', '.') }} m²)
                                 </small>
                                 {% elseif item.isTablones is defined and item.isTablones and (item.largo is not null or item.ancho is not null or item.espesor is not null) %}
@@ -88,17 +88,17 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="5" class="text-end">{{ trans('neto') }}:</td>
+                            <td colspan="5" class="text-end">{{ fsc.t('neto') }}:</td>
                             <td class="text-end">{{ fsc.formatMoney(fsc.cartNeto) }}</td>
                             <td class="no-print"></td>
                         </tr>
                         <tr>
-                            <td colspan="5" class="text-end">{{ trans('impuestos') }}:</td>
+                            <td colspan="5" class="text-end">{{ fsc.t('impuestos') }}:</td>
                             <td class="text-end">{{ fsc.formatMoney(fsc.cartImpuestos) }}</td>
                             <td class="no-print"></td>
                         </tr>
                         <tr class="table-active">
-                            <td colspan="5" class="text-end fw-bold">{{ trans('total') }}:</td>
+                            <td colspan="5" class="text-end fw-bold">{{ fsc.t('total') }}:</td>
                             <td class="text-end fw-bold">{{ fsc.formatMoney(fsc.cartTotal) }}</td>
                             <td class="no-print"></td>
                         </tr>
@@ -110,7 +110,7 @@
 
     <div class="card shadow-sm mb-4 no-print">
         <div class="card-header">
-            <h5 class="mb-0">{{ trans('checkout') }}</h5>
+            <h5 class="mb-0">{{ fsc.t('checkout') }}</h5>
         </div>
         <div class="card-body">
             <form method="post" action="{{ asset('Presupuesto') }}" id="checkout-form">
@@ -118,43 +118,43 @@
                 <input type="hidden" name="multireqtoken" value="{{ fsc.multiRequestProtection.newToken() }}">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="customer_name" class="form-label">{{ trans('customer-name') }} *</label>
+                        <label for="customer_name" class="form-label">{{ fsc.t('customer-name') }} *</label>
                         <input type="text" name="customer_name" id="customer_name" class="form-control" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="customer_nif" class="form-label">{{ trans('customer-nif') }}</label>
+                        <label for="customer_nif" class="form-label">{{ fsc.t('customer-nif') }}</label>
                         <input type="text" name="customer_nif" id="customer_nif" class="form-control" maxlength="30">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="customer_email" class="form-label">{{ trans('customer-email') }}</label>
+                        <label for="customer_email" class="form-label">{{ fsc.t('customer-email') }}</label>
                         <input type="email" name="customer_email" id="customer_email" class="form-control">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="customer_phone" class="form-label">{{ trans('customer-phone') }}</label>
+                        <label for="customer_phone" class="form-label">{{ fsc.t('customer-phone') }}</label>
                         <input type="tel" name="customer_phone" id="customer_phone" class="form-control" maxlength="30">
                     </div>
                     <div class="col-12 mb-3">
-                        <label for="address" class="form-label">{{ trans('address') }}</label>
+                        <label for="address" class="form-label">{{ fsc.t('address') }}</label>
                         <input type="text" name="address" id="address" class="form-control">
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="customer_zip" class="form-label">{{ trans('customer-zip') }}</label>
+                        <label for="customer_zip" class="form-label">{{ fsc.t('customer-zip') }}</label>
                         <input type="text" name="customer_zip" id="customer_zip" class="form-control" maxlength="10">
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="customer_city" class="form-label">{{ trans('customer-city') }}</label>
+                        <label for="customer_city" class="form-label">{{ fsc.t('customer-city') }}</label>
                         <input type="text" name="customer_city" id="customer_city" class="form-control">
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="customer_province" class="form-label">{{ trans('customer-province') }}</label>
+                        <label for="customer_province" class="form-label">{{ fsc.t('customer-province') }}</label>
                         <input type="text" name="customer_province" id="customer_province" class="form-control">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="customer_country" class="form-label">{{ trans('customer-country') }}</label>
+                        <label for="customer_country" class="form-label">{{ fsc.t('customer-country') }}</label>
                         <input type="text" name="customer_country" id="customer_country" class="form-control" value="ES" maxlength="10">
                     </div>
                     <div class="col-12 mb-3">
-                        <label for="notes" class="form-label">{{ trans('notes') }}</label>
+                        <label for="notes" class="form-label">{{ fsc.t('notes') }}</label>
                         <textarea name="notes" id="notes" class="form-control" rows="2"></textarea>
                     </div>
                 </div>
@@ -164,22 +164,22 @@
 
     <div class="d-flex justify-content-between align-items-center mt-3 mb-4 no-print">
         <a href="{{ asset('Tableros') }}" class="btn btn-outline-secondary">
-            <i class="fa-solid fa-arrow-left"></i> {{ trans('continue-shopping') }}
+            <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('continue-shopping') }}
         </a>
         <button type="button" class="btn btn-outline-secondary" onclick="submitPrintPresupuesto()">
-            <i class="fa-solid fa-print"></i> {{ trans('print-presupuesto') }}
+            <i class="fa-solid fa-print"></i> {{ fsc.t('print-presupuesto') }}
         </button>
         <button type="submit" form="checkout-form" class="btn btn-success">
-           {{ trans('place-order') }}
+           {{ fsc.t('place-order') }}
         </button>
     </div>
 
     {% else %}
     <div class="alert alert-info">
-        <i class="fa-solid fa-info-circle"></i> {{ trans('presupuesto-empty') }}
+        <i class="fa-solid fa-info-circle"></i> {{ fsc.t('presupuesto-empty') }}
     </div>
     <a href="{{ asset('Tableros') }}" class="btn btn-primary">
-        <i class="fa-solid fa-arrow-left"></i> {{ trans('go-to-store') }}
+        <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('go-to-store') }}
     </a>
     {% endif %}
 </div>

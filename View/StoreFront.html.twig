@@ -10,8 +10,8 @@
 {
     "@context": "https://schema.org",
     "@type": "Store",
-    "name": "{{ trans('sawmill') }}",
-    "description": "{{ trans('sawmill-desc') }}",
+    "name": "{{ fsc.t('sawmill') }}",
+    "description": "{{ fsc.t('sawmill-desc') }}",
     "url": "{{ asset('StoreFront') }}",
     {% if fsc.currentLang is defined %}"inLanguage": "{{ fsc.currentLang[:2] }}",{% endif %}
     "areaServed": [
@@ -25,7 +25,7 @@
     "paymentAccepted": "Credit Card, Stripe",
     "hasOfferCatalog": {
         "@type": "OfferCatalog",
-        "name": "{{ trans('products') }}",
+        "name": "{{ fsc.t('products') }}",
         "itemListElement": [
             {% for product in fsc.products %}
             {
@@ -35,7 +35,7 @@
                 "sku": "{{ product.referencia }}",
                 "url": "{{ asset('ProductoDetalle') }}?url={{ product.slug }}",
                 {% if product.image %}"image": "{{ product.image }}",{% endif %}
-                "material": "{{ trans('olive-wood') }}",
+                "material": "{{ fsc.t('olive-wood') }}",
                 "offers": {
                     "@type": "Offer",
                     "price": "{{ product.price }}",
@@ -54,11 +54,11 @@
 </script>
 
 <div class="container mt-4" itemscope itemtype="https://schema.org/Store">
-    <meta itemprop="name" content="{{ trans('sawmill') }}">
-    <meta itemprop="description" content="{{ trans('sawmill-desc') }}">
+    <meta itemprop="name" content="{{ fsc.t('sawmill') }}">
+    <meta itemprop="description" content="{{ fsc.t('sawmill-desc') }}">
 
     <h1 class="mb-4">
-        {{ trans('storefront') }}
+        {{ fsc.t('storefront') }}
     </h1>
 
     <div class="row" itemprop="hasOfferCatalog" itemscope itemtype="https://schema.org/OfferCatalog">
@@ -66,7 +66,7 @@
         <div class="col-6 col-md-4 col-lg-3 mb-4">
             <article class="card h-100 shadow-sm" itemscope itemtype="https://schema.org/Product">
                 <meta itemprop="sku" content="{{ product.referencia }}">
-                <meta itemprop="material" content="{{ trans('olive-wood') }}">
+                <meta itemprop="material" content="{{ fsc.t('olive-wood') }}">
                 <a href="{{ asset('ProductoDetalle') }}?url={{ product.slug }}" class="text-decoration-none text-dark" itemprop="url">
                     {% if product.image %}
                     <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}" itemprop="image" style="height: 200px; object-fit: cover;">
@@ -85,12 +85,12 @@
                             <span class="mb-0" itemprop="price" content="{{ product.price }}">{{ fsc.formatMoney(product.price) }}</span>
                             {% if product.stock > 0 %}
                             <link itemprop="availability" href="https://schema.org/InStock">
-                            <span class="badge bg-success">{{ trans('in-stock') }}</span>
+                            <span class="badge bg-success">{{ fsc.t('in-stock') }}</span>
                             {% elseif product.nostock is defined and product.nostock %}
                             <link itemprop="availability" href="https://schema.org/InStock">
                             {% else %}
                             <link itemprop="availability" href="https://schema.org/OutOfStock">
-                            <span class="badge bg-danger">{{ trans('out-of-stock') }}</span>
+                            <span class="badge bg-danger">{{ fsc.t('out-of-stock') }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -100,7 +100,7 @@
         {% else %}
         <div class="col-12">
             <div class="alert alert-info">
-                <i class="fa-solid fa-info-circle"></i> {{ trans('no-products-available') }}
+                <i class="fa-solid fa-info-circle"></i> {{ fsc.t('no-products-available') }}
             </div>
         </div>
         {% endfor %}
@@ -110,7 +110,7 @@
     <div class="sticky-cart-btn me-3 text-end d-none d-md-block">
         <a href="{{ asset('Presupuesto') }}" class="btn btn-success shadow">
             <i class="fa-solid fa-file-invoice"></i>
-            {{ trans('view-presupuesto') }} ({{ fsc.cartItemCount }})
+            {{ fsc.t('view-presupuesto') }} ({{ fsc.cartItemCount }})
         </a>
     </div>
     {% endif %}

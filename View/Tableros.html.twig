@@ -16,8 +16,8 @@
 {
     "@context": "https://schema.org",
     "@type": "Store",
-    "name": "{{ trans('sawmill') }}",
-    "description": "{{ trans('sawmill-desc') }}",
+    "name": "{{ fsc.t('sawmill') }}",
+    "description": "{{ fsc.t('sawmill-desc') }}",
     "url": "{{ asset('Tableros') }}",
     {% if fsc.currentLang is defined %}"inLanguage": "{{ fsc.currentLang[:2] }}",{% endif %}
     "areaServed": [
@@ -31,7 +31,7 @@
     "paymentAccepted": "Credit Card, Stripe",
     "hasOfferCatalog": {
         "@type": "OfferCatalog",
-        "name": "{{ trans('products') }}",
+        "name": "{{ fsc.t('products') }}",
         "itemListElement": [
             {% for product in fsc.products %}
             {
@@ -41,8 +41,8 @@
                 "sku": "{{ product.referencia }}",
                 "url": "{{ asset('ProductoDetalle') }}?url={{ product.slug }}",
                 {% if product.image %}"image": "{{ product.image }}",{% endif %}
-                "material": "{{ trans('olive-wood') }}",
-                "category": "{% if product.familyType is defined and product.familyType == 'tableros' %}{{ trans('olive-wood-boards') }}{% elseif product.familyType is defined and product.familyType == 'tablones' %}{{ trans('wood-planks') }}{% elseif product.familyType is defined and product.familyType == 'artesania' %}{{ trans('olive-wood-crafts') }}{% else %}{{ trans('olive-wood') }}{% endif %}",
+                "material": "{{ fsc.t('olive-wood') }}",
+                "category": "{% if product.familyType is defined and product.familyType == 'tableros' %}{{ fsc.t('olive-wood-boards') }}{% elseif product.familyType is defined and product.familyType == 'tablones' %}{{ fsc.t('wood-planks') }}{% elseif product.familyType is defined and product.familyType == 'artesania' %}{{ fsc.t('olive-wood-crafts') }}{% else %}{{ fsc.t('olive-wood') }}{% endif %}",
                 "offers": {
                     "@type": "Offer",
                     "price": "{{ product.price }}",
@@ -63,7 +63,7 @@
 <div class="container mt-4">
     {% block category_header %}
     <h1 class="mb-4">
-        {% if fsc.selectedCategoryFamily %}{{ fsc.selectedCategoryFamily.descripcion }}{% else %}{{ trans('tableros') }}{% endif %}
+        {% if fsc.selectedCategoryFamily %}{{ fsc.selectedCategoryFamily.descripcion }}{% else %}{{ fsc.t('tableros') }}{% endif %}
     </h1>
     {% endblock %}
 
@@ -80,37 +80,37 @@
     {% if fsc.selectedCategoryType == 'tablones' %}
     <div class="card mb-3">
         <div class="card-body">
-            <h6 class="card-title"><i class="fa-solid fa-filter"></i> {{ trans('filter-dimensions') }}</h6>
+            <h6 class="card-title"><i class="fa-solid fa-filter"></i> {{ fsc.t('filter-dimensions') }}</h6>
             <form method="get" action="{{ asset('Tableros') }}">
                 <input type="hidden" name="cat" value="{{ fsc.categorySlug }}">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-2">
-                        <label class="form-label small">{{ trans('largo') }}</label>
+                        <label class="form-label small">{{ fsc.t('largo') }}</label>
                         <div class="input-group input-group-sm">
-                            <input type="number" name="largo_min" class="form-control" placeholder="{{ trans('min') }}" step="1" min="0" value="{{ fsc.dimensionFilters.largo_min }}">
+                            <input type="number" name="largo_min" class="form-control" placeholder="{{ fsc.t('min') }}" step="1" min="0" value="{{ fsc.dimensionFilters.largo_min }}">
                             <span class="input-group-text">-</span>
-                            <input type="number" name="largo_max" class="form-control" placeholder="{{ trans('max') }}" step="1" min="0" value="{{ fsc.dimensionFilters.largo_max }}">
+                            <input type="number" name="largo_max" class="form-control" placeholder="{{ fsc.t('max') }}" step="1" min="0" value="{{ fsc.dimensionFilters.largo_max }}">
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small">{{ trans('ancho') }}</label>
+                        <label class="form-label small">{{ fsc.t('ancho') }}</label>
                         <div class="input-group input-group-sm">
-                            <input type="number" name="ancho_min" class="form-control" placeholder="{{ trans('min') }}" step="1" min="0" value="{{ fsc.dimensionFilters.ancho_min }}">
+                            <input type="number" name="ancho_min" class="form-control" placeholder="{{ fsc.t('min') }}" step="1" min="0" value="{{ fsc.dimensionFilters.ancho_min }}">
                             <span class="input-group-text">-</span>
-                            <input type="number" name="ancho_max" class="form-control" placeholder="{{ trans('max') }}" step="1" min="0" value="{{ fsc.dimensionFilters.ancho_max }}">
+                            <input type="number" name="ancho_max" class="form-control" placeholder="{{ fsc.t('max') }}" step="1" min="0" value="{{ fsc.dimensionFilters.ancho_max }}">
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small">{{ trans('espesor') }}</label>
+                        <label class="form-label small">{{ fsc.t('espesor') }}</label>
                         <div class="input-group input-group-sm">
-                            <input type="number" name="espesor_min" class="form-control" placeholder="{{ trans('min') }}" step="1" min="0" value="{{ fsc.dimensionFilters.espesor_min }}">
+                            <input type="number" name="espesor_min" class="form-control" placeholder="{{ fsc.t('min') }}" step="1" min="0" value="{{ fsc.dimensionFilters.espesor_min }}">
                             <span class="input-group-text">-</span>
-                            <input type="number" name="espesor_max" class="form-control" placeholder="{{ trans('max') }}" step="1" min="0" value="{{ fsc.dimensionFilters.espesor_max }}">
+                            <input type="number" name="espesor_max" class="form-control" placeholder="{{ fsc.t('max') }}" step="1" min="0" value="{{ fsc.dimensionFilters.espesor_max }}">
                         </div>
                     </div>
                     <div class="col-md-auto">
                         <button type="submit" class="btn btn-sm btn-primary">
-                            <i class="fa-solid fa-search"></i> {{ trans('filter-dimensions') }}
+                            <i class="fa-solid fa-search"></i> {{ fsc.t('filter-dimensions') }}
                         </button>
                         <a href="{{ asset('Tableros') }}?cat={{ fsc.categorySlug }}" class="btn btn-sm btn-outline-secondary">
                             <i class="fa-solid fa-times"></i>
@@ -129,7 +129,7 @@
         <div class="col-6 col-md-4 col-lg-3 mb-4">
             <article class="card h-100 shadow-sm {% if product.isSold is defined and product.isSold %}border-warning{% endif %}" itemscope itemtype="https://schema.org/Product">
                 <meta itemprop="sku" content="{{ product.referencia }}">
-                <meta itemprop="material" content="{{ trans('olive-wood') }}">
+                <meta itemprop="material" content="{{ fsc.t('olive-wood') }}">
                 <a href="{{ asset('ProductoDetalle') }}?url={{ product.slug }}" class="text-decoration-none text-dark" itemprop="url">
                     {% if product.image %}
                     <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}" itemprop="image" style="height: 200px; object-fit: cover;">
@@ -163,15 +163,15 @@
                             </span>
                             {% if product.isSold is defined and product.isSold %}
                             <link itemprop="availability" href="https://schema.org/SoldOut">
-                            <span class="badge bg-warning text-dark">{{ trans('sold') }}</span>
+                            <span class="badge bg-warning text-dark">{{ fsc.t('sold') }}</span>
                             {% elseif product.nostock is defined and product.nostock %}
                             <link itemprop="availability" href="https://schema.org/InStock">
                             {% elseif product.stock > 0 %}
                             <link itemprop="availability" href="https://schema.org/InStock">
-                            <span class="badge bg-success">{{ trans('in-stock') }}</span>
+                            <span class="badge bg-success">{{ fsc.t('in-stock') }}</span>
                             {% else %}
                             <link itemprop="availability" href="https://schema.org/OutOfStock">
-                            <span class="badge bg-danger">{{ trans('out-of-stock') }}</span>
+                            <span class="badge bg-danger">{{ fsc.t('out-of-stock') }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -181,7 +181,7 @@
         {% else %}
         <div class="col-12">
             <div class="alert alert-info">
-                <i class="fa-solid fa-info-circle"></i> {{ trans('no-products-available') }}
+                <i class="fa-solid fa-info-circle"></i> {{ fsc.t('no-products-available') }}
             </div>
         </div>
         {% endfor %}
@@ -199,7 +199,7 @@
     <div class="sticky-cart-btn me-3 text-end d-none d-md-block">
         <a href="{{ asset('Presupuesto') }}" class="btn btn-success shadow">
             <i class="fa-solid fa-file-invoice"></i>
-            {{ trans('view-presupuesto') }} ({{ fsc.cartItemCount }})
+            {{ fsc.t('view-presupuesto') }} ({{ fsc.cartItemCount }})
         </a>
     </div>
     {% endif %}

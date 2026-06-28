@@ -27,19 +27,19 @@
     </div>
     <div id="hamburger-menu" class="hamburger-dropdown">
         <ul>
-            <li><a href="#placeholder-home">{{ trans('nav-home') }}</a></li>
+            <li><a href="#placeholder-home">{{ fsc.t('nav-home') }}</a></li>
 
         {% if fsc.categories is defined and fsc.categories is not empty %}
-            <li><a href="{{ asset('Productos') }}">{{ trans('all') }}</a></li>
+            <li><a href="{{ asset('Productos') }}">{{ fsc.t('all') }}</a></li>
             {% for cat in fsc.categories %}
             <li><a href="{{ asset('Productos') }}?category={{ cat.codfamilia }}">{{ fsc.categoryNames[cat.codfamilia] | default(cat.descripcion) }}</a></li>
             {% endfor %}
         {% endif %}
 
-            <li><a href="#placeholder-products">{{ trans('products') }}</a></li>
-            <li><a href="#placeholder-about">{{ trans('nav-about') }}</a></li>
-            <li><a href="#placeholder-contact">{{ trans('nav-contact') }}</a></li>
-            <li><a href="#placeholder-faq">{{ trans('nav-faq') }}</a></li>
+            <li><a href="#placeholder-products">{{ fsc.t('products') }}</a></li>
+            <li><a href="#placeholder-about">{{ fsc.t('nav-about') }}</a></li>
+            <li><a href="#placeholder-contact">{{ fsc.t('nav-contact') }}</a></li>
+            <li><a href="#placeholder-faq">{{ fsc.t('nav-faq') }}</a></li>
         </ul>
     </div>
 </header>

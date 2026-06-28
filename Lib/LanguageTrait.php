@@ -15,6 +15,9 @@ trait LanguageTrait
     /** @var string Current language code (e.g. 'es_ES') */
     public $currentLang = 'es_ES';
 
+    /** @var array<string, array<string, string>> Per-request translation cache keyed by lang code */
+    private static array $pluginTransCache = [];
+
     /** @var string Display label for the current language (e.g. 'español') */
     public $currentLangLabel = 'español';
 
@@ -101,6 +104,48 @@ trait LanguageTrait
     }
 
     /**
+     * Translates a UI key directly from the plugin's Translation JSON files,
+     * bypassing FacturaScripts' translator which does not honour setLang() for
+     * Twig's trans() function on public (unauthenticated) pages.
+     * Falls back to es_ES when a key is missing in the active language.
+     */
+    public function t(string $key): string
+    {
+        $lang = $this->currentLang;
+
+        if (!isset(self::$pluginTransCache[$lang])) {
+            self::$pluginTransCache[$lang] = $this->loadPluginJson($lang);
+        }
+
+        return self::$pluginTransCache[$lang][$key] ?? $key;
+    }
+
+    /**
+     * Loads translation JSON for the given language, merged on top of es_ES as fallback.
+     *
+     * @return array<string, string>
+     */
+    private function loadPluginJson(string $langCode): array
+    {
+        $dir = FS_FOLDER . '/Plugins/YeveaStore/Translation/';
+
+        $esFile = $dir . 'es_ES.json';
+        $base = file_exists($esFile) ? (json_decode((string) file_get_contents($esFile), true) ?? []) : [];
+
+        if ($langCode === 'es_ES') {
+            return $base;
+        }
+
+        $langFile = $dir . $langCode . '.json';
+        if (!file_exists($langFile)) {
+            return $base;
+        }
+
+        $override = json_decode((string) file_get_contents($langFile), true) ?? [];
+        return array_merge($base, $override);
+    }
+
+    /**
      * Translates a product name/description using translation keys derived
      * from the product referencia.  Falls back to the original DB value
      * (Spanish) when no translation key is found.
@@ -114,8 +159,8 @@ trait LanguageTrait
         $nameKey = 'product-' . $referencia . '-name';
         $descKey = 'product-' . $referencia . '-desc';
 
-        $translatedName = Tools::lang()->trans($nameKey);
-        $translatedDesc = Tools::lang()->trans($descKey);
+        $translatedName = $this->t($nameKey);
+        $translatedDesc = $this->t($descKey);
 
         return [
             'name' => ($translatedName !== $nameKey) ? $translatedName : $dbName,
@@ -137,9 +182,9 @@ trait LanguageTrait
         $introKey = 'family-' . $codfamilia . '-intro';
         $outroKey = 'family-' . $codfamilia . '-outro';
 
-        $translatedName  = Tools::lang()->trans($nameKey);
-        $translatedIntro = Tools::lang()->trans($introKey);
-        $translatedOutro = Tools::lang()->trans($outroKey);
+        $translatedName  = $this->t($nameKey);
+        $translatedIntro = $this->t($introKey);
+        $translatedOutro = $this->t($outroKey);
 
         return [
             'descripcion'    => ($translatedName !== $nameKey)   ? $translatedName  : $dbDescripcion,
