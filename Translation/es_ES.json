@@ -141,5 +141,9 @@
     "footer-contact": "Contacto",
     "footer-address": "Nuestra Dirección",
     "footer-links": "Enlaces Rápidos",
-    "footer-rights": "Todos los derechos reservados."
+    "footer-rights": "Todos los derechos reservados.",
+    "nav-home": "Inicio",
+    "nav-about": "Sobre nosotros",
+    "nav-contact": "Contacto",
+    "nav-faq": "Preguntas frecuentes"
 }
