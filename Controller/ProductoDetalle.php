@@ -1,12 +1,13 @@
 <?php
 namespace FacturaScripts\Plugins\YeveaStore\Controller;
 
+use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Model\Familia;
 use FacturaScripts\Core\Model\Producto;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Core\Where;
+use FacturaScripts\Plugins\YeveaStore\Lib\StoreControllerBase;
 
-class ProductoDetalle extends StoreFront
+class ProductoDetalle extends StoreControllerBase
 {
     /** @var object|null */
     public $product = null;
@@ -41,9 +42,14 @@ class ProductoDetalle extends StoreFront
 
     public function run(): void
     {
-        // Disable automatic rendering so we can load the product before rendering.
-        $this->autoRenderView = false;
         parent::run();
+
+        if ($this->request()->request->get('action', '') === 'add-to-cart') {
+            $this->addToCart();
+        }
+
+        $this->loadCategories();
+        $this->loadCartItemCount();
 
         $slug = $this->request()->query->get('url', '');
         $referencia = $this->request()->query->get('ref', '');
@@ -53,16 +59,39 @@ class ProductoDetalle extends StoreFront
             $this->loadProduct($referencia);
         }
 
+        // Real 404 for unknown products so search engines drop the URL
+        // instead of indexing a "soft 404" page.
+        if ($this->product === null) {
+            http_response_code(404);
+            $response = method_exists($this, 'response') ? $this->response() : null;
+            if ($response !== null) {
+                if (method_exists($response, 'setHttpCode')) {
+                    $response->setHttpCode(404);
+                } elseif (method_exists($response, 'setStatusCode')) {
+                    $response->setStatusCode(404);
+                }
+            }
+        }
+
         $this->view('ProductoDetalle.html.twig');
     }
 
     private function loadProductBySlug(string $slug): void
     {
+        // Fast path: stored slug column (indexed lookup, no full-table scan)
         $product = new Producto();
+        if ($product->loadWhere([Where::eq('slug', $slug)])) {
+            $this->loadProduct($product->referencia);
+            return;
+        }
+
+        // Fallback for products without a stored slug yet: scan visible products,
+        // and persist the slug once found so the next visit takes the fast path.
 
         // First try individually-public products
         foreach ($product->all([Where::eq('publico', true)], [], 0, 0) as $p) {
             if (self::generateProductSlug($p->descripcion) === $slug) {
+                $this->persistSlug($p, $slug);
                 $this->loadProduct($p->referencia);
                 return;
             }
@@ -79,11 +108,24 @@ class ProductoDetalle extends StoreFront
             $where = [Where::in('codfamilia', $publicFamilyCodes)];
             foreach ($product->all($where, [], 0, 0) as $p) {
                 if (self::generateProductSlug($p->descripcion) === $slug) {
+                    $this->persistSlug($p, $slug);
                     $this->loadProduct($p->referencia);
                     return;
                 }
             }
         }
+    }
+
+    /**
+     * Persists a resolved slug with a single-column UPDATE (avoids Producto::save()
+     * side effects on stock/variants).
+     */
+    private function persistSlug(Producto $p, string $slug): void
+    {
+        $db = new DataBase();
+        $db->exec('UPDATE ' . Producto::tableName()
+            . ' SET slug = ' . $db->var2str($slug)
+            . ' WHERE idproducto = ' . (int) $p->idproducto);
     }
 
     private function loadProduct(string $referencia): void

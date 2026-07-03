@@ -1,5 +1,20 @@
 {% extends "Master/MenuTemplate.html.twig" %}
 
+{% block meta %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    {% if fsc.product is not null %}
+    <title>{{ fsc.product.name }} | Yevea</title>
+    <meta name="description" content="{{ fsc.product.description | striptags | slice(0, 155) }}"/>
+    <meta name="robots" content="index, follow"/>
+    <link rel="canonical" href="{{ fsc.baseUrl() }}/ProductoDetalle?url={{ fsc.product.slug }}"/>
+    {% else %}
+    <title>{{ fsc.t('product-not-found') }} | Yevea</title>
+    <meta name="robots" content="noindex"/>
+    {% endif %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="generator" content="FacturaScripts"/>
+{% endblock %}
+
 {% block navbar %}{% endblock %}
 
 {% block body %}
@@ -73,7 +88,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
             <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                <a href="{{ asset('Tableros') }}" itemprop="item"><span itemprop="name">{{ fsc.t('tableros') }}</span></a>
+                <a href="{{ asset('Productos') }}" itemprop="item"><span itemprop="name">{{ fsc.t('products') }}</span></a>
                 <meta itemprop="position" content="1">
             </li>
             <li class="breadcrumb-item active" aria-current="page" id="breadcrumb-product-name" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
@@ -355,8 +370,8 @@
     <div class="alert alert-warning">
         <i class="fa-solid fa-exclamation-triangle"></i> {{ fsc.t('product-not-found') }}
     </div>
-    <a href="{{ asset('Tableros') }}" class="btn btn-primary">
-        <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('tableros') }}
+    <a href="{{ asset('Productos') }}" class="btn btn-primary">
+        <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('products') }}
     </a>
     {% endif %}
 

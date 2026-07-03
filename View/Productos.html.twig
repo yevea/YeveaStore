@@ -1,10 +1,218 @@
-{% extends "StoreFront.html.twig" %}
+{% extends "Master/MenuTemplate.html.twig" %}
 
 {% block meta %}
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <title>{{ fsc.seoTitle }}</title>
+    <title>{% if fsc.selectedCategoryFamily %}{{ fsc.selectedCategoryFamily.descripcion }} | Yevea{% else %}{{ fsc.seoTitle }}{% endif %}</title>
     <meta name="description" content="{{ fsc.seoDescription }}"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="generator" content="FacturaScripts"/>
     <meta name="robots" content="{{ fsc.noindex ? 'noindex' : 'index, follow' }}"/>
+    <link rel="canonical" href="{{ fsc.baseUrl() }}/Productos{% if fsc.categorySlug %}?cat={{ fsc.categorySlug }}{% endif %}"/>
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block body %}
+{% include 'Header.html.twig' %}
+{% include 'Hreflang.html.twig' %}
+{% block category_custom_css %}
+{% if fsc.selectedCategoryFamily and fsc.selectedCategoryFamily.category_custom_css is not empty %}
+<style>{{ fsc.selectedCategoryFamily.category_custom_css | replace({'</style>': '', '</STYLE>': ''}) | raw }}</style>
+{% endif %}
+{% endblock %}
+
+{# Schema.org structured data for AI agents and search engines #}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "name": "{{ fsc.t('sawmill') }}",
+    "description": "{{ fsc.t('sawmill-desc') }}",
+    "url": "{{ asset('Productos') }}",
+    {% if fsc.currentLang is defined %}"inLanguage": "{{ fsc.currentLang[:2] }}",{% endif %}
+    "areaServed": [
+        {"@type": "Country", "name": "Spain"},
+        {"@type": "Country", "name": "France"},
+        {"@type": "Country", "name": "Germany"},
+        {"@type": "Place", "name": "European Union"}
+    ],
+    "availableLanguage": ["es", "en", "fr", "de"],
+    "currenciesAccepted": "EUR",
+    "paymentAccepted": "Credit Card, Stripe",
+    "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "{{ fsc.t('products') }}",
+        "itemListElement": [
+            {% for product in fsc.products %}
+            {
+                "@type": "Product",
+                "name": "{{ product.name | e('js') }}",
+                "description": "{{ product.description | e('js') }}",
+                "sku": "{{ product.referencia }}",
+                "url": "{{ asset('ProductoDetalle') }}?url={{ product.slug }}",
+                {% if product.image %}"image": "{{ product.image }}",{% endif %}
+                "material": "{{ fsc.t('olive-wood') }}",
+                "category": "{% if product.familyType is defined and product.familyType == 'tableros' %}{{ fsc.t('olive-wood-boards') }}{% elseif product.familyType is defined and product.familyType == 'tablones' %}{{ fsc.t('wood-planks') }}{% elseif product.familyType is defined and product.familyType == 'artesania' %}{{ fsc.t('olive-wood-crafts') }}{% else %}{{ fsc.t('olive-wood') }}{% endif %}",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "{{ product.price }}",
+                    "priceCurrency": "EUR",
+                    "availability": "{% if product.isSold is defined and product.isSold %}https://schema.org/SoldOut{% elseif product.nostock is defined and product.nostock %}https://schema.org/InStock{% elseif product.stock > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+                    "areaServed": {
+                        "@type": "Place",
+                        "name": "European Union"
+                    }
+                }
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }
+}
+</script>
+
+<div class="container mt-4">
+    {% block category_header %}
+    <h1 class="mb-4">
+        {% if fsc.selectedCategoryFamily %}{{ fsc.selectedCategoryFamily.descripcion }}{% else %}{{ fsc.t('products') }}{% endif %}
+    </h1>
+    {% endblock %}
+
+    {% block category_nav %}{% endblock %}
+
+    {% block category_intro %}
+    {% if fsc.selectedCategoryFamily and fsc.selectedCategoryFamily.category_intro is not empty %}
+    {{ fsc.selectedCategoryFamily.category_intro | raw }}
+    {% endif %}
+    {% endblock %}
+
+    {% block category_filters %}
+    {# Dimension filters for Tablones category #}
+    {% if fsc.selectedCategoryType == 'tablones' %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h6 class="card-title"><i class="fa-solid fa-filter"></i> {{ fsc.t('filter-dimensions') }}</h6>
+            <form method="get" action="{{ asset('Productos') }}">
+                <input type="hidden" name="cat" value="{{ fsc.categorySlug }}">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label small">{{ fsc.t('largo') }}</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" name="largo_min" class="form-control" placeholder="{{ fsc.t('min') }}" step="1" min="0" value="{{ fsc.dimensionFilters.largo_min }}">
+                            <span class="input-group-text">-</span>
+                            <input type="number" name="largo_max" class="form-control" placeholder="{{ fsc.t('max') }}" step="1" min="0" value="{{ fsc.dimensionFilters.largo_max }}">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">{{ fsc.t('ancho') }}</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" name="ancho_min" class="form-control" placeholder="{{ fsc.t('min') }}" step="1" min="0" value="{{ fsc.dimensionFilters.ancho_min }}">
+                            <span class="input-group-text">-</span>
+                            <input type="number" name="ancho_max" class="form-control" placeholder="{{ fsc.t('max') }}" step="1" min="0" value="{{ fsc.dimensionFilters.ancho_max }}">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">{{ fsc.t('espesor') }}</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" name="espesor_min" class="form-control" placeholder="{{ fsc.t('min') }}" step="1" min="0" value="{{ fsc.dimensionFilters.espesor_min }}">
+                            <span class="input-group-text">-</span>
+                            <input type="number" name="espesor_max" class="form-control" placeholder="{{ fsc.t('max') }}" step="1" min="0" value="{{ fsc.dimensionFilters.espesor_max }}">
+                        </div>
+                    </div>
+                    <div class="col-md-auto">
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fa-solid fa-search"></i> {{ fsc.t('filter-dimensions') }}
+                        </button>
+                        <a href="{{ asset('Productos') }}?cat={{ fsc.categorySlug }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fa-solid fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    {% endblock %}
+
+    {% block product_grid %}
+    <div class="row">
+        {% for product in fsc.products %}
+        <div class="col-6 col-md-4 col-lg-3 mb-4">
+            <article class="card h-100 shadow-sm {% if product.isSold is defined and product.isSold %}border-warning{% endif %}" itemscope itemtype="https://schema.org/Product">
+                <meta itemprop="sku" content="{{ product.referencia }}">
+                <meta itemprop="material" content="{{ fsc.t('olive-wood') }}">
+                <a href="{{ asset('ProductoDetalle') }}?url={{ product.slug }}" class="text-decoration-none text-dark" itemprop="url">
+                    {% if product.image %}
+                    <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}" itemprop="image" loading="lazy" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="fa-solid fa-image fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="card-title h5" itemprop="name">{{ product.name }}</h2>
+                        {% set hasDimensions = product.familyType is defined and product.familyType == 'tablones' and (product.largo is not null or product.ancho is not null or product.espesor is not null) %}
+                        {% if hasDimensions %}
+                        <p class="card-text small mb-1">
+                            <i class="fa-solid fa-ruler-combined"></i>
+                            {% if product.largo is not null %}{{ product.largo }}{% endif %}
+                            {% if product.ancho is not null %}×{{ product.ancho }}{% endif %}
+                            {% if product.espesor is not null %}×{{ product.espesor }}{% endif %}
+                            cm
+                        </p>
+                        {% endif %}
+                        <p class="card-text text-muted small flex-grow-1" itemprop="description">
+                            {{ product.description | slice(0, 100) }}{% if product.description | length > 100 %}...{% endif %}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-2" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                            <meta itemprop="priceCurrency" content="EUR">
+                            <span class="mb-0" itemprop="price" content="{{ product.price }}">
+                                {{ fsc.formatMoney(product.price) }}
+                                {% if product.familyType is defined and product.familyType == 'tableros' %}
+                                <small class="text-muted">/m²</small>
+                                {% endif %}
+                            </span>
+                            {% if product.isSold is defined and product.isSold %}
+                            <link itemprop="availability" href="https://schema.org/SoldOut">
+                            <span class="badge bg-warning text-dark">{{ fsc.t('sold') }}</span>
+                            {% elseif product.nostock is defined and product.nostock %}
+                            <link itemprop="availability" href="https://schema.org/InStock">
+                            {% elseif product.stock > 0 %}
+                            <link itemprop="availability" href="https://schema.org/InStock">
+                            <span class="badge bg-success">{{ fsc.t('in-stock') }}</span>
+                            {% else %}
+                            <link itemprop="availability" href="https://schema.org/OutOfStock">
+                            <span class="badge bg-danger">{{ fsc.t('out-of-stock') }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </article>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fa-solid fa-info-circle"></i> {{ fsc.t('no-products-available') }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endblock %}
+
+    {% block category_outro %}
+    {% if fsc.selectedCategoryFamily and fsc.selectedCategoryFamily.category_outro is not empty %}
+    {{ fsc.selectedCategoryFamily.category_outro | raw }}
+    {% endif %}
+
+    {% endblock %}
+
+    {% if fsc.cartItemCount > 0 %}
+    <div class="sticky-cart-btn me-3 text-end d-none d-md-block">
+        <a href="{{ asset('Presupuesto') }}" class="btn btn-success shadow">
+            <i class="fa-solid fa-file-invoice"></i>
+            {{ fsc.t('view-presupuesto') }} ({{ fsc.cartItemCount }})
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% include 'Footer.html.twig' %}
 {% endblock %}

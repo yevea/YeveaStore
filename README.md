@@ -63,10 +63,10 @@ YeveaStore/
 │   ├── ListYeveaStoreOrder.php       # List orders (admin)
 │   ├── Presupuesto.php              # Quote/checkout (frontend)
 │   ├── ProductoDetalle.php          # Product detail (frontend)
-│   ├── Tableros.php                 # Product catalogue (frontend)
+│   ├── Productos.php                # Product catalogue (frontend)
 │   ├── SettingsYeveaStore.php        # Stripe settings (admin)
-│   ├── ShoppingCartView.php         # Shopping cart redirect
-│   └── StoreFront.php               # Storefront catalogue (frontend)
+│   ├── StoreFront.php               # Legacy route: 301 → /Productos
+│   └── Tableros.php                 # Legacy route: 301 → /Productos
 ├── Extension/
 │   ├── Controller/
 │   │   ├── EditFamilia.php          # Family type + dimension limits
@@ -98,9 +98,7 @@ YeveaStore/
 ├── View/
 │   ├── Presupuesto.html.twig        # Quote/checkout template
 │   ├── ProductoDetalle.html.twig    # Product detail template (with Schema.org)
-│   ├── Tableros.html.twig            # Product catalogue template (with Schema.org)
-│   ├── ShoppingCartView.html.twig   # Cart redirect template
-│   └── StoreFront.html.twig         # Storefront template (with Schema.org)
+│   └── Productos.html.twig          # Product catalogue template (with Schema.org)
 ├── XMLView/
 │   ├── EditYeveaStoreOrder.xml       # Order editor view
 │   ├── EditYeveaStoreOrderLine.xml   # Order line editor view
@@ -179,7 +177,7 @@ When a customer completes a payment via Stripe, the plugin automatically:
 - Orders are created automatically when customers complete the checkout process
 
 ### Storefront
-- Access the storefront at `/StoreFront` or `/Tableros`
+- Access the storefront at `/Productos` (the legacy `/StoreFront` and `/Tableros` URLs 301-redirect there)
 - Browse products, filter by category, add items to cart
 - Access the quote/cart at `/Presupuesto`
 - Complete checkout by entering customer details (name, NIF/CIF, email, phone, address, city, postal code, province, country) and clicking **Realizar Pedido**

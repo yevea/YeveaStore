@@ -22,9 +22,13 @@ use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Template\InitClass;
 use FacturaScripts\Core\Where;
 use FacturaScripts\Dinamic\Model\AttachedFileRelation;
+use FacturaScripts\Dinamic\Model\Producto;
+use FacturaScripts\Plugins\YeveaStore\Lib\SlugTrait;
 
 class Init extends InitClass
 {
+    use SlugTrait;
+
     public function init(): void
     {
         $this->loadExtension(new Extension\Controller\EditProducto());
@@ -35,6 +39,7 @@ class Init extends InitClass
     {
         $this->migrateFromEcommerce();
         $this->fixProductImageFileRelations();
+        $this->backfillProductSlugs();
     }
 
     public function uninstall(): void
@@ -113,6 +118,49 @@ class Init extends InitClass
 
         $colList = implode(', ', $commonCols);
         $db->exec("INSERT INTO " . $newTable . " (" . $colList . ") SELECT " . $colList . " FROM " . $oldTable);
+    }
+
+    /**
+     * Fills the slug column for products that don't have one yet, so
+     * ProductoDetalle can resolve SEO URLs with an indexed lookup instead of
+     * scanning every product. Ensures uniqueness by suffixing duplicates
+     * (-2, -3, …). Idempotent: only touches products with an empty slug.
+     */
+    private function backfillProductSlugs(): void
+    {
+        $db = new DataBase();
+        $producto = new Producto();
+        $all = $producto->all([], [], 0, 0);
+
+        $usedSlugs = [];
+        foreach ($all as $p) {
+            if (!empty($p->slug)) {
+                $usedSlugs[$p->slug] = true;
+            }
+        }
+
+        foreach ($all as $p) {
+            if (!empty($p->slug) || empty($p->descripcion)) {
+                continue;
+            }
+
+            $base = self::generateProductSlug($p->descripcion);
+            if ($base === '') {
+                continue;
+            }
+
+            $slug = $base;
+            $suffix = 2;
+            while (isset($usedSlugs[$slug])) {
+                $slug = $base . '-' . $suffix;
+                $suffix++;
+            }
+            $usedSlugs[$slug] = true;
+
+            $db->exec('UPDATE ' . Producto::tableName()
+                . ' SET slug = ' . $db->var2str($slug)
+                . ' WHERE idproducto = ' . (int) $p->idproducto);
+        }
     }
 
     /**

@@ -15,4 +15,9 @@
         <type>double precision</type>
         <null>YES</null>
     </column>
+    <column>
+        <name>slug</name>
+        <type>character varying(200)</type>
+        <null>YES</null>
+    </column>
 </table>

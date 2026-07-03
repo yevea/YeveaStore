@@ -1,25 +1,17 @@
 <?php
 namespace FacturaScripts\Plugins\YeveaStore\Controller;
 
-use FacturaScripts\Core\Lib\AssetManager;
 use FacturaScripts\Core\Model\Familia;
 use FacturaScripts\Core\Model\Producto;
-use FacturaScripts\Core\Template\Controller;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Core\Where;
-use FacturaScripts\Plugins\YeveaStore\Lib\LanguageTrait;
-use FacturaScripts\Plugins\YeveaStore\Lib\SlugTrait;
+use FacturaScripts\Plugins\YeveaStore\Lib\StoreControllerBase;
 use FacturaScripts\Plugins\YeveaStore\Model\YeveaStoreCartItem;
 use FacturaScripts\Plugins\YeveaStore\Model\YeveaStoreOrder;
 use FacturaScripts\Plugins\YeveaStore\Model\YeveaStoreOrderLine;
 
-class Presupuesto extends Controller
+class Presupuesto extends StoreControllerBase
 {
-    use LanguageTrait;
-    use SlugTrait;
-
-    protected $requiresAuth = false;
-
     private const CLIENTE_CLASS = 'FacturaScripts\\Dinamic\\Model\\Cliente';
     private const PEDIDO_CLASS = 'FacturaScripts\\Dinamic\\Model\\PedidoCliente';
     private const LINEA_CLASS = 'FacturaScripts\\Dinamic\\Model\\LineaPedidoCliente';
@@ -44,15 +36,6 @@ class Presupuesto extends Controller
     /** @var string */
     public $orderCode = '';
 
-    /** @var Familia[] */
-    public $categories = [];
-
-    /** @var array Map of codfamilia => translated category name */
-    public $categoryNames = [];
-
-    /** @var array Map of codfamilia => slug for all categories */
-    public $slugMap = [];
-
     public function getPageData(): array
     {
         $pageData = parent::getPageData();
@@ -66,12 +49,6 @@ class Presupuesto extends Controller
     public function run(): void
     {
         parent::run();
-        $this->detectAndSetLanguage();
-
-        $cssPath = FS_FOLDER . '/Plugins/YeveaStore/Assets/CSS/yeveastore.css';
-        if (file_exists($cssPath)) {
-            AssetManager::addCss(FS_ROUTE . '/Plugins/YeveaStore/Assets/CSS/yeveastore.css');
-        }
 
         $stripeCallback = $this->request()->query->get('stripe', '');
         if ($stripeCallback === 'success') {
@@ -103,11 +80,6 @@ class Presupuesto extends Controller
         $this->loadCategories();
 
         $this->view('Presupuesto.html.twig');
-    }
-
-    public function formatMoney(float $amount): string
-    {
-        return number_format($amount, 2, ',', '.') . ' €';
     }
 
     private function updateQuantity(): void
@@ -524,13 +496,7 @@ class Presupuesto extends Controller
 
     private function createStripeCheckoutSession(array $items, string $secretKey): ?string
     {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = preg_replace('/[^a-zA-Z0-9.\-]/', '', $_SERVER['SERVER_NAME'] ?? 'localhost');
-        $port = (int) ($_SERVER['SERVER_PORT'] ?? 80);
-        $defaultPort = ($scheme === 'https') ? 443 : 80;
-        $hostWithPort = ($port !== $defaultPort) ? $host . ':' . $port : $host;
-        $scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
-        $baseUrl = $scheme . '://' . $hostWithPort . $scriptDir;
+        $baseUrl = $this->baseUrl();
 
         $lineItems = [];
         foreach ($items as $item) {
@@ -773,14 +739,6 @@ class Presupuesto extends Controller
         return $impuesto->loadFromCode($codimpuesto) ? (float) $impuesto->iva : 0.0;
     }
 
-    private function getSessionId(): string
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        return session_id();
-    }
-
     /**
      * Calculates the area in m² for Tableros items.
      * Returns null if this is not a Tableros item (no valid dimensions).
@@ -838,47 +796,5 @@ class Presupuesto extends Controller
             }
         }
         return $descripcion;
-    }
-
-    private function loadCategories(): void
-    {
-        $product = new Producto();
-        $publicProducts = $product->all([Where::eq('publico', true)], [], 0, 0);
-
-        $familyCodes = [];
-        foreach ($publicProducts as $p) {
-            if (!empty($p->codfamilia)) {
-                $familyCodes[$p->codfamilia] = true;
-            }
-        }
-
-        $familia = new Familia();
-        $publicFamilies = $familia->all([Where::eq('publica', true)], [], 0, 0);
-        foreach ($publicFamilies as $fam) {
-            $familyCodes[$fam->codfamilia] = true;
-        }
-
-        if (empty($familyCodes)) {
-            $this->categories = [];
-            return;
-        }
-
-        $this->categories = $familia->all(
-            [Where::in('codfamilia', array_keys($familyCodes))],
-            ['descripcion' => 'ASC'],
-            0,
-            0
-        );
-
-        $this->categoryNames = [];
-        $this->slugMap = [];
-        foreach ($this->categories as $cat) {
-            $nameKey = 'family-' . $cat->codfamilia . '-name';
-            $translatedName = Tools::lang()->trans($nameKey);
-            $this->categoryNames[$cat->codfamilia] = ($translatedName !== $nameKey)
-                ? $translatedName
-                : $cat->descripcion;
-            $this->slugMap[$cat->codfamilia] = self::generateSlug($cat->descripcion);
-        }
     }
 }
