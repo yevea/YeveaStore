@@ -15,6 +15,31 @@ class SettingsYeveaStore extends EditSettings
         return $data;
     }
 
+    protected function createViews()
+    {
+        parent::createViews();
+
+        // "Visit site" and "Orders" links on every tab, always visible at the top.
+        // The store admin pages are hidden from the main menu, so these buttons
+        // are the UI entry points to the storefront and the orders list.
+        foreach (array_keys($this->views) as $viewName) {
+            $this->addButton($viewName, [
+                'action' => 'Productos',
+                'color' => 'info',
+                'icon' => 'fa-solid fa-store',
+                'label' => 'visit-site',
+                'type' => 'link',
+            ]);
+            $this->addButton($viewName, [
+                'action' => 'ListYeveaStoreOrder',
+                'color' => 'secondary',
+                'icon' => 'fa-solid fa-shopping-bag',
+                'label' => 'orders',
+                'type' => 'link',
+            ]);
+        }
+    }
+
     protected function execPreviousAction($action)
     {
         if ($action === 'insert'

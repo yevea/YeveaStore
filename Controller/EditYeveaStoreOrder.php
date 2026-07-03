@@ -17,6 +17,7 @@ class EditYeveaStoreOrder extends EditController
         $pageData['menu'] = 'yeveastore';
         $pageData['title'] = 'order';
         $pageData['icon'] = 'fa-solid fa-shopping-bag';
+        $pageData['showonmenu'] = false;
         return $pageData;
     }
 
