@@ -81,6 +81,7 @@
     "codpedido": "Pedido Nativo FS",
     "stripe-secret-key": "Clave Secreta de Stripe (sk_...)",
     "stripe-public-key": "Clave Pública de Stripe (pk_...)",
+    "stripe-webhook-secret": "Clave de firma del Webhook de Stripe (whsec_...)",
     "settings-yeveastore": "Configuración YeveaStore",
     "publica": "Pública (visible en la tienda)",
     "family-type": "Tipo de Familia",

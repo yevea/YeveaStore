@@ -66,6 +66,7 @@ YeveaStore/
 │   ├── Productos.php                # Product catalogue (frontend)
 │   ├── SettingsYeveaStore.php        # Stripe settings (admin)
 │   ├── StoreFront.php               # Legacy route: 301 → /Productos
+│   ├── StripeWebhook.php            # Stripe webhook (checkout.session.completed)
 │   └── Tableros.php                 # Legacy route: 301 → /Productos
 ├── Extension/
 │   ├── Controller/
@@ -135,6 +136,21 @@ Stripe is the payment gateway used during checkout.  You need a **Stripe Secret 
 You can obtain both keys from the [Stripe Dashboard → Developers → API keys](https://dashboard.stripe.com/apikeys).
 
 > **Tip:** Use test keys (`sk_test_…` / `pk_test_…`) during development and switch to live keys for production.
+
+#### Webhook (recommended)
+
+The webhook guarantees that a paid order is registered even if the customer never
+returns to the site after paying (closed tab, lost connection, expired session).
+
+1. Go to [Stripe Dashboard → Developers → Webhooks](https://dashboard.stripe.com/webhooks) and click **Add endpoint**.
+2. Endpoint URL: `https://your-domain.com/StripeWebhook`
+3. Select the event **`checkout.session.completed`** and save.
+4. Copy the **Signing secret** (`whsec_…`) shown for the endpoint.
+5. Paste it into **Admin → Settings → E-Commerce → Stripe Webhook Signing Secret** and save.
+
+Events are verified with an HMAC-SHA256 signature check (5-minute replay tolerance).
+Order fulfilment is idempotent: the webhook and the customer's return page can both
+fire without creating duplicates.
 
 #### Option B — phpMyAdmin / cPanel File Manager (no admin panel access needed)
 

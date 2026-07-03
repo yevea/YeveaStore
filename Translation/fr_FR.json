@@ -81,6 +81,7 @@
     "codpedido": "Commande Native FS",
     "stripe-secret-key": "Clé Secrète Stripe (sk_...)",
     "stripe-public-key": "Clé Publique Stripe (pk_...)",
+    "stripe-webhook-secret": "Clé de signature du webhook Stripe (whsec_...)",
     "settings-yeveastore": "Paramètres YeveaStore",
     "publica": "Publique (visible en boutique)",
     "family-type": "Type de Famille",

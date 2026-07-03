@@ -81,6 +81,7 @@
     "codpedido": "Native FS-Bestellung",
     "stripe-secret-key": "Stripe Geheimer Schlüssel (sk_...)",
     "stripe-public-key": "Stripe Öffentlicher Schlüssel (pk_...)",
+    "stripe-webhook-secret": "Stripe Webhook-Signaturschlüssel (whsec_...)",
     "settings-yeveastore": "YeveaStore-Einstellungen",
     "publica": "Öffentlich (im Shop sichtbar)",
     "family-type": "Familientyp",

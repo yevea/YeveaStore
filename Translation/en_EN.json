@@ -81,6 +81,7 @@
     "codpedido": "Native FS Order",
     "stripe-secret-key": "Stripe Secret Key (sk_...)",
     "stripe-public-key": "Stripe Public Key (pk_...)",
+    "stripe-webhook-secret": "Stripe Webhook Signing Secret (whsec_...)",
     "settings-yeveastore": "YeveaStore Settings",
     "publica": "Public (visible on storefront)",
     "family-type": "Family Type",
