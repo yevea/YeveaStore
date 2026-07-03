@@ -4,6 +4,7 @@
         <group name="data" numcolumns="12">
             <column name="status" numcolumns="3">
                 <widget type="select" translate="true" fieldname="status">
+                    <values title="pending-payment">pending_payment</values>
                     <values title="pending">pending</values>
                     <values title="processing">processing</values>
                     <values title="completed">completed</values>

@@ -47,7 +47,8 @@ class Productos extends StoreControllerBase
         ];
 
         if ($this->request()->request->get('action', '') === 'add-to-cart') {
-            $this->addToCart();
+            $ok = $this->addToCart();
+            $this->redirectAfterPost($ok ? 'added=1' : 'added=0');
         }
 
         // Category via ?category=code, or via SEO slug ?cat=SlugName

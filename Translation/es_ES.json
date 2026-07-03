@@ -38,6 +38,7 @@
     "name": "Nombre",
     "description": "Descripción",
     "creation-date": "Fecha de Creación",
+    "pending-payment": "Pago pendiente (abandonado)",
     "pending": "Pendiente",
     "processing": "En proceso",
     "completed": "Completado",

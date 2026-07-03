@@ -38,6 +38,7 @@
     "name": "Name",
     "description": "Beschreibung",
     "creation-date": "Erstellungsdatum",
+    "pending-payment": "Zahlung ausstehend (abgebrochen)",
     "pending": "Ausstehend",
     "processing": "In Bearbeitung",
     "completed": "Abgeschlossen",

@@ -82,11 +82,29 @@ abstract class StoreControllerBase extends Controller
         return basename(str_replace('\\', '/', static::class));
     }
 
-    protected function addToCart(): void
+    /**
+     * POST-Redirect-GET: after processing a POST action, redirect (302) back to
+     * the same URL so a browser refresh repeats a harmless GET instead of
+     * re-submitting the form. Optionally appends a query param for feedback.
+     */
+    protected function redirectAfterPost(string $extraParam = ''): void
+    {
+        $uri = $this->request()->getRequestUri();
+        if ($extraParam !== '') {
+            $uri .= (str_contains($uri, '?') ? '&' : '?') . $extraParam;
+        }
+        header('Location: ' . $uri, true, 302);
+        exit;
+    }
+
+    /**
+     * @return bool true when the product ended up in the cart, false otherwise
+     */
+    protected function addToCart(): bool
     {
         $productReferencia = $this->request()->request->get('product_referencia', '');
         if (empty($productReferencia)) {
-            return;
+            return false;
         }
 
         $isPublic = false;
@@ -113,7 +131,7 @@ abstract class StoreControllerBase extends Controller
         }
 
         if (!$isPublic) {
-            return;
+            return false;
         }
 
         $qty = max(1, (int) $this->request()->request->get('quantity', 1));
@@ -131,7 +149,7 @@ abstract class StoreControllerBase extends Controller
             $anchoCm = (float) $this->request()->request->get('ancho_cm', 0);
             if ($largoCm <= 0 || $anchoCm <= 0) {
                 Tools::log()->warning('invalid-dimensions');
-                return;
+                return false;
             }
             $qty = 1;
         }
@@ -150,12 +168,12 @@ abstract class StoreControllerBase extends Controller
             if (!empty($existing)) {
                 if ($familyType === 'artesania' || $familyType === 'tablones') {
                     // Artesanía / Tablones: unique pieces, don't add more, quantity stays at 1
-                    return;
+                    return true;
                 }
                 $existing[0]->quantity += $qty;
                 $existing[0]->save();
                 Tools::log()->notice('product-added-to-cart');
-                return;
+                return true;
             }
         }
 
@@ -164,9 +182,12 @@ abstract class StoreControllerBase extends Controller
         $cartItem->quantity = $qty;
         $cartItem->largo_cm = $largoCm;
         $cartItem->ancho_cm = $anchoCm;
-        $cartItem->save();
+        $result = $cartItem->save();
 
-        Tools::log()->notice('product-added-to-cart');
+        if ($result) {
+            Tools::log()->notice('product-added-to-cart');
+        }
+        return $result;
     }
 
     protected function loadCategories(): void

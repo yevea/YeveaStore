@@ -61,10 +61,12 @@ class Presupuesto extends StoreControllerBase
         switch ($action) {
             case 'update-quantity':
                 $this->updateQuantity();
+                $this->redirectAfterPost();
                 break;
 
             case 'remove-item':
                 $this->removeItem();
+                $this->redirectAfterPost();
                 break;
 
             case 'place-order':
@@ -148,8 +150,11 @@ class Presupuesto extends StoreControllerBase
             return;
         }
 
-        // Store pending order data in session to retrieve after Stripe callback
-        $_SESSION['pending_yeveastore_order'] = [
+        // Create the order (status 'pending_payment') BEFORE redirecting to Stripe,
+        // and pass its id in the Stripe metadata. This way the order can always be
+        // recovered on the success callback, even if the PHP session expired or the
+        // customer returns from another browser/device.
+        $order = $this->createPendingOrder($items, [
             'customer_name' => $customerName,
             'customer_email' => $customerEmail,
             'customer_phone' => $customerPhone,
@@ -160,15 +165,102 @@ class Presupuesto extends StoreControllerBase
             'customer_province' => $customerProvince,
             'customer_country' => $customerCountry ?: 'ES',
             'notes' => $notes,
-        ];
+        ]);
+        if ($order === null) {
+            Tools::log()->error('order-placement-failed');
+            return;
+        }
 
-        $checkoutUrl = $this->createStripeCheckoutSession($items, $secretKey);
+        $checkoutUrl = $this->createStripeCheckoutSession($items, $secretKey, [
+            'order_id' => (string) $order->id,
+            'cart_session' => $sessionId,
+        ]);
         if ($checkoutUrl) {
             header('Location: ' . $checkoutUrl, true, 302);
             exit;
         }
 
+        // Stripe session could not be created: remove the pending order so a retry
+        // does not leave duplicates behind.
+        $this->deleteOrderWithLines($order);
         Tools::log()->error('stripe-session-failed');
+    }
+
+    /**
+     * Creates a YeveaStoreOrder (status 'pending_payment') with its lines and totals
+     * from the current cart items. Returns null if nothing could be saved.
+     * Orders left in 'pending_payment' are abandoned checkouts.
+     */
+    private function createPendingOrder(array $items, array $data): ?YeveaStoreOrder
+    {
+        $order = new YeveaStoreOrder();
+        $order->customer_name = $data['customer_name'];
+        $order->customer_email = $data['customer_email'];
+        $order->customer_phone = $data['customer_phone'];
+        $order->customer_nif = $data['customer_nif'];
+        $order->address = $data['address'];
+        $order->customer_city = $data['customer_city'];
+        $order->customer_zip = $data['customer_zip'];
+        $order->customer_province = $data['customer_province'];
+        $order->customer_country = $data['customer_country'];
+        $order->notes = $data['notes'];
+        $order->status = 'pending_payment';
+
+        $total = 0;
+        $orderLines = [];
+
+        foreach ($items as $item) {
+            $info = $this->resolveProductInfoByRef($item->product_referencia);
+            if ($info === null) {
+                continue;
+            }
+
+            $priceWithTax = $info->price * (1 + $info->tax_rate / 100);
+
+            // For Tableros: area-based pricing
+            $largoCm = $item->largo_cm ?? null;
+            $anchoCm = $item->ancho_cm ?? null;
+            $area = $this->calculateTablerosArea($largoCm, $anchoCm);
+            $subtotal = ($area !== null)
+                ? $priceWithTax * $area * $item->quantity
+                : $priceWithTax * $item->quantity;
+            $total += $subtotal;
+
+            $line = new YeveaStoreOrderLine();
+            $line->product_referencia = $info->referencia;
+            $line->product_name = $info->name;
+            $line->quantity = $item->quantity;
+            $line->price = $priceWithTax;
+            $line->subtotal = $subtotal;
+            $line->largo_cm = $largoCm;
+            $line->ancho_cm = $anchoCm;
+            $orderLines[] = $line;
+        }
+
+        if (empty($orderLines)) {
+            return null;
+        }
+
+        $order->total = $total;
+        if (false === $order->save()) {
+            return null;
+        }
+
+        foreach ($orderLines as $line) {
+            $line->order_id = $order->id;
+            $line->save();
+        }
+
+        return $order;
+    }
+
+    private function deleteOrderWithLines(YeveaStoreOrder $order): void
+    {
+        $lineModel = new YeveaStoreOrderLine();
+        foreach ($lineModel->all([Where::eq('order_id', $order->id)], [], 0, 0) as $line) {
+            $line->delete();
+        }
+        $order->delete();
     }
 
     private function handleStripeSuccess(): void
@@ -183,96 +275,60 @@ class Presupuesto extends StoreControllerBase
             return;
         }
 
-        if (!$this->verifyStripePayment($stripeSessionId, $secretKey)) {
+        $session = $this->getStripeSession($stripeSessionId, $secretKey);
+        if ($session === null || ($session['payment_status'] ?? '') !== 'paid') {
             Tools::log()->error('stripe-session-failed');
             return;
         }
 
-        $sessionId = $this->getSessionId();
-        $pendingOrder = $_SESSION['pending_yeveastore_order'] ?? null;
-        if (empty($pendingOrder)) {
-            // Session expired or order was already processed; show a generic success page
+        $orderId = (int) ($session['metadata']['order_id'] ?? 0);
+        $order = new YeveaStoreOrder();
+        if ($orderId <= 0 || false === $order->loadFromCode($orderId)) {
+            // Paid Stripe session without a recoverable order (e.g. checkout started
+            // before this version was deployed). Show a generic success to the customer
+            // and flag it in the log so the admin can reconcile it in Stripe.
             $this->orderSuccess = true;
-            Tools::log()->notice('order-placed-successfully');
+            Tools::log()->error('order-not-found-for-paid-stripe-session ' . $stripeSessionId);
             return;
         }
 
-        $cartItem = new YeveaStoreCartItem();
-        $where = [Where::eq('session_id', $sessionId)];
-        $items = $cartItem->all($where);
-
-        $order = new YeveaStoreOrder();
-        $order->customer_name = $pendingOrder['customer_name'];
-        $order->customer_email = $pendingOrder['customer_email'];
-        $order->customer_phone = $pendingOrder['customer_phone'] ?? '';
-        $order->customer_nif = $pendingOrder['customer_nif'] ?? '';
-        $order->address = $pendingOrder['address'];
-        $order->customer_city = $pendingOrder['customer_city'] ?? '';
-        $order->customer_zip = $pendingOrder['customer_zip'] ?? '';
-        $order->customer_province = $pendingOrder['customer_province'] ?? '';
-        $order->customer_country = $pendingOrder['customer_country'] ?? 'ES';
-        $order->notes = $pendingOrder['notes'];
-        $order->status = 'pending';
-
-        $total = 0;
-        $orderLines = [];
-
-        foreach ($items as $item) {
-            $info = $this->resolveProductInfoByRef($item->product_referencia);
-            if ($info !== null) {
-                $priceWithTax = $info->price * (1 + $info->tax_rate / 100);
-
-                // For Tableros: area-based pricing
-                $largoCm = $item->largo_cm ?? null;
-                $anchoCm = $item->ancho_cm ?? null;
-                $area = $this->calculateTablerosArea($largoCm, $anchoCm);
-                if ($area !== null) {
-                    $subtotal = $priceWithTax * $area * $item->quantity;
-                } else {
-                    $subtotal = $priceWithTax * $item->quantity;
-                }
-                $total += $subtotal;
-
-                $line = new YeveaStoreOrderLine();
-                $line->product_referencia = $info->referencia;
-                $line->product_name = $info->name;
-                $line->quantity = $item->quantity;
-                $line->price = $priceWithTax;
-                $line->subtotal = $subtotal;
-                $line->largo_cm = $largoCm;
-                $line->ancho_cm = $anchoCm;
-                $orderLines[] = $line;
-            }
-        }
-
-        $order->total = $total;
-
-        if ($order->save()) {
-            foreach ($orderLines as $line) {
-                $line->order_id = $order->id;
-                $line->save();
-            }
-
-            // Integrate with FacturaScripts native client and order models
-            $this->createNativeFsOrder($order, $orderLines, $pendingOrder);
-
-            foreach ($items as $item) {
-                $item->delete();
-            }
-
-            unset($_SESSION['pending_yeveastore_order']);
+        // Idempotent: refreshing the success URL must not process the order twice.
+        if ($order->status !== 'pending_payment') {
             $this->orderSuccess = true;
             $this->orderCode = $order->code;
-        } else {
-            Tools::log()->error('order-placement-failed');
+            return;
         }
+
+        $order->status = 'pending';
+        if (false === $order->save()) {
+            Tools::log()->error('order-placement-failed');
+            return;
+        }
+
+        $lineModel = new YeveaStoreOrderLine();
+        $orderLines = $lineModel->all([Where::eq('order_id', $order->id)], [], 0, 0);
+
+        // Integrate with FacturaScripts native client and order models
+        $this->createNativeFsOrder($order, $orderLines);
+
+        // Empty the cart that generated this order, even if the current PHP
+        // session differs from the one used at checkout time.
+        $cartSession = $session['metadata']['cart_session'] ?? $this->getSessionId();
+        $cartItem = new YeveaStoreCartItem();
+        foreach ($cartItem->all([Where::eq('session_id', $cartSession)], [], 0, 0) as $item) {
+            $item->delete();
+        }
+
+        $this->orderSuccess = true;
+        $this->orderCode = $order->code;
+        Tools::log()->notice('order-placed-successfully');
     }
 
     /**
      * Creates a native FacturaScripts Cliente and PedidoCliente from the YeveaStore order.
      * Gracefully skips if the required FS models are not available.
      */
-    private function createNativeFsOrder(YeveaStoreOrder $order, array $orderLines, array $pendingOrder): void
+    private function createNativeFsOrder(YeveaStoreOrder $order, array $orderLines): void
     {
         if (!class_exists(self::CLIENTE_CLASS) || !class_exists(self::PEDIDO_CLASS) || !class_exists(self::LINEA_CLASS)) {
             return;
@@ -284,7 +340,7 @@ class Presupuesto extends StoreControllerBase
 
         try {
             // Find or create a Cliente
-            $cliente = $this->findOrCreateCliente($pendingOrder);
+            $cliente = $this->findOrCreateCliente($order);
             if (null === $cliente) {
                 return;
             }
@@ -295,16 +351,16 @@ class Presupuesto extends StoreControllerBase
             /** @var \FacturaScripts\Dinamic\Model\PedidoCliente $pedido */
             $pedido = new (self::PEDIDO_CLASS)();
             $pedido->codcliente = $cliente->codcliente;
-            $pedido->nombrecliente = $pendingOrder['customer_name'];
-            $pedido->cifnif = $pendingOrder['customer_nif'] ?? '';
-            $pedido->email = $pendingOrder['customer_email'] ?? '';
-            $pedido->telefono1 = $pendingOrder['customer_phone'] ?? '';
-            $pedido->direccion = $pendingOrder['address'] ?? '';
-            $pedido->codpostal = $pendingOrder['customer_zip'] ?? '';
-            $pedido->ciudad = $pendingOrder['customer_city'] ?? '';
-            $pedido->provincia = $pendingOrder['customer_province'] ?? '';
-            $pedido->codpais = $pendingOrder['customer_country'] ?: 'ES';
-            $pedido->observaciones = $pendingOrder['notes'] ?? '';
+            $pedido->nombrecliente = $order->customer_name;
+            $pedido->cifnif = $order->customer_nif ?? '';
+            $pedido->email = $order->customer_email ?? '';
+            $pedido->telefono1 = $order->customer_phone ?? '';
+            $pedido->direccion = $order->address ?? '';
+            $pedido->codpostal = $order->customer_zip ?? '';
+            $pedido->ciudad = $order->customer_city ?? '';
+            $pedido->provincia = $order->customer_province ?? '';
+            $pedido->codpais = $order->customer_country ?: 'ES';
+            $pedido->observaciones = $order->notes ?? '';
             $pedido->fecha = Tools::date();
             $pedido->hora = Tools::hour();
 
@@ -357,14 +413,13 @@ class Presupuesto extends StoreControllerBase
     }
 
     /**
-     * Finds an existing Cliente by email or creates a new one.
+     * Finds an existing Cliente by email or creates a new one from the order data.
      *
-     * @param array $pendingOrder
      * @return object|null
      */
-    private function findOrCreateCliente(array $pendingOrder): ?object
+    private function findOrCreateCliente(YeveaStoreOrder $order): ?object
     {
-        $email = $pendingOrder['customer_email'] ?? '';
+        $email = $order->customer_email ?? '';
 
         if (!empty($email)) {
             /** @var \FacturaScripts\Dinamic\Model\Cliente $existing */
@@ -377,15 +432,15 @@ class Presupuesto extends StoreControllerBase
 
         /** @var \FacturaScripts\Dinamic\Model\Cliente $cliente */
         $cliente = new (self::CLIENTE_CLASS)();
-        $cliente->nombre = $pendingOrder['customer_name'];
-        $cliente->cifnif = $pendingOrder['customer_nif'] ?? '';
+        $cliente->nombre = $order->customer_name;
+        $cliente->cifnif = $order->customer_nif ?? '';
         $cliente->email = $email;
-        $cliente->telefono1 = $pendingOrder['customer_phone'] ?? '';
-        $cliente->direccion = $pendingOrder['address'] ?? '';
-        $cliente->codpostal = $pendingOrder['customer_zip'] ?? '';
-        $cliente->ciudad = $pendingOrder['customer_city'] ?? '';
-        $cliente->provincia = $pendingOrder['customer_province'] ?? '';
-        $cliente->codpais = $pendingOrder['customer_country'] ?: 'ES';
+        $cliente->telefono1 = $order->customer_phone ?? '';
+        $cliente->direccion = $order->address ?? '';
+        $cliente->codpostal = $order->customer_zip ?? '';
+        $cliente->ciudad = $order->customer_city ?? '';
+        $cliente->provincia = $order->customer_province ?? '';
+        $cliente->codpais = $order->customer_country ?: 'ES';
 
         if ($cliente->save()) {
             return $cliente;
@@ -494,7 +549,7 @@ class Presupuesto extends StoreControllerBase
         Tools::log()->notice('order-payment-cancelled');
     }
 
-    private function createStripeCheckoutSession(array $items, string $secretKey): ?string
+    private function createStripeCheckoutSession(array $items, string $secretKey, array $metadata = []): ?string
     {
         $baseUrl = $this->baseUrl();
 
@@ -547,6 +602,12 @@ class Presupuesto extends StoreControllerBase
             'cancel_url' => $baseUrl . '/Presupuesto?stripe=cancel',
         ];
 
+        // Metadata travels with the Stripe session and comes back on retrieval,
+        // so the order can be recovered without relying on the PHP session.
+        foreach ($metadata as $key => $value) {
+            $params['metadata[' . $key . ']'] = $value;
+        }
+
         $ch = curl_init('https://api.stripe.com/v1/checkout/sessions');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -570,7 +631,10 @@ class Presupuesto extends StoreControllerBase
         return $data['url'] ?? null;
     }
 
-    private function verifyStripePayment(string $stripeSessionId, string $secretKey): bool
+    /**
+     * Retrieves a Stripe Checkout Session (payment status + metadata) from the API.
+     */
+    private function getStripeSession(string $stripeSessionId, string $secretKey): ?array
     {
         $ch = curl_init('https://api.stripe.com/v1/checkout/sessions/' . urlencode($stripeSessionId));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -586,11 +650,11 @@ class Presupuesto extends StoreControllerBase
             if ($curlError) {
                 Tools::log()->error($curlError);
             }
-            return false;
+            return null;
         }
 
         $data = json_decode($response, true);
-        return isset($data['payment_status']) && $data['payment_status'] === 'paid';
+        return is_array($data) ? $data : null;
     }
 
     private function loadCartItems(): void

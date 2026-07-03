@@ -38,6 +38,7 @@
     "name": "Name",
     "description": "Description",
     "creation-date": "Creation Date",
+    "pending-payment": "Awaiting payment (abandoned)",
     "pending": "Pending",
     "processing": "Processing",
     "completed": "Completed",

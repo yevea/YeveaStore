@@ -21,11 +21,13 @@
         </column>
         <column name="status" display="center" order="140">
             <widget type="select" translate="true" fieldname="status">
+                <option color="secondary">pending_payment</option>
                 <option color="warning">pending</option>
                 <option color="info">processing</option>
                 <option color="success">completed</option>
                 <option color="danger">cancelled</option>
 
+                <values title="pending-payment">pending_payment</values>
                 <values title="pending">pending</values>
                 <values title="processing">processing</values>
                 <values title="completed">completed</values>
@@ -41,6 +43,7 @@
     </columns>
     <rows>
         <row type="status">
+            <option color="secondary" fieldname="status">pending_payment</option>
             <option color="warning" fieldname="status">pending</option>
             <option color="info" fieldname="status">processing</option>
             <option color="success" fieldname="status">completed</option>

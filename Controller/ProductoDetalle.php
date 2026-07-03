@@ -33,6 +33,9 @@ class ProductoDetalle extends StoreControllerBase
     /** @var object|null Family data including dimension limits for tableros */
     public $familyData = null;
 
+    /** @var string|null '1' after a successful add-to-cart redirect, '0' after a failed one */
+    public $addedToCart = null;
+
     public function getPageData(): array
     {
         $pageData = parent::getPageData();
@@ -45,8 +48,10 @@ class ProductoDetalle extends StoreControllerBase
         parent::run();
 
         if ($this->request()->request->get('action', '') === 'add-to-cart') {
-            $this->addToCart();
+            $ok = $this->addToCart();
+            $this->redirectAfterPost($ok ? 'added=1' : 'added=0');
         }
+        $this->addedToCart = $this->request()->query->get('added', null);
 
         $this->loadCategories();
         $this->loadCartItemCount();
