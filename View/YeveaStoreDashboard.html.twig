@@ -1,0 +1,24 @@
+<div class="container-fluid mt-3 mb-4">
+    <div class="row">
+        <div class="col">
+            <h4><i class="fa-solid fa-chart-line"></i> {{ trans('bot-reports-title') }}</h4>
+            <p class="text-muted">
+                {{ trans('bot-reports-help') }}
+            </p>
+
+            {% set reports = fsc.getBotReports() %}
+            {% if reports is empty %}
+                <div class="alert alert-info">
+                    <i class="fa-solid fa-info-circle"></i> {{ trans('bot-reports-empty') }}
+                </div>
+            {% else %}
+                {% for date, content in reports %}
+                    <details class="mb-2" {% if loop.first %}open{% endif %}>
+                        <summary class="fw-bold py-1">{{ date }}</summary>
+                        <pre class="border rounded p-3 bg-light small" style="white-space: pre-wrap;">{{ content }}</pre>
+                    </details>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>

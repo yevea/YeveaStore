@@ -35,7 +35,9 @@ class Productos extends StoreControllerBase
     {
         parent::run();
 
-        $this->noindex = (bool) Tools::settings('yeveastore', 'noindex', false);
+        // filter_var: FS may persist the checkbox as boolean or as 'true'/'false'
+        // strings — a plain (bool) cast would turn the string 'false' into true.
+        $this->noindex = filter_var(Tools::settings('yeveastore', 'noindex', false), FILTER_VALIDATE_BOOLEAN);
 
         $this->dimensionFilters = [
             'largo_min' => $this->request()->query->get('largo_min', ''),

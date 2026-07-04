@@ -4,9 +4,25 @@ namespace FacturaScripts\Plugins\YeveaStore\Controller;
 use FacturaScripts\Core\Controller\EditSettings;
 use FacturaScripts\Core\Lib\AssetManager;
 use FacturaScripts\Core\Model\Settings;
+use FacturaScripts\Core\Tools;
 
+/**
+ * Admin → YeveaStore: the store's control page.
+ *
+ * Tabs: 1) AI-bot dashboard (daily reports)  2) store settings
+ *       3) content plan (editable)           4) reviews tracking (editable)
+ *
+ * Editable docs live in MyFiles/ (survive plugin updates) and are seeded
+ * from the plugin's Docs/ folder on first load.
+ */
 class SettingsYeveaStore extends EditSettings
 {
+    /** Editable docs: key => [MyFiles file, seed file in plugin Docs/] */
+    private const DOCS = [
+        'content-plan' => 'yeveastore-content-plan.md',
+        'reviews' => 'yeveastore-reviews-plan.md',
+    ];
+
     public function getPageData(): array
     {
         $data = parent::getPageData();
@@ -16,23 +32,55 @@ class SettingsYeveaStore extends EditSettings
         return $data;
     }
 
-    protected function createViews()
+    /**
+     * Daily AI-bot reports written by Scripts/ai-bot-report.sh (cron),
+     * newest first. Used by the dashboard tab.
+     *
+     * @return array<string, string> date => report text
+     */
+    public function getBotReports(int $limit = 14): array
     {
-        // Only the YeveaStore tab: the full settings panel (all SettingsXXX tabs,
-        // api-keys, sequences…) already lives in the core EditSettings page. This
-        // page must open directly on the store settings.
-        $this->setTemplate('EditSettings');
-        $this->createViewsSettings('SettingsYeveaStore', 'Settings', $this->getPageData()['icon']);
-
-        // Undo the core auto-focus that scrolls the page to the first input
-        $jsPath = FS_FOLDER . '/Plugins/YeveaStore/Assets/JS/SettingsScrollTop.js';
-        if (file_exists($jsPath)) {
-            AssetManager::addJs(FS_ROUTE . '/Plugins/YeveaStore/Assets/JS/SettingsScrollTop.js');
+        $dir = FS_FOLDER . '/MyFiles/yeveastore-reports';
+        if (false === is_dir($dir)) {
+            return [];
         }
 
+        $files = glob($dir . '/*.txt') ?: [];
+        rsort($files);
+
+        $reports = [];
+        foreach (array_slice($files, 0, $limit) as $file) {
+            $reports[basename($file, '.txt')] = (string) file_get_contents($file);
+        }
+        return $reports;
+    }
+
+    /** Content of an editable doc, for the doc tabs. */
+    public function getYeveaDoc(string $key): string
+    {
+        $path = $this->docPath($key);
+        if ($path !== null && file_exists($path)) {
+            return (string) file_get_contents($path);
+        }
+        return '';
+    }
+
+    protected function createViews()
+    {
+        $this->setTemplate('EditSettings');
+
+        // 1) Dashboard first: it is what opens by default
+        $this->addHtmlView('YeveaStoreDashboard', 'YeveaStoreDashboard', 'Settings', 'dashboard', 'fa-solid fa-chart-line');
+
+        // 2) Store settings (only the YeveaStore tab; the full settings panel
+        //    lives in the core EditSettings page)
+        $this->createViewsSettings('SettingsYeveaStore', 'Settings', 'fa-solid fa-store');
+
+        // 3) + 4) Editable docs
+        $this->addHtmlView('YeveaStorePlan', 'YeveaStorePlan', 'Settings', 'content-plan', 'fa-solid fa-pen-to-square');
+        $this->addHtmlView('YeveaStoreResenas', 'YeveaStoreResenas', 'Settings', 'reviews-tracking', 'fa-solid fa-star-half-stroke');
+
         // "Visit site" and "Orders" links, always visible at the top.
-        // The store admin pages are hidden from the main menu, so these buttons
-        // are the UI entry points to the storefront and the orders list.
         foreach (array_keys($this->views) as $viewName) {
             $this->addButton($viewName, [
                 'action' => 'Productos',
@@ -49,10 +97,21 @@ class SettingsYeveaStore extends EditSettings
                 'type' => 'link',
             ]);
         }
+
+        // Undo the core auto-focus that scrolls the page to the first input
+        $jsPath = FS_FOLDER . '/Plugins/YeveaStore/Assets/JS/SettingsScrollTop.js';
+        if (file_exists($jsPath)) {
+            AssetManager::addJs(FS_ROUTE . '/Plugins/YeveaStore/Assets/JS/SettingsScrollTop.js');
+        }
     }
 
     protected function execPreviousAction($action)
     {
+        if ($action === 'save-yeveastore-doc') {
+            $this->saveYeveaDoc();
+            return true;
+        }
+
         if ($action === 'insert'
             && $this->active === 'SettingsYeveaStore'
             && isset($this->views[$this->active])
@@ -66,12 +125,54 @@ class SettingsYeveaStore extends EditSettings
 
     protected function loadData($viewName, $view)
     {
-        parent::loadData($viewName, $view);
+        switch ($viewName) {
+            case 'YeveaStoreDashboard':
+            case 'YeveaStorePlan':
+            case 'YeveaStoreResenas':
+                $this->seedDocs();
+                break;
 
-        if ($viewName === 'SettingsYeveaStore'
-            && $view->model instanceof Settings
-            && empty($view->model->name)) {
-            $view->model->name = 'yeveastore';
+            default:
+                parent::loadData($viewName, $view);
+                if ($viewName === 'SettingsYeveaStore'
+                    && $view->model instanceof Settings
+                    && empty($view->model->name)) {
+                    $view->model->name = 'yeveastore';
+                }
+                break;
+        }
+    }
+
+    private function docPath(string $key): ?string
+    {
+        return isset(self::DOCS[$key]) ? FS_FOLDER . '/MyFiles/' . self::DOCS[$key] : null;
+    }
+
+    private function saveYeveaDoc(): void
+    {
+        if (false === $this->validateFormToken()) {
+            return;
+        }
+
+        $key = (string) $this->request->request->get('doc', '');
+        $path = $this->docPath($key);
+        if ($path === null) {
+            return;
+        }
+
+        file_put_contents($path, (string) $this->request->request->get('doc_content', ''));
+        Tools::log()->notice('record-updated-correctly');
+    }
+
+    /** Copies the default docs from Plugins/YeveaStore/Docs to MyFiles on first use. */
+    private function seedDocs(): void
+    {
+        foreach (self::DOCS as $file) {
+            $target = FS_FOLDER . '/MyFiles/' . $file;
+            $seed = FS_FOLDER . '/Plugins/YeveaStore/Docs/' . $file;
+            if (false === file_exists($target) && file_exists($seed)) {
+                copy($seed, $target);
+            }
         }
     }
 }

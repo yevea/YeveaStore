@@ -1,0 +1,15 @@
+<div class="container-fluid mt-3 mb-4">
+    <form method="post">
+        <input type="hidden" name="action" value="save-yeveastore-doc">
+        <input type="hidden" name="doc" value="content-plan">
+        <input type="hidden" name="multireqtoken" value="{{ formToken() }}">
+        <p class="text-muted mb-2">
+            <i class="fa-solid fa-pen-to-square"></i> {{ trans('yevea-doc-help') }}
+        </p>
+        <textarea name="doc_content" class="form-control font-monospace" rows="30"
+                  spellcheck="false">{{ fsc.getYeveaDoc('content-plan') }}</textarea>
+        <button type="submit" class="btn btn-primary mt-2">
+            <i class="fa-solid fa-save"></i> {{ trans('save') }}
+        </button>
+    </form>
+</div>

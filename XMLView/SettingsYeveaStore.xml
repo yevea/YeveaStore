@@ -14,6 +14,9 @@
             <column name="noindex" numcolumns="6">
                 <widget type="checkbox" fieldname="noindex" />
             </column>
+            <column name="bot-report-email" numcolumns="6">
+                <widget type="checkbox" fieldname="bot_report_email" />
+            </column>
             <column name="social-facebook" numcolumns="6">
                 <widget type="text" fieldname="social_facebook" />
             </column>
