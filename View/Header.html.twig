@@ -19,6 +19,23 @@
     });
 })();
 </script>
+{# Schema.org Organization: consolidates "Yevea" as a single entity for search
+   engines and AI agents. sameAs profiles are configured in Admin → YeveaStore. #}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Yevea",
+    "url": "https://yevea.com/",
+    "logo": "https://yevea.com/001-vectores/logo-yevea-white.svg",
+    "description": "{{ fsc.t('sawmill-desc') | e('js') }}"{% if fsc.socialProfiles is defined and fsc.socialProfiles() is not empty %},
+    "sameAs": [
+        {% for profileUrl in fsc.socialProfiles() %}"{{ profileUrl }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]{% endif %}
+}
+</script>
+
 <header id="yeveastore-header">
     <div class="container d-flex align-items-center justify-content-between">
         <a href="/"><img style="width:100px;height:25px;" src="https://yevea.com/001-vectores/logo-yevea-white.svg" alt="madera olivo - logo"><sup>®</sup></a>

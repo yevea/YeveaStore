@@ -98,6 +98,23 @@ abstract class StoreControllerBase extends Controller
     }
 
     /**
+     * Social/entity profile URLs configured in the store settings, used to
+     * build the Organization schema "sameAs" list (entity consolidation for
+     * search engines and AI agents).
+     */
+    public function socialProfiles(): array
+    {
+        $profiles = [];
+        foreach (['social_facebook', 'social_instagram', 'social_youtube', 'social_google'] as $key) {
+            $url = trim((string) Tools::settings('yeveastore', $key, ''));
+            if ($url !== '') {
+                $profiles[] = $url;
+            }
+        }
+        return $profiles;
+    }
+
+    /**
      * POST-Redirect-GET: after processing a POST action, redirect (302) back to
      * the same URL so a browser refresh repeats a harmless GET instead of
      * re-submitting the form. Optionally appends a query param for feedback.
@@ -394,6 +411,7 @@ abstract class StoreControllerBase extends Controller
                 'largo' => $p->largo ?? null,
                 'ancho' => $p->ancho ?? null,
                 'espesor' => $p->espesor ?? null,
+                'updated' => $p->actualizado ?? null,
             ];
         }
     }

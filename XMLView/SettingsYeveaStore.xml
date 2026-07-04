@@ -14,6 +14,18 @@
             <column name="noindex" numcolumns="6">
                 <widget type="checkbox" fieldname="noindex" />
             </column>
+            <column name="social-facebook" numcolumns="6">
+                <widget type="text" fieldname="social_facebook" />
+            </column>
+            <column name="social-instagram" numcolumns="6">
+                <widget type="text" fieldname="social_instagram" />
+            </column>
+            <column name="social-youtube" numcolumns="6">
+                <widget type="text" fieldname="social_youtube" />
+            </column>
+            <column name="social-google" numcolumns="6">
+                <widget type="text" fieldname="social_google" />
+            </column>
         </group>
     </columns>
 </view>
