@@ -46,6 +46,21 @@ abstract class StoreControllerBase extends Controller
     /** @var array Map of codfamilia => slug for all categories */
     public $slugMap = [];
 
+    /**
+     * Default page registration for all public store controllers: grouped under
+     * the 'yeveastore' menu and hidden from the admin menu bar. Without this,
+     * subclasses that only override 'title' would fall back to the FS core
+     * defaults (menu 'new', visible) and pollute the admin menu.
+     */
+    public function getPageData(): array
+    {
+        $pageData = parent::getPageData();
+        $pageData['menu'] = 'yeveastore';
+        $pageData['icon'] = 'fa-solid fa-store';
+        $pageData['showonmenu'] = false;
+        return $pageData;
+    }
+
     public function run(): void
     {
         parent::run();
