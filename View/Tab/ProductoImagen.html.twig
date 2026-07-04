@@ -25,9 +25,9 @@
                     <div class="card-body p-3">
                         <div class="row g-2">
                             <div class="col-sm-2">
-                                {{ trans('variant') }}
+                                {{ fsc.t('variant') }}
                                 <select name="referencia" class="form-select mb-2">
-                                    <option value="">{{ trans('all-variants') }}</option>
+                                    <option value="">{{ fsc.t('all-variants') }}</option>
                                     <option value="">------</option>
                                     {% for variant in product.getVariants() %}
                                         <option value="{{ variant.referencia }}">{{ variant.referencia }}</option>
@@ -35,28 +35,28 @@
                                 </select>
                             </div>
                             <div class="col">
-                                {{ trans('observations') }}
+                                {{ fsc.t('observations') }}
                                 <textarea name="observations" class="form-control mb-2"
-                                          placeholder="{{ trans('observations') }}"></textarea>
+                                          placeholder="{{ fsc.t('observations') }}"></textarea>
                                 <div class="row g-2 mb-2">
                                     <div class="col">
-                                        {{ trans('short-description') }}
+                                        {{ fsc.t('short-description') }}
                                         <textarea name="descripcion_corta" class="form-control" rows="3"
                                                   maxlength="300"
-                                                  placeholder="{{ trans('short-description-placeholder') }}"></textarea>
+                                                  placeholder="{{ fsc.t('short-description-placeholder') }}"></textarea>
                                     </div>
                                 </div>
-                                {{ trans('images') }}
+                                {{ fsc.t('images') }}
                                 <input type="file" name="newfiles[]" class="form-control" multiple=""
                                        accept="image/png, image/jpeg, image/gif" required/>
                                 <p class="text-muted mb-2">
-                                    {{ trans('help-server-accepts-filesize', {'%size%': currentView.model.getMaxFileUpload()}) }}
+                                    {{ fsc.t('help-server-accepts-filesize', {'%size%': currentView.model.getMaxFileUpload()}) }}
                                 </p>
                             </div>
                             <div class="col-auto">
                                 <br/>
                                 <button type="submit" class="btn btn-success mb-2">
-                                    <i class="fa-solid fa-save fa-fw" aria-hidden="true"></i> {{ trans('add') }}
+                                    <i class="fa-solid fa-save fa-fw" aria-hidden="true"></i> {{ fsc.t('add') }}
                                 </button>
                             </div>
                         </div>
@@ -85,7 +85,7 @@
                         <div class="card-body p-2">
                             <div class="mb-1">
                                 <select name="referencia" class="form-select form-select-sm">
-                                    <option value="">{{ trans('all-variants') }}</option>
+                                    <option value="">{{ fsc.t('all-variants') }}</option>
                                     {% for variant in product.getVariants() %}
                                         <option value="{{ variant.referencia }}" {% if variant.referencia == image.referencia %}selected{% endif %}>{{ variant.referencia }}</option>
                                     {% endfor %}
@@ -93,7 +93,7 @@
                             </div>
                             <div class="mb-1">
                                 <textarea name="observaciones" class="form-control form-control-sm" rows="2"
-                                          placeholder="{{ trans('observations') }}">{{ image.observaciones }}</textarea>
+                                          placeholder="{{ fsc.t('observations') }}">{{ image.observaciones }}</textarea>
                             </div>
                             <div class="mb-1">
                                 <input type="text" name="descripcion_corta" class="form-control form-control-sm"
@@ -105,7 +105,7 @@
                                 {% set fileBase = fullFileName | slice(0, -(fileExt | length + 1)) %}
                                 <div class="input-group input-group-sm">
                                     <input type="text" name="nombre_archivo" class="form-control"
-                                           maxlength="90" placeholder="{{ trans('rename-file') }}"
+                                           maxlength="90" placeholder="{{ fsc.t('rename-file') }}"
                                            value="{{ fileBase }}">
                                     <span class="input-group-text">.{{ fileExt }}</span>
                                 </div>
@@ -130,7 +130,7 @@
         {% endfor %}
     </div>
     {% if currentView.count > 1 %}
-        <div class="alert alert-info">{{ trans('you-can-sort-images') }}</div>
+        <div class="alert alert-info">{{ fsc.t('you-can-sort-images') }}</div>
     {% endif %}
 </div>
 <script>
@@ -142,10 +142,10 @@ function submitEditImage(formName) {
 </script>
 
 {% macro buttonDelete(formName) %}
-    {% set label = trans('delete-file') %}
-    {% set text = trans('are-you-sure') %}
-    {% set cancel = trans('cancel') %}
-    {% set confirm = trans('confirm') %}
+    {% set label = fsc.t('delete-file') %}
+    {% set text = fsc.t('are-you-sure') %}
+    {% set cancel = fsc.t('cancel') %}
+    {% set confirm = fsc.t('confirm') %}
     <button type="button" class="btn btn-sm btn-outline-danger p-1"
             onclick="confirmAction('{{ formName }}','delete-image','{{ label }}','{{ text }}','{{ cancel }}','{{ confirm }}');">
         <i class="fa-solid fa-trash-alt fa-fw" aria-hidden="true"></i>

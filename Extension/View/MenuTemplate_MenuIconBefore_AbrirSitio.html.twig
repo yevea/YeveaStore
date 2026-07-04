@@ -1,0 +1,9 @@
+{# Direct link to the public storefront, injected in the top navbar of every
+   admin page via the getIncludeViews('MenuTemplate', 'MenuIconBefore') hook.
+   Opens in a new tab so the admin session stays where it is. #}
+<li class="nav-item" title="{{ trans('abrir-sitio') }}">
+    <a class="nav-link" href="Productos" target="_blank" rel="noopener" id="menuIconAbrirSitio">
+        <i class="fa-solid fa-store" aria-hidden="true"></i>
+        <span class="d-none d-lg-inline ms-1">{{ trans('abrir-sitio') }}</span>
+    </a>
+</li>

@@ -33,6 +33,7 @@ class Init extends InitClass
     {
         $this->loadExtension(new Extension\Controller\EditProducto());
         $this->loadExtension(new Extension\Controller\EditFamilia());
+        $this->loadExtension(new Extension\Controller\EditSettings());
     }
 
     public function update(): void

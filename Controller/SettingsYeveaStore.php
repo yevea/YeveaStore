@@ -2,6 +2,7 @@
 namespace FacturaScripts\Plugins\YeveaStore\Controller;
 
 use FacturaScripts\Core\Controller\EditSettings;
+use FacturaScripts\Core\Lib\AssetManager;
 use FacturaScripts\Core\Model\Settings;
 
 class SettingsYeveaStore extends EditSettings
@@ -22,6 +23,12 @@ class SettingsYeveaStore extends EditSettings
         // page must open directly on the store settings.
         $this->setTemplate('EditSettings');
         $this->createViewsSettings('SettingsYeveaStore', 'Settings', $this->getPageData()['icon']);
+
+        // Undo the core auto-focus that scrolls the page to the first input
+        $jsPath = FS_FOLDER . '/Plugins/YeveaStore/Assets/JS/SettingsScrollTop.js';
+        if (file_exists($jsPath)) {
+            AssetManager::addJs(FS_ROUTE . '/Plugins/YeveaStore/Assets/JS/SettingsScrollTop.js');
+        }
 
         // "Visit site" and "Orders" links, always visible at the top.
         // The store admin pages are hidden from the main menu, so these buttons
