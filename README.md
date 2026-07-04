@@ -157,7 +157,7 @@ fire without creating duplicates.
 If you prefer to configure the keys directly in the database (e.g. via **cPanel → phpMyAdmin**):
 
 1. Open phpMyAdmin and select the FacturaScripts database.
-2. Browse the `fs_settings` table.
+2. Browse the `settings` table (named `fs_settings` in older FacturaScripts versions).
 3. Look for a row where `name = 'yeveastore'`.  
    • If it exists, open the row for editing.  
    • If it does not exist yet, insert a new row with `name = 'yeveastore'`.

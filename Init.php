@@ -71,22 +71,30 @@ class Init extends InitClass
      */
     private function migrateSettings(DataBase $db): void
     {
-        if (false === $db->tableExists('fs_settings')) {
+        // The settings table is 'settings' in current FS versions, 'fs_settings' in older ones
+        $table = null;
+        foreach (['settings', 'fs_settings'] as $candidate) {
+            if ($db->tableExists($candidate)) {
+                $table = $candidate;
+                break;
+            }
+        }
+        if ($table === null) {
             return;
         }
 
-        $old = $db->select("SELECT * FROM fs_settings WHERE name = 'ecommerce'");
+        $old = $db->select("SELECT * FROM " . $table . " WHERE name = 'ecommerce'");
         if (empty($old)) {
             return;
         }
 
-        $new = $db->select("SELECT * FROM fs_settings WHERE name = 'yeveastore'");
+        $new = $db->select("SELECT * FROM " . $table . " WHERE name = 'yeveastore'");
         if (!empty($new)) {
             return;
         }
 
         $properties = $db->var2str($old[0]['properties'] ?? '');
-        $db->exec("INSERT INTO fs_settings (name, properties) VALUES ('yeveastore', " . $properties . ")");
+        $db->exec("INSERT INTO " . $table . " (name, properties) VALUES ('yeveastore', " . $properties . ")");
     }
 
     /**

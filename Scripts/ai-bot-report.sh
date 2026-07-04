@@ -65,7 +65,7 @@ find "$OUT_DIR" -name "*.txt" -mtime +60 -delete 2>/dev/null
 DBNAME=$(grep -oP "FS_DB_NAME.,\s*.\K[^'\"]+" "$FS_DIR/config.php" | head -1)
 DBUSER=$(grep -oP "FS_DB_USER.,\s*.\K[^'\"]+" "$FS_DIR/config.php" | head -1)
 DBPASS=$(grep -oP "FS_DB_PASS.,\s*.\K[^'\"]+" "$FS_DIR/config.php" | head -1)
-PROPS=$(mysql -u"$DBUSER" -p"$DBPASS" "$DBNAME" -N -e "SELECT properties FROM fs_settings WHERE name='yeveastore';" 2>/dev/null)
+PROPS=$(mysql -u"$DBUSER" -p"$DBPASS" "$DBNAME" -N -e "SELECT properties FROM settings WHERE name='yeveastore';" 2>/dev/null)
 if echo "$PROPS" | grep -qE '"bot_report_email"[[:space:]]*:[[:space:]]*("false"|false|"0")'; then
     exit 0
 fi
