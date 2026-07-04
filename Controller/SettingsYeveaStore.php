@@ -17,9 +17,13 @@ class SettingsYeveaStore extends EditSettings
 
     protected function createViews()
     {
-        parent::createViews();
+        // Only the YeveaStore tab: the full settings panel (all SettingsXXX tabs,
+        // api-keys, sequences…) already lives in the core EditSettings page. This
+        // page must open directly on the store settings.
+        $this->setTemplate('EditSettings');
+        $this->createViewsSettings('SettingsYeveaStore', 'Settings', $this->getPageData()['icon']);
 
-        // "Visit site" and "Orders" links on every tab, always visible at the top.
+        // "Visit site" and "Orders" links, always visible at the top.
         // The store admin pages are hidden from the main menu, so these buttons
         // are the UI entry points to the storefront and the orders list.
         foreach (array_keys($this->views) as $viewName) {

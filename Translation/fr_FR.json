@@ -84,6 +84,7 @@
     "stripe-webhook-secret": "Clé de signature du webhook Stripe (whsec_...)",
     "settings-yeveastore": "YeveaStore",
     "visit-site": "Voir le site",
+    "abrir-sitio": "Ouvrir le site",
     "publica": "Publique (visible en boutique)",
     "family-type": "Type de Famille",
     "mercancia": "Marchandise",

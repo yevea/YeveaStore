@@ -84,6 +84,7 @@
     "stripe-webhook-secret": "Stripe Webhook Signing Secret (whsec_...)",
     "settings-yeveastore": "YeveaStore",
     "visit-site": "Visit site",
+    "abrir-sitio": "Open site",
     "publica": "Public (visible on storefront)",
     "family-type": "Family Type",
     "mercancia": "Merchandise",
