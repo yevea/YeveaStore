@@ -128,7 +128,7 @@ Stripe is the payment gateway used during checkout.  You need a **Stripe Secret 
 #### Option A — Admin panel (recommended)
 
 1. Log in to the FacturaScripts admin panel.
-2. Navigate to **Admin → Settings** and click the **E-Commerce** tab  
+2. Navigate to **Admin → YeveaStore** and open the **Settings** tab  
    (direct URL: `/SettingsYeveaStore`).
 3. Enter your **Stripe Secret Key** (`sk_live_…` or `sk_test_…` for testing) and optionally the **Stripe Public Key** (`pk_live_…` / `pk_test_…`).
 4. Click **Save**.

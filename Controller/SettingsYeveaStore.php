@@ -72,9 +72,12 @@ class SettingsYeveaStore extends EditSettings
         // 1) Dashboard first: it is what opens by default
         $this->addHtmlView('YeveaStoreDashboard', 'YeveaStoreDashboard', 'Settings', 'dashboard', 'fa-solid fa-chart-line');
 
-        // 2) Store settings (only the YeveaStore tab; the full settings panel
-        //    lives in the core EditSettings page)
-        $this->createViewsSettings('SettingsYeveaStore', 'Settings', 'fa-solid fa-store');
+        // 2) Store settings. The XMLView is named YeveaStoreAjustes (NOT Settings*)
+        //    on purpose: the core EditSettings page scans Settings*.xml files, and
+        //    this store must be managed ONLY from this page.
+        $this->addEditView('YeveaStoreAjustes', 'Settings', 'store-settings', 'fa-solid fa-sliders');
+        $this->setSettings('YeveaStoreAjustes', 'btnDelete', false);
+        $this->setSettings('YeveaStoreAjustes', 'btnNew', false);
 
         // 3) + 4) Editable docs
         $this->addHtmlView('YeveaStorePlan', 'YeveaStorePlan', 'Settings', 'content-plan', 'fa-solid fa-pen-to-square');
@@ -113,7 +116,7 @@ class SettingsYeveaStore extends EditSettings
         }
 
         if ($action === 'insert'
-            && $this->active === 'SettingsYeveaStore'
+            && $this->active === 'YeveaStoreAjustes'
             && isset($this->views[$this->active])
             && $this->views[$this->active]->model instanceof Settings
             && empty($this->views[$this->active]->model->name)) {
@@ -127,18 +130,26 @@ class SettingsYeveaStore extends EditSettings
     {
         switch ($viewName) {
             case 'YeveaStoreDashboard':
+                // The dashboard is the MAIN view but holds no model data;
+                // without this flag PanelController disables every other tab.
+                $this->hasData = true;
+                $this->seedDocs();
+                break;
+
             case 'YeveaStorePlan':
             case 'YeveaStoreResenas':
                 $this->seedDocs();
                 break;
 
-            default:
-                parent::loadData($viewName, $view);
-                if ($viewName === 'SettingsYeveaStore'
-                    && $view->model instanceof Settings
-                    && empty($view->model->name)) {
+            case 'YeveaStoreAjustes':
+                $view->loadData('yeveastore');
+                if ($view->model instanceof Settings && empty($view->model->name)) {
                     $view->model->name = 'yeveastore';
                 }
+                break;
+
+            default:
+                parent::loadData($viewName, $view);
                 break;
         }
     }
