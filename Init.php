@@ -19,6 +19,7 @@
 namespace FacturaScripts\Plugins\YeveaStore;
 
 use FacturaScripts\Core\Base\DataBase;
+use FacturaScripts\Core\Kernel;
 use FacturaScripts\Core\Template\InitClass;
 use FacturaScripts\Core\Where;
 use FacturaScripts\Dinamic\Model\AttachedFileRelation;
@@ -29,11 +30,27 @@ class Init extends InitClass
 {
     use SlugTrait;
 
+    /** Lowercase SEO routes for the public pages (see also StoreControllerBase::PUBLIC_PATHS) */
+    private const LOWERCASE_ROUTES = [
+        '/productos' => 'Productos',
+        '/producto' => 'ProductoDetalle',
+        '/presupuesto' => 'Presupuesto',
+        '/sitemap.xml' => 'Sitemap',
+        '/llms.txt' => 'LlmsTxt',
+    ];
+
     public function init(): void
     {
         $this->loadExtension(new Extension\Controller\EditProducto());
         $this->loadExtension(new Extension\Controller\EditFamilia());
         $this->loadExtension(new Extension\Controller\EditSettings());
+
+        // Register the lowercase routes on EVERY request: Plugins::init() runs
+        // before Kernel routing, and core deploys rewrite MyFiles/routes.json,
+        // so runtime registration is the reliable source.
+        foreach (self::LOWERCASE_ROUTES as $route => $controller) {
+            Kernel::addRoute($route, $controller, 0, 'yeveastore' . str_replace(['/', '.'], '-', $route));
+        }
     }
 
     public function update(): void
@@ -52,21 +69,13 @@ class Init extends InitClass
      */
     private function registerLowercaseRoutes(): void
     {
-        $myRoutes = [
-            '/productos' => 'Productos',
-            '/producto' => 'ProductoDetalle',
-            '/presupuesto' => 'Presupuesto',
-            '/sitemap.xml' => 'Sitemap',
-            '/llms.txt' => 'LlmsTxt',
-        ];
-
         $file = FS_FOLDER . '/MyFiles/routes.json';
         $routes = [];
         if (file_exists($file)) {
             $routes = json_decode((string) file_get_contents($file), true) ?: [];
         }
 
-        foreach ($myRoutes as $route => $controller) {
+        foreach (self::LOWERCASE_ROUTES as $route => $controller) {
             $routes[$route] = [
                 'controller' => $controller,
                 'customId' => 'yeveastore' . str_replace(['/', '.'], '-', $route),
