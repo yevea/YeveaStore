@@ -4,7 +4,7 @@
 **License:** LGPL v3  
 **Web:** [facturascripts.com](https://facturascripts.com)
 
-A YeveaStore / shopping cart plugin for FacturaScripts, built for a Spanish olive wood sawmill. The plugin manages a product catalogue of olive wood products—planks, custom-cut boards, rustic bathroom countertops, kitchen countertops, cutting boards and handcrafted olive wood items—with full support for customers across the European Union.
+A YeveaStore / shopping cart plugin for FacturaScripts, built for a Spanish olive grove products. The plugin manages a product catalogue of olive oil, olives and olive wood products—planks, custom-cut boards, rustic bathroom countertops, kitchen countertops, cutting boards and handcrafted olive wood items—with full support for customers across the European Union.
 
 ## Product Categories
 
