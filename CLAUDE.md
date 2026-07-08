@@ -32,6 +32,22 @@
 - Legacy NO tocar: `~/catalogo` (FS viejo, BD shopcat_cat), `~/productos` (WordPress→301 al lanzar), raíz = home estática. BD huérfana `shopcat_catalogo` fuera de cPanel: ignorar.
 - SSH `shopcat@uk604.directrouter.com` (pwd: pedir a Martín, no guardar). Backups: `~/backups-migracion/`.
 
+## Estructura objetivo del sitio (plan de Martín, 2026-07)
+```
+yevea.com/
+├── cat/      Tienda dinámica (FacturaScripts) — EXISTE, es prod
+├── madera/   Workspace de Claude (scripts/herramientas) — existe, casi vacío
+└── doc/      KB ESTÁTICA por silos de idioma — existe VACÍA, por construir
+    ├── es/  aceite/ olivas/ hierbas/ madera/{tablones,rodajas,troncos,
+    │        tableros-mesa,estantes,encimeras-cocina,encimeras-bano,
+    │        torneado,tablas-cocina,utensilios-cocina}  (cada hoja = index.html)
+    ├── en/  URLs TRADUCIDAS para SEO: oil/ olives/ herbs/ wood/{planks,slices,
+    │        logs,table-tops,shelves,kitchen-worktops,bathroom-worktops,
+    │        turning,cutting-boards,kitchen-utensils}
+    └── fr/  huile/ olives/ herbes/ bois/{planches,...}
+```
+- Rol del /doc: contenido citable (SEO+LLMs) que enlaza a las fichas de /cat; el catálogo vende, la KB posiciona. Las categorías del árbol anticipan las familias futuras de la tienda (aceite, olivas, hierbas).
+
 ## Deploy (tras push a main)
 ```
 cd ~/public_html/cat/Plugins/YeveaStore && git pull origin main
