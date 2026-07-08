@@ -48,7 +48,7 @@ The storefront and product detail pages include:
 - **Order Processing** — Checkout flow that converts cart items into orders with full customer details
 - **Native FS Integration** — Automatically creates FacturaScripts `Cliente` and `PedidoCliente` records
 - **Stripe Payments** — Integrated Stripe checkout for card payments
-- **Translations** — English, Spanish, French and German language support
+- **Translations** — English, Spanish, French and German language support, with a public language switcher (`?lang=`, persisted in a cookie) and `hreflang` alternate-language tags
 - **EU Shipping** — Designed for customers in Spain, France, Germany and the whole EU
 
 ## Plugin Structure
@@ -61,17 +61,20 @@ YeveaStore/
 ├── Controller/
 │   ├── EditYeveaStoreOrder.php       # Edit order (admin)
 │   ├── ListYeveaStoreOrder.php       # List orders (admin)
+│   ├── LlmsTxt.php                  # /llms.txt (AI-agent discovery)
 │   ├── Presupuesto.php              # Quote/checkout (frontend)
 │   ├── ProductoDetalle.php          # Product detail (frontend)
 │   ├── Productos.php                # Product catalogue (frontend)
-│   ├── SettingsYeveaStore.php        # Stripe settings (admin)
+│   ├── SettingsYeveaStore.php        # Admin settings (4 tabs: Dashboard/Ajustes/Plan/Reseñas)
+│   ├── Sitemap.php                  # /sitemap.xml
 │   ├── StoreFront.php               # Legacy route: 301 → /productos
 │   ├── StripeWebhook.php            # Stripe webhook (checkout.session.completed)
 │   └── Tableros.php                 # Legacy route: 301 → /productos
 ├── Extension/
 │   ├── Controller/
 │   │   ├── EditFamilia.php          # Family type + dimension limits
-│   │   └── EditProducto.php         # Product image fixes + nostock
+│   │   ├── EditProducto.php         # Product image fixes + nostock
+│   │   └── EditSettings.php         # Registers YeveaStore settings tab
 │   ├── Table/
 │   │   ├── familias.xml             # Family table extensions
 │   │   ├── productos.xml            # Product table extensions
@@ -82,6 +85,11 @@ YeveaStore/
 │       ├── EditVariante.xml         # Variant editor extensions
 │       ├── ListFamilia.xml          # Family list extensions
 │       └── ListProducto.xml         # Product list extensions
+├── Lib/
+│   ├── LanguageTrait.php            # Visitor language detection (?lang=/cookie) + content translation
+│   ├── OrderFulfillmentTrait.php    # Shared order-completion logic (Presupuesto + StripeWebhook)
+│   ├── SlugTrait.php                # Product/category slug generation (always from Spanish)
+│   └── StoreControllerBase.php      # Abstract base for public controllers (Productos, ProductoDetalle, Presupuesto)
 ├── Model/
 │   ├── YeveaStoreCartItem.php        # Cart item model
 │   ├── YeveaStoreOrder.php           # Order model
@@ -94,18 +102,25 @@ YeveaStore/
 ├── Translation/
 │   ├── de_DE.json                   # German translations
 │   ├── en_EN.json                   # English translations
-│   ├── es_ES.json                   # Spanish translations
+│   ├── es_ES.json                   # Spanish translations (canonical fallback)
 │   └── fr_FR.json                   # French translations
 ├── View/
+│   ├── Footer.html.twig             # Shared public footer
+│   ├── Header.html.twig             # Shared public header (nav + language switcher)
+│   ├── Hreflang.html.twig           # hreflang alternate-language <link> tags
 │   ├── Presupuesto.html.twig        # Quote/checkout template
 │   ├── ProductoDetalle.html.twig    # Product detail template (with Schema.org)
-│   └── Productos.html.twig          # Product catalogue template (with Schema.org)
+│   ├── Productos.html.twig          # Product catalogue template (with Schema.org)
+│   ├── YeveaStoreDashboard.html.twig # Admin: AI-bot traffic dashboard tab
+│   ├── YeveaStorePlan.html.twig     # Admin: content plan tab
+│   ├── YeveaStoreResenas.html.twig  # Admin: reviews tab
+│   └── Tab/                        # Admin panel tab partials
 ├── XMLView/
 │   ├── EditYeveaStoreOrder.xml       # Order editor view
 │   ├── EditYeveaStoreOrderLine.xml   # Order line editor view
 │   ├── ListYeveaStoreOrder.xml       # Order list view
-│   └── SettingsYeveaStore.xml        # Settings view
-├── Init.php                         # Plugin initialisation
+│   └── YeveaStoreAjustes.xml        # Settings view (Admin > Settings scans Settings*.xml)
+├── Init.php                         # Plugin initialisation (routes, migrations, slug backfill)
 ├── composer.json                    # PHP dependencies
 ├── facturascripts.ini               # Plugin metadata
 ├── LICENSE
@@ -193,8 +208,9 @@ When a customer completes a payment via Stripe, the plugin automatically:
 - Orders are created automatically when customers complete the checkout process
 
 ### Storefront
-- Access the storefront at `/productos` (the legacy `/StoreFront` and `/Tableros` URLs 301-redirect there)
+- Public routes are lowercase for SEO: `/productos` (catalogue), `/producto` (product detail), `/presupuesto` (quote/cart), `/sitemap.xml`, `/llms.txt`
+- The legacy CamelCase routes (`/StoreFront`, `/Tableros`, `/Presupuesto`, `/ProductoDetalle`) 301-redirect to their lowercase equivalent on GET requests
 - Browse products, filter by category, add items to cart
-- Access the quote/cart at `/Presupuesto`
+- Switch language with the header selector (`?lang=es_ES|en_EN|fr_FR|de_DE`); the choice is remembered in a cookie and reflected in `hreflang` tags
 - Complete checkout by entering customer details (name, NIF/CIF, email, phone, address, city, postal code, province, country) and clicking **Realizar Pedido**
 - Stripe payment is processed; on success, a native FacturaScripts client and sales order are created automatically
