@@ -29,13 +29,13 @@ class Sitemap extends StoreControllerBase
         $entries = [];
 
         // Catalogue home
-        $entries[] = ['loc' => $base . '/Productos', 'lastmod' => null];
+        $entries[] = ['loc' => $base . '/productos', 'lastmod' => null];
 
         // Category pages (slug URLs, matching the canonical form)
         foreach ($this->categories as $cat) {
             $slug = $this->slugMap[$cat->codfamilia] ?? '';
             if ($slug !== '') {
-                $entries[] = ['loc' => $base . '/Productos?cat=' . $slug, 'lastmod' => null];
+                $entries[] = ['loc' => $base . '/productos?cat=' . $slug, 'lastmod' => null];
             }
         }
 
@@ -47,7 +47,7 @@ class Sitemap extends StoreControllerBase
                 $lastmod = $time ? date('Y-m-d', $time) : null;
             }
             $entries[] = [
-                'loc' => $base . '/ProductoDetalle?url=' . rawurlencode($product->slug),
+                'loc' => $base . '/producto?url=' . rawurlencode($product->slug),
                 'lastmod' => $lastmod,
             ];
         }

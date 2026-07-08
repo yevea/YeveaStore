@@ -65,9 +65,9 @@ YeveaStore/
 │   ├── ProductoDetalle.php          # Product detail (frontend)
 │   ├── Productos.php                # Product catalogue (frontend)
 │   ├── SettingsYeveaStore.php        # Stripe settings (admin)
-│   ├── StoreFront.php               # Legacy route: 301 → /Productos
+│   ├── StoreFront.php               # Legacy route: 301 → /productos
 │   ├── StripeWebhook.php            # Stripe webhook (checkout.session.completed)
-│   └── Tableros.php                 # Legacy route: 301 → /Productos
+│   └── Tableros.php                 # Legacy route: 301 → /productos
 ├── Extension/
 │   ├── Controller/
 │   │   ├── EditFamilia.php          # Family type + dimension limits
@@ -193,7 +193,7 @@ When a customer completes a payment via Stripe, the plugin automatically:
 - Orders are created automatically when customers complete the checkout process
 
 ### Storefront
-- Access the storefront at `/Productos` (the legacy `/StoreFront` and `/Tableros` URLs 301-redirect there)
+- Access the storefront at `/productos` (the legacy `/StoreFront` and `/Tableros` URLs 301-redirect there)
 - Browse products, filter by category, add items to cart
 - Access the quote/cart at `/Presupuesto`
 - Complete checkout by entering customer details (name, NIF/CIF, email, phone, address, city, postal code, province, country) and clicking **Realizar Pedido**

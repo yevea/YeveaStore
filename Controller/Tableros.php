@@ -28,7 +28,7 @@ class Tableros extends Controller
 
         $scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
         $query = $_SERVER['QUERY_STRING'] ?? '';
-        $target = $scriptDir . '/Productos' . ($query !== '' ? '?' . $query : '');
+        $target = $scriptDir . '/productos' . ($query !== '' ? '?' . $query : '');
 
         header('Location: ' . $target, true, 301);
         exit;

@@ -96,9 +96,14 @@ trait LanguageTrait
         $query = $this->request()->query->all();
         $query['lang'] = $langCode;
 
-        $controller = method_exists($this, 'controllerName')
-            ? $this->controllerName()
-            : basename(str_replace('\\', '/', static::class));
+        // Prefer the lowercase SEO route when the controller defines one
+        if (method_exists($this, 'publicPath')) {
+            $controller = $this->publicPath();
+        } elseif (method_exists($this, 'controllerName')) {
+            $controller = $this->controllerName();
+        } else {
+            $controller = basename(str_replace('\\', '/', static::class));
+        }
 
         return $controller . '?' . http_build_query($query);
     }

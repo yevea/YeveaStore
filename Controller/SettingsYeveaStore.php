@@ -86,7 +86,7 @@ class SettingsYeveaStore extends EditSettings
         // "Visit site" and "Orders" links, always visible at the top.
         foreach (array_keys($this->views) as $viewName) {
             $this->addButton($viewName, [
-                'action' => 'Productos',
+                'action' => 'productos',
                 'color' => 'info',
                 'icon' => 'fa-solid fa-store',
                 'label' => 'visit-site',

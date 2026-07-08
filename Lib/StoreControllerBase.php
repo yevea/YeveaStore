@@ -20,6 +20,15 @@ abstract class StoreControllerBase extends Controller
     use LanguageTrait;
     use SlugTrait;
 
+    /** Lowercase public routes (SEO): registered in MyFiles/routes.json by Init */
+    private const PUBLIC_PATHS = [
+        'Productos' => 'productos',
+        'ProductoDetalle' => 'producto',
+        'Presupuesto' => 'presupuesto',
+        'Sitemap' => 'sitemap.xml',
+        'LlmsTxt' => 'llms.txt',
+    ];
+
     protected $requiresAuth = false;
 
     /** @var Familia[] */
@@ -64,6 +73,7 @@ abstract class StoreControllerBase extends Controller
     public function run(): void
     {
         parent::run();
+        $this->enforceLowercasePath();
         $this->detectAndSetLanguage();
 
         $cssPath = FS_FOLDER . '/Plugins/YeveaStore/Assets/CSS/yeveastore.css';
@@ -95,6 +105,33 @@ abstract class StoreControllerBase extends Controller
     protected function controllerName(): string
     {
         return basename(str_replace('\\', '/', static::class));
+    }
+
+    /** The lowercase public route of this controller (e.g. 'productos') */
+    public function publicPath(): string
+    {
+        return self::PUBLIC_PATHS[$this->controllerName()] ?? $this->controllerName();
+    }
+
+    /**
+     * 301 from the legacy CamelCase route (/Productos) to the lowercase one
+     * (/productos). GET only, so form POSTs are never converted or lost.
+     */
+    protected function enforceLowercasePath(): void
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+            return;
+        }
+
+        $path = (string) parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+        if (basename($path) !== $this->controllerName() || $this->publicPath() === $this->controllerName()) {
+            return;
+        }
+
+        $scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+        $query = $_SERVER['QUERY_STRING'] ?? '';
+        header('Location: ' . $scriptDir . '/' . $this->publicPath() . ($query !== '' ? '?' . $query : ''), true, 301);
+        exit;
     }
 
     /**

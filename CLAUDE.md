@@ -58,6 +58,7 @@ cd ~/public_html/cat && php -r 'require "vendor/autoload.php"; const FS_FOLDER=_
 - Menú/pages se cachean: Cache::clear + relogin. Tabla ajustes = `settings` (¡no fs_settings!), grupo 'yeveastore', JSON en `properties`.
 
 ## Arquitectura plugin
+- Rutas públicas MINÚSCULAS vía MyFiles/routes.json (Init::update → registerLowercaseRoutes): /productos /producto /presupuesto /sitemap.xml /llms.txt. CamelCase legacy (/Productos…) → 301 solo en GET (enforceLowercasePath en base). publicPath() da la ruta minúscula de cada controller.
 - Público: `Lib/StoreControllerBase` (abstracto, sin ruta; getPageData default menu=yeveastore+oculto) ← Productos, ProductoDetalle, Presupuesto. StoreFront/Tableros = stubs 301→/Productos.
 - `Lib/OrderFulfillmentTrait` = finalización de pedido compartida Presupuesto+StripeWebhook; idempotente vía status `pending_payment`→`pending`; Stripe metadata: order_id, cart_session. `pending_payment` huérfanos = checkouts abandonados.
 - tipofamilia: mercancia | tablones (piezas únicas qty=1, sold si stock≤0, dims en descripción) | tableros (precio/m², largo_cm×ancho_cm cliente, límites en familia) | artesania (como tablones).
@@ -78,5 +79,5 @@ cd ~/public_html/cat && php -r 'require "vendor/autoload.php"; const FS_FOLDER=_
 
 ## Estado / pendientes → memoria [[project-migration]]
 - noindex ON hasta orden de lanzamiento. Productos aún sin marcar públicos (catálogo/sitemap/llms vacíos hasta entonces).
-- Lanzamiento: noindex OFF + robots raíz (Sitemap /cat/Sitemap, pedir OK) + llms.txt raíz + 301 WP + GSC/Bing + ficha Google (renombrar a "Yevea").
+- Lanzamiento: noindex OFF + robots raíz (Sitemap /cat/sitemap.xml, pedir OK) + llms.txt raíz + 301 WP + GSC/Bing + ficha Google (renombrar a "Yevea").
 - Futuro: plugin YeveaReviews (diseño en tab Reseñas) cuando ~5 reseñas; FAQPage schema cuando Martín escriba FAQs.

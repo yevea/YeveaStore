@@ -42,13 +42,13 @@ class LlmsTxt extends StoreControllerBase
         foreach ($this->categories as $cat) {
             $name = $this->categoryNames[$cat->codfamilia] ?? $cat->descripcion;
             $slug = $this->slugMap[$cat->codfamilia] ?? '';
-            $out[] = '- [' . $name . '](' . $base . '/Productos?cat=' . $slug . ')';
+            $out[] = '- [' . $name . '](' . $base . '/productos?cat=' . $slug . ')';
         }
         $out[] = '';
         $out[] = '## Productos / Products';
         $out[] = '';
         foreach (array_slice($this->products, 0, self::MAX_PRODUCTS) as $product) {
-            $line = '- [' . $product->name . '](' . $base . '/ProductoDetalle?url=' . rawurlencode($product->slug) . ')';
+            $line = '- [' . $product->name . '](' . $base . '/producto?url=' . rawurlencode($product->slug) . ')';
             if ($product->familyType === 'tableros') {
                 $line .= ' — precio por m², corte a medida / price per m², custom cut';
             }
@@ -57,8 +57,8 @@ class LlmsTxt extends StoreControllerBase
         $out[] = '';
         $out[] = '## Comprar / How to buy';
         $out[] = '';
-        $out[] = '- Catálogo / catalogue: ' . $base . '/Productos';
-        $out[] = '- Presupuesto y pedido / quote & checkout: ' . $base . '/Presupuesto';
+        $out[] = '- Catálogo / catalogue: ' . $base . '/productos';
+        $out[] = '- Presupuesto y pedido / quote & checkout: ' . $base . '/presupuesto';
         $out[] = '- Pago con tarjeta (Stripe). Envío a España y toda la UE / Card payments (Stripe). Shipping to Spain and the EU.';
         $out[] = '- Los tableros y encimeras se cortan a la medida indicada por el cliente (precio por m²).';
         $out[] = '';
@@ -69,7 +69,7 @@ class LlmsTxt extends StoreControllerBase
         $out[] = '## Más información / More';
         $out[] = '';
         $out[] = '- Web: https://yevea.com';
-        $out[] = '- Sitemap: ' . $base . '/Sitemap';
+        $out[] = '- Sitemap: ' . $base . '/sitemap.xml';
         $out[] = '';
 
         header('Content-Type: text/plain; charset=utf-8');

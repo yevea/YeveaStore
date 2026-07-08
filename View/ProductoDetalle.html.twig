@@ -6,7 +6,7 @@
     <title>{{ fsc.product.name }} | Yevea</title>
     <meta name="description" content="{{ fsc.product.description | striptags | slice(0, 155) }}"/>
     <meta name="robots" content="index, follow"/>
-    <link rel="canonical" href="{{ fsc.baseUrl() }}/ProductoDetalle?url={{ fsc.product.slug }}"/>
+    <link rel="canonical" href="{{ fsc.baseUrl() }}/producto?url={{ fsc.product.slug }}"/>
     {% else %}
     <title>{{ fsc.t('product-not-found') }} | Yevea</title>
     <meta name="robots" content="noindex"/>
@@ -33,7 +33,7 @@
         "sku": "{{ fsc.product.referencia }}",
         "material": "{{ fsc.t('olive-wood') }}",
         {% if fsc.currentLang is defined %}"inLanguage": "{{ fsc.currentLang[:2] }}",{% endif %}
-        "url": "{{ asset('ProductoDetalle') }}?url={{ fsc.product.slug }}",
+        "url": "{{ asset('producto') }}?url={{ fsc.product.slug }}",
         {% if fsc.productImages is not empty %}"image": "{{ fsc.productImages[0].url }}",{% endif %}
         "brand": {
             "@type": "Brand",
@@ -88,7 +88,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
             <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                <a href="{{ asset('Productos') }}" itemprop="item"><span itemprop="name">{{ fsc.t('products') }}</span></a>
+                <a href="{{ asset('productos') }}" itemprop="item"><span itemprop="name">{{ fsc.t('products') }}</span></a>
                 <meta itemprop="position" content="1">
             </li>
             <li class="breadcrumb-item active" aria-current="page" id="breadcrumb-product-name" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
@@ -107,7 +107,7 @@
     {% if fsc.addedToCart == '1' %}
     <div class="alert alert-success d-flex justify-content-between align-items-center">
         <span><i class="fa-solid fa-circle-check"></i> {{ fsc.t('product-added-to-cart') }}</span>
-        <a href="{{ asset('Presupuesto') }}" class="btn btn-sm btn-success">
+        <a href="{{ asset('presupuesto') }}" class="btn btn-sm btn-success">
             <i class="fa-solid fa-file-invoice"></i> {{ fsc.t('view-presupuesto') }}
         </a>
     </div>
@@ -275,7 +275,7 @@
             {% elseif fsc.familyType == 'tableros' %}
             {% set showForm = fsc.product.nostock or fsc.product.stock > 0 %}
             {% if showForm %}
-            <form method="post" action="{{ asset('ProductoDetalle') }}?url={{ fsc.product.slug }}" id="tableros-form">
+            <form method="post" action="{{ asset('producto') }}?url={{ fsc.product.slug }}" id="tableros-form">
                 <input type="hidden" name="action" value="add-to-cart">
                 <input type="hidden" name="product_referencia" id="add-referencia"
                     value="{{ fsc.defaultVariant ? fsc.defaultVariant.referencia : fsc.product.referencia }}">
@@ -329,7 +329,7 @@
             {% elseif fsc.familyType == 'tablones' %}
             {% set showForm = fsc.product.stock > 0 or fsc.product.nostock %}
             {% if showForm %}
-            <form method="post" action="{{ asset('ProductoDetalle') }}?url={{ fsc.product.slug }}">
+            <form method="post" action="{{ asset('producto') }}?url={{ fsc.product.slug }}">
                 <input type="hidden" name="action" value="add-to-cart">
                 <input type="hidden" name="product_referencia" id="add-referencia"
                     value="{{ fsc.defaultVariant ? fsc.defaultVariant.referencia : fsc.product.referencia }}">
@@ -350,7 +350,7 @@
             {% else %}
             {% set showForm = fsc.productVariants is not empty or fsc.product.stock > 0 or fsc.product.nostock %}
             {% if showForm %}
-            <form method="post" action="{{ asset('ProductoDetalle') }}?url={{ fsc.product.slug }}">
+            <form method="post" action="{{ asset('producto') }}?url={{ fsc.product.slug }}">
                 <input type="hidden" name="action" value="add-to-cart">
                 <input type="hidden" name="product_referencia" id="add-referencia"
                     value="{{ fsc.defaultVariant ? fsc.defaultVariant.referencia : fsc.product.referencia }}">
@@ -383,14 +383,14 @@
     <div class="alert alert-warning">
         <i class="fa-solid fa-exclamation-triangle"></i> {{ fsc.t('product-not-found') }}
     </div>
-    <a href="{{ asset('Productos') }}" class="btn btn-primary">
+    <a href="{{ asset('productos') }}" class="btn btn-primary">
         <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('products') }}
     </a>
     {% endif %}
 
     {% if fsc.cartItemCount > 0 %}
     <div class="sticky-cart-btn me-3 text-end d-none d-md-block">
-        <a href="{{ asset('Presupuesto') }}" class="btn btn-success shadow">
+        <a href="{{ asset('presupuesto') }}" class="btn btn-success shadow">
             <i class="fa-solid fa-file-invoice"></i>
             {{ fsc.t('view-presupuesto') }} ({{ fsc.cartItemCount }})
         </a>

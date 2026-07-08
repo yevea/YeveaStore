@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="generator" content="FacturaScripts"/>
     <meta name="robots" content="{{ fsc.noindex ? 'noindex' : 'index, follow' }}"/>
-    <link rel="canonical" href="{{ fsc.baseUrl() }}/Productos{% if fsc.categorySlug %}?cat={{ fsc.categorySlug }}{% endif %}"/>
+    <link rel="canonical" href="{{ fsc.baseUrl() }}/productos{% if fsc.categorySlug %}?cat={{ fsc.categorySlug }}{% endif %}"/>
 {% endblock %}
 
 {% block navbar %}{% endblock %}
@@ -28,7 +28,7 @@
     "@type": "Store",
     "name": "{{ fsc.t('sawmill') }}",
     "description": "{{ fsc.t('sawmill-desc') }}",
-    "url": "{{ asset('Productos') }}",
+    "url": "{{ asset('productos') }}",
     {% if fsc.currentLang is defined %}"inLanguage": "{{ fsc.currentLang[:2] }}",{% endif %}
     "areaServed": [
         {"@type": "Country", "name": "Spain"},
@@ -49,7 +49,7 @@
                 "name": "{{ product.name | e('js') }}",
                 "description": "{{ product.description | e('js') }}",
                 "sku": "{{ product.referencia }}",
-                "url": "{{ asset('ProductoDetalle') }}?url={{ product.slug }}",
+                "url": "{{ asset('producto') }}?url={{ product.slug }}",
                 {% if product.image %}"image": "{{ product.image }}",{% endif %}
                 "material": "{{ fsc.t('olive-wood') }}",
                 "category": "{% if product.familyType is defined and product.familyType == 'tableros' %}{{ fsc.t('olive-wood-boards') }}{% elseif product.familyType is defined and product.familyType == 'tablones' %}{{ fsc.t('wood-planks') }}{% elseif product.familyType is defined and product.familyType == 'artesania' %}{{ fsc.t('olive-wood-crafts') }}{% else %}{{ fsc.t('olive-wood') }}{% endif %}",
@@ -91,7 +91,7 @@
     <div class="card mb-3">
         <div class="card-body">
             <h6 class="card-title"><i class="fa-solid fa-filter"></i> {{ fsc.t('filter-dimensions') }}</h6>
-            <form method="get" action="{{ asset('Productos') }}">
+            <form method="get" action="{{ asset('productos') }}">
                 <input type="hidden" name="cat" value="{{ fsc.categorySlug }}">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-2">
@@ -122,7 +122,7 @@
                         <button type="submit" class="btn btn-sm btn-primary">
                             <i class="fa-solid fa-search"></i> {{ fsc.t('filter-dimensions') }}
                         </button>
-                        <a href="{{ asset('Productos') }}?cat={{ fsc.categorySlug }}" class="btn btn-sm btn-outline-secondary">
+                        <a href="{{ asset('productos') }}?cat={{ fsc.categorySlug }}" class="btn btn-sm btn-outline-secondary">
                             <i class="fa-solid fa-times"></i>
                         </a>
                     </div>
@@ -140,7 +140,7 @@
             <article class="card h-100 shadow-sm {% if product.isSold is defined and product.isSold %}border-warning{% endif %}" itemscope itemtype="https://schema.org/Product">
                 <meta itemprop="sku" content="{{ product.referencia }}">
                 <meta itemprop="material" content="{{ fsc.t('olive-wood') }}">
-                <a href="{{ asset('ProductoDetalle') }}?url={{ product.slug }}" class="text-decoration-none text-dark" itemprop="url">
+                <a href="{{ asset('producto') }}?url={{ product.slug }}" class="text-decoration-none text-dark" itemprop="url">
                     {% if product.image %}
                     <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}" itemprop="image" loading="lazy" style="height: 200px; object-fit: cover;">
                     {% else %}
@@ -207,7 +207,7 @@
 
     {% if fsc.cartItemCount > 0 %}
     <div class="sticky-cart-btn me-3 text-end d-none d-md-block">
-        <a href="{{ asset('Presupuesto') }}" class="btn btn-success shadow">
+        <a href="{{ asset('presupuesto') }}" class="btn btn-success shadow">
             <i class="fa-solid fa-file-invoice"></i>
             {{ fsc.t('view-presupuesto') }} ({{ fsc.cartItemCount }})
         </a>

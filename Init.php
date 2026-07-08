@@ -41,6 +41,40 @@ class Init extends InitClass
         $this->migrateFromEcommerce();
         $this->fixProductImageFileRelations();
         $this->backfillProductSlugs();
+        $this->registerLowercaseRoutes();
+    }
+
+    /**
+     * SEO-friendly lowercase routes for the public pages, plus real
+     * /sitemap.xml and /llms.txt paths. Merged into MyFiles/routes.json:
+     * only our entries are written — core default routes are never
+     * persisted (freezing them would break core updates).
+     */
+    private function registerLowercaseRoutes(): void
+    {
+        $myRoutes = [
+            '/productos' => 'Productos',
+            '/producto' => 'ProductoDetalle',
+            '/presupuesto' => 'Presupuesto',
+            '/sitemap.xml' => 'Sitemap',
+            '/llms.txt' => 'LlmsTxt',
+        ];
+
+        $file = FS_FOLDER . '/MyFiles/routes.json';
+        $routes = [];
+        if (file_exists($file)) {
+            $routes = json_decode((string) file_get_contents($file), true) ?: [];
+        }
+
+        foreach ($myRoutes as $route => $controller) {
+            $routes[$route] = [
+                'controller' => $controller,
+                'customId' => 'yeveastore' . str_replace(['/', '.'], '-', $route),
+                'position' => 0,
+            ];
+        }
+
+        file_put_contents($file, json_encode($routes, JSON_PRETTY_PRINT));
     }
 
     public function uninstall(): void

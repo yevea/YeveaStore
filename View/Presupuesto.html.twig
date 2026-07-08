@@ -25,7 +25,7 @@
         {% if fsc.orderCode is not empty %}
         <p class="lead">{{ fsc.t('order-code') }}: <strong>{{ fsc.orderCode }}</strong></p>
         {% endif %}
-        <a href="{{ asset('Productos') }}" class="btn btn-primary mt-3">
+        <a href="{{ asset('productos') }}" class="btn btn-primary mt-3">
             <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('go-to-store') }}
         </a>
     </div>
@@ -65,7 +65,7 @@
                             </td>
                             <td class="text-center">
                                 <span class="print-only">{{ item.quantity }}</span>
-                                <form method="post" action="{{ asset('Presupuesto') }}" class="d-inline no-print">
+                                <form method="post" action="{{ asset('presupuesto') }}" class="d-inline no-print">
                                     <input type="hidden" name="action" value="update-quantity">
                                     <input type="hidden" name="cart_item_id" value="{{ item.id }}">
                                     <input type="hidden" name="multireqtoken" value="{{ fsc.multiRequestProtection.newToken() }}">
@@ -82,7 +82,7 @@
                             <td class="text-end">{{ fsc.formatMoney(item.tax_amount) }}</td>
                             <td class="text-end">{{ fsc.formatMoney(item.subtotal) }}</td>
                             <td class="text-center no-print">
-                                <form method="post" action="{{ asset('Presupuesto') }}" class="d-inline">
+                                <form method="post" action="{{ asset('presupuesto') }}" class="d-inline">
                                     <input type="hidden" name="action" value="remove-item">
                                     <input type="hidden" name="cart_item_id" value="{{ item.id }}">
                                     <input type="hidden" name="multireqtoken" value="{{ fsc.multiRequestProtection.newToken() }}">
@@ -121,7 +121,7 @@
             <h5 class="mb-0">{{ fsc.t('checkout') }}</h5>
         </div>
         <div class="card-body">
-            <form method="post" action="{{ asset('Presupuesto') }}" id="checkout-form">
+            <form method="post" action="{{ asset('presupuesto') }}" id="checkout-form">
                 <input type="hidden" name="action" value="place-order">
                 <input type="hidden" name="multireqtoken" value="{{ fsc.multiRequestProtection.newToken() }}">
                 <div class="row">
@@ -171,7 +171,7 @@
     </div>
 
     <div class="d-flex justify-content-between align-items-center mt-3 mb-4 no-print">
-        <a href="{{ asset('Productos') }}" class="btn btn-outline-secondary">
+        <a href="{{ asset('productos') }}" class="btn btn-outline-secondary">
             <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('continue-shopping') }}
         </a>
         <button type="button" class="btn btn-outline-secondary" onclick="submitPrintPresupuesto()">
@@ -186,7 +186,7 @@
     <div class="alert alert-info">
         <i class="fa-solid fa-info-circle"></i> {{ fsc.t('presupuesto-empty') }}
     </div>
-    <a href="{{ asset('Productos') }}" class="btn btn-primary">
+    <a href="{{ asset('productos') }}" class="btn btn-primary">
         <i class="fa-solid fa-arrow-left"></i> {{ fsc.t('go-to-store') }}
     </a>
     {% endif %}

@@ -446,8 +446,8 @@ class Presupuesto extends StoreControllerBase
             'payment_method_types' => ['card'],
             'line_items' => $lineItems,
             'mode' => 'payment',
-            'success_url' => $baseUrl . '/Presupuesto?stripe=success&stripe_session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => $baseUrl . '/Presupuesto?stripe=cancel',
+            'success_url' => $baseUrl . '/presupuesto?stripe=success&stripe_session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => $baseUrl . '/presupuesto?stripe=cancel',
         ];
 
         // Metadata travels with the Stripe session and comes back on retrieval,

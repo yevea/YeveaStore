@@ -67,9 +67,9 @@
             <li><a href="#placeholder-home">{{ fsc.t('nav-home') }}</a></li>
 
         {% if fsc.categories is defined and fsc.categories is not empty %}
-            <li><a href="{{ asset('Productos') }}">{{ fsc.t('all') }}</a></li>
+            <li><a href="{{ asset('productos') }}">{{ fsc.t('all') }}</a></li>
             {% for cat in fsc.categories %}
-            <li><a href="{{ asset('Productos') }}?category={{ cat.codfamilia }}">{{ fsc.categoryNames[cat.codfamilia] | default(cat.descripcion) }}</a></li>
+            <li><a href="{{ asset('productos') }}?category={{ cat.codfamilia }}">{{ fsc.categoryNames[cat.codfamilia] | default(cat.descripcion) }}</a></li>
             {% endfor %}
         {% endif %}
 
