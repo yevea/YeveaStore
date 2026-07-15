@@ -224,7 +224,8 @@ abstract class StoreControllerBase extends Controller
         $product = new Producto();
         $where = [Where::eq('referencia', $productReferencia)];
         if ($product->loadWhere($where)) {
-            $isPublic = $product->publico || $this->isFamilyPublic($product->codfamilia);
+            $isPublic = empty($product->captura_pendiente)
+                && ($product->publico || $this->isFamilyPublic($product->codfamilia));
             $familyType = $this->getFamilyTypeForProduct($product);
         } else {
             // Product not found by referencia — try looking up via Variante for non-primary variants
@@ -235,7 +236,8 @@ abstract class StoreControllerBase extends Controller
                 if ($variante->loadWhere($varWhere)) {
                     $parent = new Producto();
                     if ($parent->loadFromCode($variante->idproducto)) {
-                        $isPublic = $parent->publico || $this->isFamilyPublic($parent->codfamilia);
+                        $isPublic = empty($parent->captura_pendiente)
+                            && ($parent->publico || $this->isFamilyPublic($parent->codfamilia));
                         $familyType = $this->getFamilyTypeForProduct($parent);
                     }
                 }
@@ -466,6 +468,12 @@ abstract class StoreControllerBase extends Controller
 
         $this->products = [];
         foreach ($nativeProducts as $p) {
+            // Warehouse captures awaiting admin approval are invisible on
+            // every public surface (catalogue, sitemap, llms.txt)
+            if (!empty($p->captura_pendiente)) {
+                continue;
+            }
+
             $imageUrl = $firstImageMap[$p->idproducto] ?? null;
 
             $familyType = $familyTypeMap[$p->codfamilia] ?? 'mercancia';

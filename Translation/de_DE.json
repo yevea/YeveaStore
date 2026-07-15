@@ -192,7 +192,11 @@
     "capture-no-family": "— Ohne Familie —",
     "peso": "Gewicht (kg)",
     "capture-queued": "Offline gespeichert",
-    "capture-queued-desc": "Die Erfassung wird automatisch gesendet, sobald wieder Verbindung besteht. Nicht abmelden.",
+    "capture-queued-desc": "Die Erfassung wird automatisch gesendet, sobald wieder Verbindung besteht.",
     "capture-pending": "Erfassungen warten auf Versand",
-    "capture-offline-no-meta": "Offline und keine zwischengespeicherten Daten: App einmal mit Internet öffnen, um Offline-Erfassung zu aktivieren."
+    "capture-offline-no-meta": "Offline und keine zwischengespeicherten Daten: App einmal mit Internet öffnen, um Offline-Erfassung zu aktivieren.",
+    "capture-pending-title": "Warten auf Freigabe",
+    "capture-approve": "Freigeben",
+    "capture-no-pending": "Keine Erfassungen zur Freigabe.",
+    "captura-pendiente": "Wartet auf Freigabe (Erfassung)"
 }

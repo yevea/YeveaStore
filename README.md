@@ -70,7 +70,7 @@ YeveaStore/
 │   ├── StoreFront.php               # Legacy route: 301 → /productos
 │   ├── StripeWebhook.php            # Stripe webhook (checkout.session.completed)
 │   ├── Tableros.php                 # Legacy route: 301 → /productos
-│   └── YeveaCaptura.php             # /capturar — warehouse capture PWA (admins only)
+│   └── YeveaCaptura.php             # /capturar — warehouse capture PWA (no login; captures await admin approval)
 ├── Extension/
 │   ├── Controller/
 │   │   ├── EditFamilia.php          # Family type + dimension limits
@@ -211,7 +211,7 @@ When a customer completes a payment via Stripe, the plugin automatically:
 - Orders are created automatically when customers complete the checkout process
 
 ### Storefront
-- Public routes are lowercase for SEO: `/productos` (catalogue), `/producto` (product detail), `/presupuesto` (quote/cart), `/sitemap.xml`, `/llms.txt`, plus `/capturar` (admin-only warehouse capture PWA)
+- Public routes are lowercase for SEO: `/productos` (catalogue), `/producto` (product detail), `/presupuesto` (quote/cart), `/sitemap.xml`, `/llms.txt`, plus `/capturar` (warehouse capture PWA — no login; captured products stay hidden until approved in Admin → YeveaStore → Captura)
 - The legacy CamelCase routes (`/StoreFront`, `/Tableros`, `/Presupuesto`, `/ProductoDetalle`) 301-redirect to their lowercase equivalent on GET requests
 - Browse products, filter by category, add items to cart
 - Switch language with the header selector (`?lang=es_ES|en_EN|fr_FR|de_DE`); the choice is remembered in a cookie and reflected in `hreflang` tags

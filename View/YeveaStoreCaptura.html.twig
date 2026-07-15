@@ -1,14 +1,85 @@
 <div class="container-fluid mt-3 mb-4">
     <div class="row">
-        <div class="col-12 col-lg-8">
+        <div class="col-12">
             <h4><i class="fa-solid fa-camera"></i> Yevea Captura</h4>
             <p class="text-muted">{{ trans('capture-tab-intro') }}</p>
 
-            <a href="{{ asset('capturar') }}" target="_blank" rel="noopener" class="btn btn-primary btn-lg mb-3">
+            <a href="{{ asset('capturar') }}" target="_blank" rel="noopener" class="btn btn-primary mb-3">
                 <i class="fa-solid fa-mobile-screen-button"></i> {{ trans('capture-open-app') }}
             </a>
 
-            <h5 class="mt-3">{{ trans('capture-install-title') }}</h5>
+            {# ---- Approval queue ---- #}
+            {% set pending = fsc.getPendingCaptures() %}
+            <h5 class="mt-3">
+                {{ trans('capture-pending-title') }}
+                {% if pending is not empty %}<span class="badge bg-warning text-dark">{{ pending | length }}</span>{% endif %}
+            </h5>
+
+            {% if pending is empty %}
+            <div class="alert alert-success">
+                <i class="fa-solid fa-check"></i> {{ trans('capture-no-pending') }}
+            </div>
+            {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>SKU</th>
+                            <th>{{ trans('description') }}</th>
+                            <th>{{ trans('capture-size') }}</th>
+                            <th>{{ trans('capture-weight') }}</th>
+                            <th>{{ trans('date') }}</th>
+                            <th class="text-end"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pending %}
+                        <tr>
+                            <td style="width: 70px;">
+                                {% if p.image %}
+                                <img src="{{ p.image }}" alt="{{ p.descripcion }}"
+                                     style="width: 60px; height: 60px; object-fit: cover;" class="rounded">
+                                {% else %}
+                                <i class="fa-solid fa-image fa-2x text-muted"></i>
+                                {% endif %}
+                            </td>
+                            <td class="font-monospace">{{ p.referencia }}</td>
+                            <td>
+                                {{ p.descripcion }}
+                                {% if p.observaciones is not empty %}
+                                <br><small class="text-muted">{{ p.observaciones | slice(0, 80) }}</small>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap">
+                                {% if p.largo or p.ancho or p.espesor %}
+                                {{ p.largo ?: '–' }} × {{ p.ancho ?: '–' }} × {{ p.espesor ?: '–' }} cm
+                                {% endif %}
+                            </td>
+                            <td>{% if p.peso %}{{ p.peso }} kg{% endif %}</td>
+                            <td class="text-nowrap">{{ p.actualizado }}</td>
+                            <td class="text-end text-nowrap">
+                                <a href="EditProducto?code={{ p.idproducto }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fa-solid fa-pen"></i> {{ trans('edit') }}
+                                </a>
+                                <form method="post" class="d-inline">
+                                    <input type="hidden" name="action" value="approve-capture">
+                                    <input type="hidden" name="idproducto" value="{{ p.idproducto }}">
+                                    <input type="hidden" name="multireqtoken" value="{{ formToken() }}">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="fa-solid fa-check"></i> {{ trans('capture-approve') }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {# ---- Install help ---- #}
+            <h5 class="mt-4">{{ trans('capture-install-title') }}</h5>
             <ol>
                 <li>{{ trans('capture-install-step1') }}</li>
                 <li>{{ trans('capture-install-step2') }}</li>

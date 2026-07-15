@@ -14,10 +14,15 @@ use FacturaScripts\Dinamic\Model\ProductoImagen;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
- * YeveaCaptura: installable mobile-first PWA (admins only) to capture wood
- * planks and other products from the warehouse — photos, dimensions, weight,
- * pile location — creating Producto + Variante + Stock(1) + images in the
- * exact ProductoImagen/AttachedFile format the public store renders.
+ * YeveaCaptura: installable mobile-first PWA to capture wood planks and
+ * other products from the warehouse — photos, dimensions, weight, pile
+ * location — creating Producto + Variante + Stock(1) + images in the exact
+ * ProductoImagen/AttachedFile format the public store renders.
+ *
+ * No login required: the selected warehouse identifies the operator. As a
+ * counterweight, every captured product is created with captura_pendiente =
+ * true and stays OUT of the public store (catalogue, detail, sitemap,
+ * llms.txt, cart) until an admin approves it (Admin → YeveaStore → Captura).
  *
  * URL: /capturar. Sub-resources served from the same route so the service
  * worker scope covers the app:
@@ -44,11 +49,6 @@ class YeveaCaptura extends StoreControllerBase
     {
         parent::run();
 
-        $user = $this->adminVisitor();
-        if ($user === null) {
-            $this->denyAccess();
-        }
-
         switch ($this->request()->query->get('file', '')) {
             case 'manifest':
                 $this->serveManifest();
@@ -66,7 +66,9 @@ class YeveaCaptura extends StoreControllerBase
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'
             && $this->request()->request->get('action', '') === 'save') {
-            $this->savePlank($user);
+            // adminVisitor() only supplies the nick for the file relations
+            // when an admin happens to be logged in; it is NOT a gate.
+            $this->savePlank($this->adminVisitor());
             return;
         }
 
@@ -77,25 +79,6 @@ class YeveaCaptura extends StoreControllerBase
     public function nextSku(): string
     {
         return $this->generateSku(new DataBase());
-    }
-
-    /**
-     * Unauthenticated or non-admin: JSON 401 for API/asset requests,
-     * redirect to the FacturaScripts login for page navigations.
-     */
-    private function denyAccess(): void
-    {
-        $isHtml = $this->request()->query->get('file', '') === ''
-            && $this->request()->query->get('api', '') === ''
-            && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET';
-
-        if ($isHtml) {
-            header('Location: ' . $this->fsRoute() . '/', true, 302);
-            exit;
-        }
-
-        http_response_code(401);
-        $this->outputJson(['ok' => false, 'error' => 'admin-login-required']);
     }
 
     private function fsRoute(): string
@@ -258,6 +241,10 @@ class YeveaCaptura extends StoreControllerBase
             $producto->codfamilia = $codfamilia !== '' ? $codfamilia : null;
             $producto->observaciones = $comentario;
             $producto->nostock = false;
+            // Unauthenticated captures always await admin approval before
+            // becoming visible anywhere on the public store
+            $producto->captura_pendiente = true;
+            $producto->publico = false;
             $producto->slug = $this->uniqueSlug($nombre, $sku);
             if ($peso > 0) {
                 $producto->peso = $peso;

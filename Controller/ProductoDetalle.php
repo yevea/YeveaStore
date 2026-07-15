@@ -146,6 +146,11 @@ class ProductoDetalle extends StoreControllerBase
             return;
         }
 
+        // Warehouse captures awaiting admin approval are never visible
+        if (!empty($p->captura_pendiente)) {
+            return;
+        }
+
         // Load family type
         $this->loadFamilyType($p);
 

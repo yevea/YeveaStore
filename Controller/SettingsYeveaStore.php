@@ -5,6 +5,8 @@ use FacturaScripts\Core\Controller\EditSettings;
 use FacturaScripts\Core\Lib\AssetManager;
 use FacturaScripts\Core\Model\Settings;
 use FacturaScripts\Core\Tools;
+use FacturaScripts\Core\Where;
+use FacturaScripts\Dinamic\Model\Producto;
 
 /**
  * Admin → YeveaStore: the store's control page.
@@ -53,6 +55,44 @@ class SettingsYeveaStore extends EditSettings
             $reports[basename($file, '.txt')] = (string) file_get_contents($file);
         }
         return $reports;
+    }
+
+    /**
+     * Products captured from the warehouse PWA awaiting approval, newest
+     * first, with their first image. Used by the YeveaCaptura tab.
+     *
+     * @return object[]
+     */
+    public function getPendingCaptures(): array
+    {
+        $producto = new Producto();
+        $where = [Where::eq('captura_pendiente', true)];
+        $pending = $producto->all($where, ['actualizado' => 'DESC'], 0, 0);
+
+        // First image of each pending product (single query, avoids N+1)
+        $imageMap = [];
+        $imgClass = '\FacturaScripts\Dinamic\Model\ProductoImagen';
+        if (class_exists($imgClass) && !empty($pending)) {
+            $ids = array_map(fn($p) => $p->idproducto, $pending);
+            foreach ((new $imgClass())->all([Where::in('idproducto', $ids)], ['orden' => 'ASC'], 0, 0) as $img) {
+                if (!isset($imageMap[$img->idproducto])) {
+                    $imageMap[$img->idproducto] = $img->url('download-permanent');
+                }
+            }
+        }
+
+        return array_map(fn($p) => (object) [
+            'idproducto' => $p->idproducto,
+            'referencia' => $p->referencia,
+            'descripcion' => $p->descripcion,
+            'observaciones' => $p->observaciones ?? '',
+            'largo' => $p->largo ?? null,
+            'ancho' => $p->ancho ?? null,
+            'espesor' => $p->espesor ?? null,
+            'peso' => $p->peso ?? null,
+            'actualizado' => $p->actualizado ?? '',
+            'image' => $imageMap[$p->idproducto] ?? null,
+        ], $pending);
     }
 
     /** Content of an editable doc, for the doc tabs. */
@@ -118,6 +158,11 @@ class SettingsYeveaStore extends EditSettings
             return true;
         }
 
+        if ($action === 'approve-capture') {
+            $this->approveCapture();
+            return true;
+        }
+
         if ($action === 'insert'
             && $this->active === 'YeveaStoreAjustes'
             && isset($this->views[$this->active])
@@ -158,6 +203,26 @@ class SettingsYeveaStore extends EditSettings
                 parent::loadData($viewName, $view);
                 break;
         }
+    }
+
+    /** Approves a warehouse capture: it becomes visible under the normal
+     *  visibility rules (familia pública / producto público). */
+    private function approveCapture(): void
+    {
+        if (false === $this->validateFormToken()) {
+            return;
+        }
+
+        $id = (int) $this->request->request->get('idproducto', 0);
+        $producto = new Producto();
+        if ($id > 0 && $producto->loadFromCode($id) && !empty($producto->captura_pendiente)) {
+            $producto->captura_pendiente = false;
+            if ($producto->save()) {
+                Tools::log()->notice('record-updated-correctly');
+                return;
+            }
+        }
+        Tools::log()->warning('record-save-error');
     }
 
     private function docPath(string $key): ?string

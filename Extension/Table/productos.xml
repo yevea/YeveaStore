@@ -25,4 +25,9 @@
         <type>double precision</type>
         <null>YES</null>
     </column>
+    <column>
+        <name>captura_pendiente</name>
+        <type>boolean</type>
+        <default>false</default>
+    </column>
 </table>

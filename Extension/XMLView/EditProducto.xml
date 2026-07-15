@@ -14,6 +14,9 @@
             <column name="peso" order="203">
                 <widget type="number" fieldname="peso" decimal="2" min="0"/>
             </column>
+            <column name="captura-pendiente" order="204">
+                <widget type="checkbox" fieldname="captura_pendiente"/>
+            </column>
         </group>
     </columns>
 </view>

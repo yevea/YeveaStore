@@ -192,7 +192,11 @@
     "capture-no-family": "— Sans famille —",
     "peso": "Poids (kg)",
     "capture-queued": "Enregistrée hors ligne",
-    "capture-queued-desc": "La capture sera envoyée automatiquement au retour de la connexion. Ne vous déconnectez pas.",
+    "capture-queued-desc": "La capture sera envoyée automatiquement au retour de la connexion.",
     "capture-pending": "Captures en attente d'envoi",
-    "capture-offline-no-meta": "Hors ligne et sans données en cache : ouvrez l'app une fois avec internet pour activer la capture hors ligne."
+    "capture-offline-no-meta": "Hors ligne et sans données en cache : ouvrez l'app une fois avec internet pour activer la capture hors ligne.",
+    "capture-pending-title": "En attente d’approbation",
+    "capture-approve": "Approuver",
+    "capture-no-pending": "Aucune capture en attente.",
+    "captura-pendiente": "En attente d’approbation (capture)"
 }
