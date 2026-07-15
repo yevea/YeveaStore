@@ -90,6 +90,7 @@ class SettingsYeveaStore extends EditSettings
             'ancho' => $p->ancho ?? null,
             'espesor' => $p->espesor ?? null,
             'peso' => $p->peso ?? null,
+            'precio' => (float) $p->precio,
             'actualizado' => $p->actualizado ?? '',
             'image' => $imageMap[$p->idproducto] ?? null,
         ], $pending);

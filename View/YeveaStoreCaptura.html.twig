@@ -29,6 +29,7 @@
                             <th>{{ trans('description') }}</th>
                             <th>{{ trans('capture-size') }}</th>
                             <th>{{ trans('capture-weight') }}</th>
+                            <th>{{ trans('price') }}</th>
                             <th>{{ trans('date') }}</th>
                             <th class="text-end"></th>
                         </tr>
@@ -57,6 +58,13 @@
                                 {% endif %}
                             </td>
                             <td>{% if p.peso %}{{ p.peso }} kg{% endif %}</td>
+                            <td class="text-nowrap">
+                                {% if p.precio > 0 %}
+                                {{ p.precio | number_format(2, ',', '.') }} €
+                                {% else %}
+                                <span class="badge bg-danger">0 €</span>
+                                {% endif %}
+                            </td>
                             <td class="text-nowrap">{{ p.actualizado }}</td>
                             <td class="text-end text-nowrap">
                                 <a href="EditProducto?code={{ p.idproducto }}" class="btn btn-sm btn-outline-secondary">

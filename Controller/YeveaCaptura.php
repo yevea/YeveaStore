@@ -230,6 +230,11 @@ class YeveaCaptura extends StoreControllerBase
             }
         }
 
+        // Auto-price from the store's per-m² table (tableros products);
+        // 0 when dimensions are missing or no rate matches — the admin
+        // then sets the price manually before approving.
+        $precio = $this->calculateSlabPrice($grueso, $largo, $ancho);
+
         $db = new DataBase();
         $db->beginTransaction();
         try {
@@ -258,6 +263,9 @@ class YeveaCaptura extends StoreControllerBase
             if ($grueso > 0) {
                 $producto->espesor = $grueso;
             }
+            if ($precio > 0) {
+                $producto->precio = $precio;
+            }
             if (false === $producto->save()) {
                 throw new \RuntimeException('product-save-error');
             }
@@ -272,6 +280,9 @@ class YeveaCaptura extends StoreControllerBase
                     $variante->ancho = $ancho > 0 ? $ancho : null;
                     $variante->espesor = $grueso > 0 ? $grueso : null;
                     $variante->stockfis = 1;
+                    if ($precio > 0) {
+                        $variante->precio = $precio;
+                    }
                     $variante->save();
                 }
             }
@@ -309,6 +320,7 @@ class YeveaCaptura extends StoreControllerBase
             'ok' => true,
             'sku' => $sku,
             'photos' => $photos,
+            'price' => $precio,
             'url' => 'producto?url=' . rawurlencode($producto->slug),
             'nextSku' => $this->generateSku($db),
         ];
@@ -368,6 +380,52 @@ class YeveaCaptura extends StoreControllerBase
         ftruncate($handle, 0);
         fwrite($handle, (string) json_encode($log));
         fflush($handle);
+    }
+
+    /**
+     * Net price for a captured slab from the store's per-m² price table:
+     * the tableros-family products (and their variants) define €/m² per
+     * thickness, so the candidate whose espesor is closest to the slab's
+     * grueso sets the rate (ties go to the cheaper one). Price = rate ×
+     * largo×ancho in m². Returns 0 when dimensions are incomplete or no
+     * rate exists — the admin prices it manually before approving.
+     */
+    private function calculateSlabPrice(float $grueso, float $largo, float $ancho): float
+    {
+        if ($grueso <= 0 || $largo <= 0 || $ancho <= 0) {
+            return 0.0;
+        }
+
+        $candidates = [];
+        $varianteClass = '\FacturaScripts\Dinamic\Model\Variante';
+        $familia = new Familia();
+        foreach ($familia->all([Where::eq('tipofamilia', 'tableros')], [], 0, 0) as $fam) {
+            $producto = new Producto();
+            foreach ($producto->all([Where::eq('codfamilia', $fam->codfamilia)], [], 0, 0) as $p) {
+                if (($p->espesor ?? 0) > 0 && $p->precio > 0) {
+                    $candidates[] = ['espesor' => (float) $p->espesor, 'precio' => (float) $p->precio];
+                }
+                if (class_exists($varianteClass)) {
+                    foreach ((new $varianteClass())->all([Where::eq('idproducto', $p->idproducto)], [], 0, 0) as $v) {
+                        if (($v->espesor ?? 0) > 0 && ($v->precio ?? 0) > 0) {
+                            $candidates[] = ['espesor' => (float) $v->espesor, 'precio' => (float) $v->precio];
+                        }
+                    }
+                }
+            }
+        }
+
+        if (empty($candidates)) {
+            return 0.0;
+        }
+
+        usort($candidates, function (array $a, array $b) use ($grueso) {
+            $diff = abs($a['espesor'] - $grueso) <=> abs($b['espesor'] - $grueso);
+            return $diff !== 0 ? $diff : ($a['precio'] <=> $b['precio']);
+        });
+
+        $areaM2 = ($largo / 100) * ($ancho / 100);
+        return round($candidates[0]['precio'] * $areaM2, 2);
     }
 
     /**

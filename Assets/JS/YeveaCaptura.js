@@ -308,6 +308,11 @@
 
     function showSuccess(result) {
         document.getElementById('yc-success-sku').textContent = result.sku;
+        var priceBox = document.getElementById('yc-success-price');
+        priceBox.hidden = !(result.price > 0);
+        if (result.price > 0) {
+            priceBox.textContent = result.price.toFixed(2).replace('.', ',') + ' €';
+        }
         document.getElementById('yc-success-photos').textContent =
             result.photos + ' 📷';
         document.getElementById('yc-view-product').href =
