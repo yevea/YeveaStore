@@ -27,6 +27,7 @@ abstract class StoreControllerBase extends Controller
         'Presupuesto' => 'presupuesto',
         'Sitemap' => 'sitemap.xml',
         'LlmsTxt' => 'llms.txt',
+        'YeveaCaptura' => 'capturar',
     ];
 
     protected $requiresAuth = false;
@@ -132,6 +133,48 @@ abstract class StoreControllerBase extends Controller
         $query = $_SERVER['QUERY_STRING'] ?? '';
         header('Location: ' . $scriptDir . '/' . $this->publicPath() . ($query !== '' ? '?' . $query : ''), true, 301);
         exit;
+    }
+
+    /** @var \FacturaScripts\Dinamic\Model\User|false|null Cached result of adminVisitor() */
+    private $adminVisitorCache = null;
+
+    /**
+     * The admin User browsing this public page, validated against the
+     * fsNick/fsLogkey session cookies, or null. Used to show admin-only UI
+     * (e.g. the YeveaCaptura launcher) on the public store without auth.
+     */
+    public function adminVisitor(): ?\FacturaScripts\Dinamic\Model\User
+    {
+        if ($this->adminVisitorCache !== null) {
+            return $this->adminVisitorCache === false ? null : $this->adminVisitorCache;
+        }
+        $this->adminVisitorCache = false;
+
+        $nick = (string) ($_COOKIE['fsNick'] ?? '');
+        $logkey = (string) ($_COOKIE['fsLogkey'] ?? '');
+        if ($nick === '' || $logkey === '') {
+            return null;
+        }
+
+        $user = new \FacturaScripts\Dinamic\Model\User();
+        if (false === $user->loadFromCode($nick) || empty($user->admin) || empty($user->enabled)) {
+            return null;
+        }
+
+        $valid = method_exists($user, 'verifyLogkey')
+            ? $user->verifyLogkey($logkey)
+            : (!empty($user->logkey) && hash_equals((string) $user->logkey, $logkey));
+        if (false === $valid) {
+            return null;
+        }
+
+        $this->adminVisitorCache = $user;
+        return $user;
+    }
+
+    public function isAdminVisitor(): bool
+    {
+        return $this->adminVisitor() !== null;
     }
 
     /**

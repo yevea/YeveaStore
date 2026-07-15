@@ -83,6 +83,9 @@ class SettingsYeveaStore extends EditSettings
         $this->addHtmlView('YeveaStorePlan', 'YeveaStorePlan', 'Settings', 'content-plan', 'fa-solid fa-pen-to-square');
         $this->addHtmlView('YeveaStoreResenas', 'YeveaStoreResenas', 'Settings', 'reviews-tracking', 'fa-solid fa-star-half-stroke');
 
+        // 5) YeveaCaptura: launcher + install help for the warehouse PWA
+        $this->addHtmlView('YeveaStoreCaptura', 'YeveaStoreCaptura', 'Settings', 'yeveacaptura', 'fa-solid fa-camera');
+
         // "Visit site" and "Orders" links, always visible at the top.
         foreach (array_keys($this->views) as $viewName) {
             $this->addButton($viewName, [
@@ -139,6 +142,9 @@ class SettingsYeveaStore extends EditSettings
             case 'YeveaStorePlan':
             case 'YeveaStoreResenas':
                 $this->seedDocs();
+                break;
+
+            case 'YeveaStoreCaptura':
                 break;
 
             case 'YeveaStoreAjustes':

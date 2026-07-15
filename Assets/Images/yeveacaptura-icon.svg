@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <rect width="512" height="512" rx="96" fill="#4e3b25"/>
+    <!-- camera body -->
+    <rect x="96" y="176" width="320" height="224" rx="36" fill="#f6f2ea"/>
+    <!-- viewfinder hump -->
+    <path d="M196 176l24-40h72l24 40z" fill="#f6f2ea"/>
+    <!-- lens: wood slice with growth rings -->
+    <circle cx="256" cy="288" r="86" fill="#4e3b25"/>
+    <circle cx="256" cy="288" r="62" fill="none" stroke="#b08d57" stroke-width="10"/>
+    <circle cx="256" cy="288" r="36" fill="none" stroke="#b08d57" stroke-width="8"/>
+    <circle cx="256" cy="288" r="12" fill="#b08d57"/>
+    <!-- flash -->
+    <circle cx="372" cy="216" r="14" fill="#b08d57"/>
+</svg>

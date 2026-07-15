@@ -512,3 +512,11 @@ a:hover {
         max-height: 160px;
     }
 }
+
+/* Admin-only floating launcher for the YeveaCaptura PWA */
+.capturar-admin-btn {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 1050;
+}

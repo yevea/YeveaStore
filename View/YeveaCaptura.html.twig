@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="{{ fsc.currentLang[:2] }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#4e3b25">
+    <title>Yevea Captura</title>
+    <link rel="manifest" href="capturar?file=manifest" crossorigin="use-credentials">
+    <link rel="icon" href="{{ asset('Plugins/YeveaStore/Assets/Images/yeveacaptura-icon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ asset('Plugins/YeveaStore/Assets/Images/yeveacaptura-192.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="{{ asset('Plugins/YeveaStore/Assets/CSS/yeveacaptura.css') }}">
+</head>
+<body>
+    <header class="yc-header">
+        <span class="yc-logo">🪵</span>
+        <h1>{{ fsc.t('capture-title') }}</h1>
+        <button type="button" id="yc-install" class="yc-install-btn" hidden>
+            ⬇ {{ fsc.t('capture-install') }}
+        </button>
+    </header>
+
+    <main>
+        <form id="yc-form" autocomplete="off">
+            <input type="hidden" name="action" value="save">
+            <input type="hidden" name="multireqtoken" value="{{ formToken() }}">
+
+            {# SKU: read-only, generated server-side #}
+            <div class="yc-sku" id="yc-sku-box">
+                <label>{{ fsc.t('capture-sku') }}</label>
+                <output id="yc-sku">&hellip;</output>
+            </div>
+
+            {# Photos #}
+            <section class="yc-photos">
+                <input type="file" id="yc-camera" accept="image/*" capture="environment" hidden>
+                <input type="file" id="yc-gallery" accept="image/*" multiple hidden>
+                <button type="button" class="yc-camera-btn" id="yc-camera-btn">
+                    📷 {{ fsc.t('capture-take-photo') }}
+                </button>
+                <button type="button" class="yc-gallery-btn" id="yc-gallery-btn">
+                    🖼 {{ fsc.t('capture-gallery') }}
+                </button>
+                <div class="yc-thumbs" id="yc-thumbs" aria-label="{{ fsc.t('capture-photos') }}"></div>
+            </section>
+
+            <div class="yc-field">
+                <label for="yc-familia">{{ fsc.t('capture-family') }}</label>
+                <select id="yc-familia" name="familia"></select>
+            </div>
+
+            <div class="yc-field">
+                <label for="yc-nombre">{{ fsc.t('capture-name') }} *</label>
+                <input type="text" id="yc-nombre" name="nombre" required
+                       placeholder="{{ fsc.t('capture-name-placeholder') }}">
+            </div>
+
+            <div class="yc-field">
+                <label for="yc-almacen">{{ fsc.t('capture-warehouse') }} *</label>
+                <select id="yc-almacen" name="almacen" required></select>
+            </div>
+
+            <div class="yc-field">
+                <label for="yc-pila">{{ fsc.t('capture-pile') }}</label>
+                <input type="text" id="yc-pila" name="pila" placeholder="A-3">
+            </div>
+
+            <div class="yc-field">
+                <label for="yc-peso">{{ fsc.t('capture-weight') }}</label>
+                <input type="number" id="yc-peso" name="peso" inputmode="decimal" min="0" step="0.1">
+            </div>
+
+            <fieldset class="yc-dims">
+                <legend>{{ fsc.t('capture-size') }}</legend>
+                <div class="yc-dims-row">
+                    <div>
+                        <label for="yc-largo">{{ fsc.t('capture-length') }}</label>
+                        <input type="number" id="yc-largo" name="largo" inputmode="decimal" min="0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="yc-ancho">{{ fsc.t('capture-width') }}</label>
+                        <input type="number" id="yc-ancho" name="ancho" inputmode="decimal" min="0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="yc-grueso">{{ fsc.t('capture-thickness') }}</label>
+                        <input type="number" id="yc-grueso" name="grueso" inputmode="decimal" min="0" step="0.1">
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="yc-field">
+                <label for="yc-comentario">{{ fsc.t('capture-comment') }}</label>
+                <textarea id="yc-comentario" name="comentario" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="yc-save-btn" id="yc-save">
+                {{ fsc.t('capture-save') }}
+            </button>
+            <p class="yc-error" id="yc-error" hidden></p>
+        </form>
+
+        {# Success panel #}
+        <div class="yc-success" id="yc-success" hidden>
+            <div class="yc-success-icon">✔</div>
+            <h2>{{ fsc.t('capture-saved') }}</h2>
+            <p class="yc-success-sku" id="yc-success-sku"></p>
+            <p class="yc-success-photos" id="yc-success-photos"></p>
+            <a class="yc-link-btn" id="yc-view-product" href="#" target="_blank" rel="noopener">
+                {{ fsc.t('capture-view-product') }}
+            </a>
+            <button type="button" class="yc-again-btn" id="yc-again">
+                📷 {{ fsc.t('capture-another') }}
+            </button>
+        </div>
+    </main>
+
+    <script>
+    window.YC_I18N = {
+        error: {{ fsc.t('capture-error')|json_encode|raw }},
+        nameRequired: {{ fsc.t('capture-name-required')|json_encode|raw }},
+        warehouseRequired: {{ fsc.t('capture-warehouse-required')|json_encode|raw }},
+        saving: {{ fsc.t('capture-saving')|json_encode|raw }},
+        save: {{ fsc.t('capture-save')|json_encode|raw }},
+        noFamily: {{ fsc.t('capture-no-family')|json_encode|raw }},
+        photos: {{ fsc.t('capture-photos')|json_encode|raw }}
+    };
+    </script>
+    <script src="{{ asset('Plugins/YeveaStore/Assets/JS/YeveaCaptura.js') }}" defer></script>
+</body>
+</html>

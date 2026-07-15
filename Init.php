@@ -37,6 +37,7 @@ class Init extends InitClass
         '/presupuesto' => 'Presupuesto',
         '/sitemap.xml' => 'Sitemap',
         '/llms.txt' => 'LlmsTxt',
+        '/capturar' => 'YeveaCaptura',
     ];
 
     public function init(): void

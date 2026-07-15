@@ -11,6 +11,9 @@
             <column name="espesor" order="202">
                 <widget type="number" fieldname="espesor" decimal="2" min="0"/>
             </column>
+            <column name="peso" order="203">
+                <widget type="number" fieldname="peso" decimal="2" min="0"/>
+            </column>
         </group>
     </columns>
 </view>

@@ -65,11 +65,12 @@ YeveaStore/
 │   ├── Presupuesto.php              # Quote/checkout (frontend)
 │   ├── ProductoDetalle.php          # Product detail (frontend)
 │   ├── Productos.php                # Product catalogue (frontend)
-│   ├── SettingsYeveaStore.php        # Admin settings (4 tabs: Dashboard/Ajustes/Plan/Reseñas)
+│   ├── SettingsYeveaStore.php        # Admin settings (5 tabs: Dashboard/Ajustes/Plan/Reseñas/Captura)
 │   ├── Sitemap.php                  # /sitemap.xml
 │   ├── StoreFront.php               # Legacy route: 301 → /productos
 │   ├── StripeWebhook.php            # Stripe webhook (checkout.session.completed)
-│   └── Tableros.php                 # Legacy route: 301 → /productos
+│   ├── Tableros.php                 # Legacy route: 301 → /productos
+│   └── YeveaCaptura.php             # /capturar — warehouse capture PWA (admins only)
 ├── Extension/
 │   ├── Controller/
 │   │   ├── EditFamilia.php          # Family type + dimension limits
@@ -111,6 +112,8 @@ YeveaStore/
 │   ├── Presupuesto.html.twig        # Quote/checkout template
 │   ├── ProductoDetalle.html.twig    # Product detail template (with Schema.org)
 │   ├── Productos.html.twig          # Product catalogue template (with Schema.org)
+│   ├── YeveaCaptura.html.twig       # Warehouse capture PWA app shell (standalone, mobile-first)
+│   ├── YeveaStoreCaptura.html.twig  # Admin: YeveaCaptura tab (launcher + install help)
 │   ├── YeveaStoreDashboard.html.twig # Admin: AI-bot traffic dashboard tab
 │   ├── YeveaStorePlan.html.twig     # Admin: content plan tab
 │   ├── YeveaStoreResenas.html.twig  # Admin: reviews tab
@@ -208,7 +211,7 @@ When a customer completes a payment via Stripe, the plugin automatically:
 - Orders are created automatically when customers complete the checkout process
 
 ### Storefront
-- Public routes are lowercase for SEO: `/productos` (catalogue), `/producto` (product detail), `/presupuesto` (quote/cart), `/sitemap.xml`, `/llms.txt`
+- Public routes are lowercase for SEO: `/productos` (catalogue), `/producto` (product detail), `/presupuesto` (quote/cart), `/sitemap.xml`, `/llms.txt`, plus `/capturar` (admin-only warehouse capture PWA)
 - The legacy CamelCase routes (`/StoreFront`, `/Tableros`, `/Presupuesto`, `/ProductoDetalle`) 301-redirect to their lowercase equivalent on GET requests
 - Browse products, filter by category, add items to cart
 - Switch language with the header selector (`?lang=es_ES|en_EN|fr_FR|de_DE`); the choice is remembered in a cookie and reflected in `hreflang` tags

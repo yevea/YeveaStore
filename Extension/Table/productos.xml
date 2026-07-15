@@ -20,4 +20,9 @@
         <type>character varying(200)</type>
         <null>YES</null>
     </column>
+    <column>
+        <name>peso</name>
+        <type>double precision</type>
+        <null>YES</null>
+    </column>
 </table>
