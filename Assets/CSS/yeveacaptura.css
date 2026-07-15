@@ -310,3 +310,18 @@ textarea:focus {
     color: #fff;
     border: 0;
 }
+
+/* Pending offline-queue badge in the header */
+.yc-pending {
+    background: #e8a33d;
+    color: #2b2317;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* Queued-offline panel icon */
+.yc-queued-icon {
+    background: #e8a33d;
+}

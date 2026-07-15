@@ -190,5 +190,9 @@
     "capture-name-required": "Namen eingeben",
     "capture-warehouse-required": "Lager auswählen",
     "capture-no-family": "— Ohne Familie —",
-    "peso": "Gewicht (kg)"
+    "peso": "Gewicht (kg)",
+    "capture-queued": "Offline gespeichert",
+    "capture-queued-desc": "Die Erfassung wird automatisch gesendet, sobald wieder Verbindung besteht. Nicht abmelden.",
+    "capture-pending": "Erfassungen warten auf Versand",
+    "capture-offline-no-meta": "Offline und keine zwischengespeicherten Daten: App einmal mit Internet öffnen, um Offline-Erfassung zu aktivieren."
 }

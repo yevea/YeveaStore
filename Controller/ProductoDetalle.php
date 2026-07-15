@@ -171,6 +171,7 @@ class ProductoDetalle extends StoreControllerBase
             'largo' => $p->largo ?? null,
             'ancho' => $p->ancho ?? null,
             'espesor' => $p->espesor ?? null,
+            'peso' => $p->peso ?? null,
         ];
 
         $this->loadProductImages($p);

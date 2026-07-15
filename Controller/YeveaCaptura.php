@@ -193,9 +193,13 @@ class YeveaCaptura extends StoreControllerBase
      */
     private function savePlank($user): void
     {
-        if (method_exists($this, 'validateFormToken') && false === $this->validateFormToken()) {
+        // CSRF: same-origin check instead of a form token — offline queued
+        // captures are replayed later (even from the service worker) and
+        // cannot mint a fresh token, while FS's anti-replay token would
+        // reject the retries. Cookie auth + admin check still apply.
+        if (false === $this->sameOriginRequest()) {
             http_response_code(403);
-            $this->outputJson(['ok' => false, 'error' => 'invalid-form-token']);
+            $this->outputJson(['ok' => false, 'error' => 'cross-origin-denied']);
         }
 
         $req = $this->request()->request;
@@ -221,6 +225,27 @@ class YeveaCaptura extends StoreControllerBase
         $largo = (float) $req->get('largo', 0);
         $ancho = (float) $req->get('ancho', 0);
         $grueso = (float) $req->get('grueso', 0);
+
+        // Idempotency for offline replays: the page and the service worker's
+        // Background Sync may both flush the same queued capture. The capture
+        // log is checked/written under an exclusive lock so a concurrent
+        // replay returns the already-saved result instead of duplicating.
+        $captureId = substr((string) preg_replace('/[^a-zA-Z0-9\-]/', '', (string) $req->get('capture_id', '')), 0, 40);
+        $lock = null;
+        if ($captureId !== '') {
+            $lock = fopen($this->captureLogFile(), 'c+') ?: null;
+            if ($lock !== null) {
+                flock($lock, LOCK_EX);
+                $log = $this->readCaptureLog($lock);
+                if (isset($log[$captureId])) {
+                    $previous = $log[$captureId];
+                    $previous['duplicate'] = true;
+                    flock($lock, LOCK_UN);
+                    fclose($lock);
+                    $this->outputJson($previous);
+                }
+            }
+        }
 
         $db = new DataBase();
         $db->beginTransaction();
@@ -293,13 +318,69 @@ class YeveaCaptura extends StoreControllerBase
 
         $photos = $this->savePhotos($producto, $sku, $user);
 
-        $this->outputJson([
+        $response = [
             'ok' => true,
             'sku' => $sku,
             'photos' => $photos,
             'url' => 'producto?url=' . rawurlencode($producto->slug),
             'nextSku' => $this->generateSku($db),
-        ]);
+        ];
+
+        if ($lock !== null) {
+            $log = $this->readCaptureLog($lock);
+            $log[$captureId] = $response;
+            $this->writeCaptureLog($lock, $log);
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+
+        $this->outputJson($response);
+    }
+
+    /**
+     * True when the Origin (or, failing that, Referer) header matches the
+     * request host. Requests without either header are allowed: browsers
+     * always send Origin on cross-site POSTs, and non-browser clients don't
+     * carry the admin session cookies this endpoint requires anyway.
+     */
+    private function sameOriginRequest(): bool
+    {
+        $serverHost = strtolower(explode(':', (string) ($_SERVER['HTTP_HOST'] ?? ''))[0]);
+        foreach (['HTTP_ORIGIN', 'HTTP_REFERER'] as $header) {
+            $value = (string) ($_SERVER[$header] ?? '');
+            if ($value === '' || $value === 'null') {
+                continue;
+            }
+            $host = strtolower((string) parse_url($value, PHP_URL_HOST));
+            return $host === $serverHost;
+        }
+        return true;
+    }
+
+    private function captureLogFile(): string
+    {
+        return FS_FOLDER . '/MyFiles/yeveacaptura-captures.json';
+    }
+
+    /** @param resource $handle  @return array<string, array> */
+    private function readCaptureLog($handle): array
+    {
+        rewind($handle);
+        $content = (string) stream_get_contents($handle);
+        $log = json_decode($content, true);
+        return is_array($log) ? $log : [];
+    }
+
+    /** Persists the capture log, pruned to the most recent 300 entries. */
+    private function writeCaptureLog($handle, array $log): void
+    {
+        if (count($log) > 300) {
+            $log = array_slice($log, -300, null, true);
+        }
+        rewind($handle);
+        ftruncate($handle, 0);
+        fwrite($handle, (string) json_encode($log));
+        fflush($handle);
     }
 
     /**

@@ -197,5 +197,9 @@
     "capture-install-step2": "Inside the app, tap “Install app” when offered (or use the browser ⋮ menu → “Add to Home screen”).",
     "capture-install-step3": "The app stays on your home screen; an administrator session is required to use it.",
     "capture-tab-note": "Only administrators see the store button and can use the app. Captured products are not marked public: they show in the store when their family is public.",
-    "peso": "Weight (kg)"
+    "peso": "Weight (kg)",
+    "capture-queued": "Saved offline",
+    "capture-queued-desc": "The capture will be sent automatically when coverage returns. Do not log out.",
+    "capture-pending": "Captures waiting to be sent",
+    "capture-offline-no-meta": "Offline and no cached data: open the app once with internet to enable offline capture."
 }

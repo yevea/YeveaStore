@@ -3,19 +3,29 @@
  * gallery, dynamic form metadata (families / warehouses / next SKU) and
  * save via fetch. All URLs are relative to /capturar so the app works from
  * any FS_ROUTE without configuration.
+ *
+ * Offline-first: metadata is cached in localStorage, and saves made without
+ * connection are queued in IndexedDB (YeveaCapturaQueue.js) and replayed
+ * automatically — from the page when it reopens or comes back online, and
+ * from the service worker via Background Sync even with the app closed.
  */
 (function () {
     'use strict';
+
+    var ENDPOINT = 'capturar';
+    var META_CACHE_KEY = 'yc-meta';
 
     var i18n = window.YC_I18N || {};
     var photos = []; // {file: File, url: objectURL}
 
     var form = document.getElementById('yc-form');
     var successPanel = document.getElementById('yc-success');
+    var queuedPanel = document.getElementById('yc-queued');
     var skuOutput = document.getElementById('yc-sku');
     var thumbs = document.getElementById('yc-thumbs');
     var errorBox = document.getElementById('yc-error');
     var saveBtn = document.getElementById('yc-save');
+    var pendingBadge = document.getElementById('yc-pending');
 
     // ---- PWA: service worker + install prompt -----------------------------
 
@@ -56,26 +66,43 @@
         installBtn.hidden = true;
     });
 
-    // ---- Form metadata -----------------------------------------------------
+    // ---- Form metadata (network first, localStorage when offline) ----------
 
     function loadMeta() {
-        fetch('capturar?api=meta', { credentials: 'same-origin' })
+        fetch(ENDPOINT + '?api=meta', { credentials: 'same-origin' })
             .then(function (resp) { return resp.json(); })
             .then(function (meta) {
                 if (!meta.ok) {
-                    return;
+                    throw new Error(meta.error || 'meta');
                 }
-                fillSelect('yc-familia', meta.families, i18n.noFamily || '—');
-                fillSelect('yc-almacen', meta.warehouses, null);
-                skuOutput.textContent = meta.nextSku;
+                try {
+                    localStorage.setItem(META_CACHE_KEY, JSON.stringify(meta));
+                } catch (e) { /* storage full/blocked: cache is best-effort */ }
+                applyMeta(meta);
             })
             .catch(function () {
-                showError(i18n.error);
+                var cached = null;
+                try {
+                    cached = JSON.parse(localStorage.getItem(META_CACHE_KEY));
+                } catch (e) { /* corrupt cache */ }
+                if (cached) {
+                    applyMeta(cached);
+                    skuOutput.textContent = '—';
+                } else {
+                    showError(i18n.offlineNoMeta || i18n.error);
+                }
             });
+    }
+
+    function applyMeta(meta) {
+        fillSelect('yc-familia', meta.families, i18n.noFamily || '—');
+        fillSelect('yc-almacen', meta.warehouses, null);
+        skuOutput.textContent = meta.nextSku;
     }
 
     function fillSelect(id, items, emptyLabel) {
         var select = document.getElementById(id);
+        var previous = select.value;
         select.innerHTML = '';
         if (emptyLabel !== null) {
             var blank = document.createElement('option');
@@ -89,6 +116,9 @@
             option.textContent = item.name;
             select.appendChild(option);
         });
+        if (previous) {
+            select.value = previous;
+        }
     }
 
     // ---- Photos: camera, gallery, preview with delete ----------------------
@@ -143,7 +173,35 @@
         });
     }
 
-    // ---- Save ---------------------------------------------------------------
+    // ---- Save (online direct, offline queued) -------------------------------
+
+    function newCaptureId() {
+        if (window.crypto && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        return 'yc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+    }
+
+    function buildCapture() {
+        return {
+            id: newCaptureId(),
+            created: Date.now(),
+            fields: {
+                familia: form.familia.value,
+                nombre: form.nombre.value.trim(),
+                almacen: form.almacen.value,
+                pila: form.pila.value.trim(),
+                peso: form.peso.value,
+                largo: form.largo.value,
+                ancho: form.ancho.value,
+                grueso: form.grueso.value,
+                comentario: form.comentario.value.trim()
+            },
+            photos: photos.map(function (photo, index) {
+                return { blob: photo.file, name: photo.file.name || 'foto-' + (index + 1) + '.jpg' };
+            })
+        };
+    }
 
     form.addEventListener('submit', function (event) {
         event.preventDefault();
@@ -160,30 +218,93 @@
             return;
         }
 
-        var data = new FormData(form);
-        photos.forEach(function (photo) {
-            data.append('photos[]', photo.file, photo.file.name || 'foto.jpg');
-        });
+        var capture = buildCapture();
 
         saveBtn.disabled = true;
         saveBtn.textContent = i18n.saving || '…';
 
-        fetch('capturar', { method: 'POST', body: data, credentials: 'same-origin' })
-            .then(function (resp) { return resp.json(); })
+        if (!navigator.onLine) {
+            enqueue(capture);
+            return;
+        }
+
+        YCQ.postCapture(ENDPOINT, capture)
             .then(function (result) {
                 if (!result.ok) {
-                    throw new Error(result.error || 'error');
+                    // server-side validation error: show it, don't queue
+                    restoreSaveBtn();
+                    showError(i18n[result.error] || i18n.error);
+                    return;
                 }
+                restoreSaveBtn();
                 showSuccess(result);
             })
             .catch(function () {
-                showError(i18n.error);
-            })
-            .finally(function () {
-                saveBtn.disabled = false;
-                saveBtn.textContent = i18n.save;
+                // network failure mid-flight: queue it (server dedupes by id)
+                enqueue(capture);
             });
     });
+
+    function restoreSaveBtn() {
+        saveBtn.disabled = false;
+        saveBtn.textContent = i18n.save;
+    }
+
+    function enqueue(capture) {
+        YCQ.add(capture)
+            .then(function () {
+                restoreSaveBtn();
+                registerSync();
+                updatePendingBadge();
+                showPanel(queuedPanel);
+            })
+            .catch(function () {
+                restoreSaveBtn();
+                showError(i18n.error);
+            });
+    }
+
+    function registerSync() {
+        if (!('serviceWorker' in navigator)) {
+            return;
+        }
+        navigator.serviceWorker.ready.then(function (reg) {
+            if (reg.sync) {
+                return reg.sync.register('yc-flush');
+            }
+            return undefined;
+        }).catch(function () {
+            // Background Sync unsupported (iOS): the page flushes on reopen
+        });
+    }
+
+    // ---- Queue flushing from the page ---------------------------------------
+
+    function flushQueue() {
+        YCQ.count().then(function (pending) {
+            if (pending === 0 || !navigator.onLine) {
+                updatePendingBadge();
+                return;
+            }
+            YCQ.flush(ENDPOINT).then(function (outcome) {
+                updatePendingBadge();
+                if (outcome.sent > 0) {
+                    loadMeta(); // refresh the next-SKU preview
+                }
+            });
+        });
+    }
+
+    function updatePendingBadge() {
+        YCQ.count().then(function (pending) {
+            pendingBadge.hidden = pending === 0;
+            pendingBadge.textContent = '📥 ' + pending;
+        });
+    }
+
+    window.addEventListener('online', flushQueue);
+
+    // ---- Panels --------------------------------------------------------------
 
     function showSuccess(result) {
         document.getElementById('yc-success-sku').textContent = result.sku;
@@ -194,21 +315,30 @@
         if (result.nextSku) {
             skuOutput.textContent = result.nextSku;
         }
+        showPanel(successPanel);
+    }
+
+    function showPanel(panel) {
         form.hidden = true;
-        successPanel.hidden = false;
+        successPanel.hidden = panel !== successPanel;
+        queuedPanel.hidden = panel !== queuedPanel;
         window.scrollTo(0, 0);
     }
 
-    document.getElementById('yc-again').addEventListener('click', function () {
+    function resetForNext() {
         photos.forEach(function (photo) { URL.revokeObjectURL(photo.url); });
         photos = [];
         renderThumbs();
         form.reset();
         form.hidden = false;
         successPanel.hidden = true;
+        queuedPanel.hidden = true;
         loadMeta();
         window.scrollTo(0, 0);
-    });
+    }
+
+    document.getElementById('yc-again').addEventListener('click', resetForNext);
+    document.getElementById('yc-again-queued').addEventListener('click', resetForNext);
 
     function showError(message) {
         errorBox.textContent = message || 'Error';
@@ -220,4 +350,5 @@
     }
 
     loadMeta();
+    flushQueue();
 })();

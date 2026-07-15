@@ -190,5 +190,9 @@
     "capture-name-required": "Saisissez un nom",
     "capture-warehouse-required": "Sélectionnez un entrepôt",
     "capture-no-family": "— Sans famille —",
-    "peso": "Poids (kg)"
+    "peso": "Poids (kg)",
+    "capture-queued": "Enregistrée hors ligne",
+    "capture-queued-desc": "La capture sera envoyée automatiquement au retour de la connexion. Ne vous déconnectez pas.",
+    "capture-pending": "Captures en attente d'envoi",
+    "capture-offline-no-meta": "Hors ligne et sans données en cache : ouvrez l'app une fois avec internet pour activer la capture hors ligne."
 }

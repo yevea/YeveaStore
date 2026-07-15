@@ -197,5 +197,9 @@
     "capture-install-step2": "Dentro de la app, pulsa «Instalar app» cuando aparezca (o usa el menú ⋮ del navegador → «Añadir a pantalla de inicio»).",
     "capture-install-step3": "La app queda en tu pantalla de inicio; requiere sesión de administrador para funcionar.",
     "capture-tab-note": "Solo los administradores ven el botón en la tienda y pueden usar la app. Los productos capturados se crean sin marcar como públicos: aparecen en la tienda si su familia es pública.",
-    "peso": "Peso (kg)"
+    "peso": "Peso (kg)",
+    "capture-queued": "Guardada sin conexión",
+    "capture-queued-desc": "La captura se enviará automáticamente cuando vuelva la cobertura. No cierres sesión.",
+    "capture-pending": "Capturas pendientes de enviar",
+    "capture-offline-no-meta": "Sin conexión y sin datos guardados: abre la app una vez con internet para poder capturar offline."
 }

@@ -35,6 +35,10 @@
         {% if fsc.currentLang is defined %}"inLanguage": "{{ fsc.currentLang[:2] }}",{% endif %}
         "url": "{{ asset('producto') }}?url={{ fsc.product.slug }}",
         {% if fsc.productImages is not empty %}"image": "{{ fsc.productImages[0].url }}",{% endif %}
+        {% if fsc.product.peso %}"weight": {"@type": "QuantitativeValue", "value": {{ fsc.product.peso }}, "unitCode": "KGM"},{% endif %}
+        {% if fsc.product.largo %}"depth": {"@type": "QuantitativeValue", "value": {{ fsc.product.largo }}, "unitCode": "CMT"},{% endif %}
+        {% if fsc.product.ancho %}"width": {"@type": "QuantitativeValue", "value": {{ fsc.product.ancho }}, "unitCode": "CMT"},{% endif %}
+        {% if fsc.product.espesor %}"height": {"@type": "QuantitativeValue", "value": {{ fsc.product.espesor }}, "unitCode": "CMT"},{% endif %}
         "brand": {
             "@type": "Brand",
             "name": "{{ fsc.t('sawmill') }}"

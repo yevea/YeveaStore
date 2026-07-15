@@ -17,6 +17,7 @@
     <header class="yc-header">
         <span class="yc-logo">🪵</span>
         <h1>{{ fsc.t('capture-title') }}</h1>
+        <span id="yc-pending" class="yc-pending" title="{{ fsc.t('capture-pending') }}" hidden></span>
         <button type="button" id="yc-install" class="yc-install-btn" hidden>
             ⬇ {{ fsc.t('capture-install') }}
         </button>
@@ -24,8 +25,6 @@
 
     <main>
         <form id="yc-form" autocomplete="off">
-            <input type="hidden" name="action" value="save">
-            <input type="hidden" name="multireqtoken" value="{{ formToken() }}">
 
             {# SKU: read-only, generated server-side #}
             <div class="yc-sku" id="yc-sku-box">
@@ -114,6 +113,16 @@
                 📷 {{ fsc.t('capture-another') }}
             </button>
         </div>
+
+        {# Queued-offline panel #}
+        <div class="yc-success" id="yc-queued" hidden>
+            <div class="yc-success-icon yc-queued-icon">📥</div>
+            <h2>{{ fsc.t('capture-queued') }}</h2>
+            <p class="yc-success-photos">{{ fsc.t('capture-queued-desc') }}</p>
+            <button type="button" class="yc-again-btn" id="yc-again-queued">
+                📷 {{ fsc.t('capture-another') }}
+            </button>
+        </div>
     </main>
 
     <script>
@@ -124,9 +133,14 @@
         saving: {{ fsc.t('capture-saving')|json_encode|raw }},
         save: {{ fsc.t('capture-save')|json_encode|raw }},
         noFamily: {{ fsc.t('capture-no-family')|json_encode|raw }},
-        photos: {{ fsc.t('capture-photos')|json_encode|raw }}
+        photos: {{ fsc.t('capture-photos')|json_encode|raw }},
+        offlineNoMeta: {{ fsc.t('capture-offline-no-meta')|json_encode|raw }},
+        'capture-name-required': {{ fsc.t('capture-name-required')|json_encode|raw }},
+        'capture-warehouse-required': {{ fsc.t('capture-warehouse-required')|json_encode|raw }},
+        'capture-error': {{ fsc.t('capture-error')|json_encode|raw }}
     };
     </script>
+    <script src="{{ asset('Plugins/YeveaStore/Assets/JS/YeveaCapturaQueue.js') }}"></script>
     <script src="{{ asset('Plugins/YeveaStore/Assets/JS/YeveaCaptura.js') }}" defer></script>
 </body>
 </html>

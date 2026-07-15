@@ -1,15 +1,19 @@
 /**
  * YeveaCaptura service worker. Served through /capturar?file=sw so its scope
- * covers the app URL; all precache URLs are relative to that location.
- * Strategy: network-first for the app shell (fresh form token), cache-first
- * for static assets. Saving always requires a connection.
+ * covers the app URL; all precache and importScripts URLs are relative to
+ * that location. Strategy: network-first for the app shell (fresh data),
+ * cache-first for static assets. Saves made offline are queued in IndexedDB
+ * and flushed here via Background Sync — even with the app closed.
  */
-var CACHE = 'yevea-captura-v1';
+importScripts('Plugins/YeveaStore/Assets/JS/YeveaCapturaQueue.js');
+
+var CACHE = 'yevea-captura-v2';
 var SHELL = [
     'capturar',
     'capturar?file=manifest',
     'Plugins/YeveaStore/Assets/CSS/yeveacaptura.css',
     'Plugins/YeveaStore/Assets/JS/YeveaCaptura.js',
+    'Plugins/YeveaStore/Assets/JS/YeveaCapturaQueue.js',
     'Plugins/YeveaStore/Assets/Images/yeveacaptura-icon.svg'
 ];
 
@@ -31,6 +35,15 @@ self.addEventListener('activate', function (event) {
             })
             .then(function () { return self.clients.claim(); })
     );
+});
+
+// Background Sync: replay queued captures when connectivity returns,
+// even if the app tab/PWA is closed. The server dedupes by capture_id,
+// so overlapping with a page-driven flush is harmless.
+self.addEventListener('sync', function (event) {
+    if (event.tag === 'yc-flush') {
+        event.waitUntil(YCQ.flush('capturar'));
+    }
 });
 
 self.addEventListener('fetch', function (event) {
