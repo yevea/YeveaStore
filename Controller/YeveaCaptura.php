@@ -324,6 +324,31 @@ class YeveaCaptura extends StoreControllerBase
         return $prefix . str_pad((string) ($max + 1), 4, '0', STR_PAD_LEFT);
     }
 
+    /**
+     * SEO keyword base for photo filenames: family slug + product slug
+     * (family part skipped when the product slug already starts with it,
+     * e.g. "tablones" + "tablon-olivo…"→ no dedup needed, they differ).
+     * Falls back to the lowercase SKU when both slugs are empty.
+     */
+    private function photoSlugBase(Producto $producto, string $sku): string
+    {
+        $famSlug = '';
+        if (!empty($producto->codfamilia)) {
+            $familia = new Familia();
+            if ($familia->loadFromCode($producto->codfamilia)) {
+                $famSlug = self::generateProductSlug($familia->descripcion);
+            }
+        }
+
+        $prodSlug = (string) $producto->slug;
+        if ($famSlug !== '' && strpos($prodSlug, $famSlug) === 0) {
+            $famSlug = '';
+        }
+
+        $base = trim($famSlug . '-' . $prodSlug, '-');
+        return $base !== '' ? $base : strtolower($sku);
+    }
+
     /** SEO slug from the product name, unique across productos (suffix -2, -3…). */
     private function uniqueSlug(string $nombre, string $sku): string
     {
@@ -343,9 +368,10 @@ class YeveaCaptura extends StoreControllerBase
     }
 
     /**
-     * Stores each photo as AttachedFile (renamed to sku-1.jpg, sku-2.jpg…)
-     * + ProductoImagen + AttachedFileRelation — the exact format the public
-     * store templates render via url('download-permanent').
+     * Stores each photo as AttachedFile + ProductoImagen + AttachedFileRelation
+     * — the exact format the public store templates render via
+     * url('download-permanent'). Files are renamed to an SEO keyword slug:
+     * familia-producto-1.jpg, familia-producto-2.jpg…
      *
      * @return int number of photos saved
      */
@@ -359,6 +385,7 @@ class YeveaCaptura extends StoreControllerBase
             $files = [$files];
         }
 
+        $slugBase = $this->photoSlugBase($producto, $sku);
         $saved = 0;
         foreach ($files as $upload) {
             if (!$upload instanceof UploadedFile || false === $upload->isValid()) {
@@ -373,8 +400,8 @@ class YeveaCaptura extends StoreControllerBase
                 $ext = 'jpg';
             }
 
-            // sku-1.jpg, sku-2.jpg… (extra suffix only on the rare name clash)
-            $base = strtolower($sku) . '-' . ($saved + 1);
+            // familia-producto-1.jpg… (extra suffix only on the rare name clash)
+            $base = $slugBase . '-' . ($saved + 1);
             $name = $base . '.' . $ext;
             $bump = 1;
             while (file_exists(FS_FOLDER . '/MyFiles/' . $name)) {
