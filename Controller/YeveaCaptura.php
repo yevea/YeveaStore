@@ -149,8 +149,10 @@ class YeveaCaptura extends StoreControllerBase
 
     private function serveMeta(): void
     {
+        // Only store-public families: internal ones (accounting, etc.) must
+        // not be selectable — nor visible — from the unauthenticated PWA
         $families = [];
-        foreach ((new Familia())->all([], ['descripcion' => 'ASC'], 0, 0) as $fam) {
+        foreach ((new Familia())->all([Where::eq('publica', true)], ['descripcion' => 'ASC'], 0, 0) as $fam) {
             $families[] = [
                 'cod' => $fam->codfamilia,
                 'name' => $fam->descripcion,
@@ -200,9 +202,13 @@ class YeveaCaptura extends StoreControllerBase
             $this->outputJson(['ok' => false, 'error' => 'capture-warehouse-required']);
         }
 
+        // Family must exist AND be store-public (same filter as the selector)
         $codfamilia = trim((string) $req->get('familia', ''));
-        if ($codfamilia !== '' && false === (new Familia())->loadFromCode($codfamilia)) {
-            $codfamilia = '';
+        if ($codfamilia !== '') {
+            $familia = new Familia();
+            if (false === $familia->loadFromCode($codfamilia) || empty($familia->publica)) {
+                $codfamilia = '';
+            }
         }
 
         $pila = trim((string) $req->get('pila', ''));
