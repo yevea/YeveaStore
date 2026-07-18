@@ -151,12 +151,14 @@ class YeveaCaptura extends StoreControllerBase
     {
         // Only store-public families: internal ones (accounting, etc.) must
         // not be selectable — nor visible — from the unauthenticated PWA
+        $db = new DataBase();
         $families = [];
         foreach ((new Familia())->all([Where::eq('publica', true)], ['descripcion' => 'ASC'], 0, 0) as $fam) {
             $families[] = [
                 'cod' => $fam->codfamilia,
                 'name' => $fam->descripcion,
                 'tipo' => $fam->tipofamilia ?? 'mercancia',
+                'nextSku' => $this->generateSku($db, $fam->codfamilia),
             ];
         }
 
@@ -169,7 +171,7 @@ class YeveaCaptura extends StoreControllerBase
             'ok' => true,
             'families' => $families,
             'warehouses' => $warehouses,
-            'nextSku' => $this->generateSku(new DataBase()),
+            'nextSku' => $this->generateSku($db),
         ]);
     }
 
@@ -247,7 +249,7 @@ class YeveaCaptura extends StoreControllerBase
         $db = new DataBase();
         $db->beginTransaction();
         try {
-            $sku = $this->generateSku($db);
+            $sku = $this->generateSku($db, $codfamilia);
 
             $producto = new Producto();
             $producto->referencia = $sku;
@@ -331,7 +333,7 @@ class YeveaCaptura extends StoreControllerBase
             'photos' => $photos,
             'price' => $precio,
             'url' => 'producto?url=' . rawurlencode($producto->slug),
-            'nextSku' => $this->generateSku($db),
+            'nextSku' => $this->generateSku($db, $codfamilia),
         ];
 
         if ($lock !== null) {
@@ -437,13 +439,21 @@ class YeveaCaptura extends StoreControllerBase
         return round($candidates[0]['precio'] * $areaM2, 2);
     }
 
+    /** SKU prefix from the family code ("TABLONES-"), fallback "YV-". */
+    private function skuPrefix(string $codfamilia): string
+    {
+        $clean = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $codfamilia));
+        return ($clean !== '' ? $clean : self::SKU_PREFIX) . '-';
+    }
+
     /**
-     * Next sequential SKU: YV-<year>-NNNN, scanning both productos and
+     * Next sequential SKU: <FAMILIA>-NNNN, scanning both productos and
      * variantes so it never collides with a manually created referencia.
      */
-    private function generateSku(DataBase $db): string
+    private function generateSku(DataBase $db, string $codfamilia = ''): string
     {
-        $prefix = self::SKU_PREFIX . '-' . date('Y') . '-';
+        $prefix = $this->skuPrefix($codfamilia);
+        $pattern = '/^' . preg_quote($prefix, '/') . '(\d+)$/';
         $max = 0;
         foreach ([Producto::tableName(), 'variantes'] as $table) {
             if (false === $db->tableExists($table)) {
@@ -452,8 +462,9 @@ class YeveaCaptura extends StoreControllerBase
             $sql = 'SELECT referencia FROM ' . $table
                 . ' WHERE referencia LIKE ' . $db->var2str($prefix . '%');
             foreach ($db->select($sql) as $row) {
-                $num = (int) substr((string) $row['referencia'], strlen($prefix));
-                $max = max($max, $num);
+                if (preg_match($pattern, (string) $row['referencia'], $match)) {
+                    $max = max($max, (int) $match[1]);
+                }
             }
         }
         return $prefix . str_pad((string) ($max + 1), 4, '0', STR_PAD_LEFT);
@@ -559,11 +570,17 @@ class YeveaCaptura extends StoreControllerBase
                 continue;
             }
 
+            // The store renders ONLY ProductoImagen records — if this save
+            // fails the photo would be invisible on the public pages
             $image = new ProductoImagen();
             $image->idfile = $attached->idfile;
             $image->idproducto = $producto->idproducto;
+            $image->referencia = $sku;
             $image->orden = $saved + 1;
-            $image->save();
+            if (false === $image->save()) {
+                Tools::log()->error('yeveacaptura: ProductoImagen save failed for idfile ' . $attached->idfile);
+                continue;
+            }
 
             $relation = new AttachedFileRelation();
             $relation->idfile = $attached->idfile;

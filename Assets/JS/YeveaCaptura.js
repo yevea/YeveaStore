@@ -94,11 +94,26 @@
             });
     }
 
+    var currentMeta = null;
+
     function applyMeta(meta) {
+        currentMeta = meta;
         fillSelect('yc-familia', meta.families, i18n.noFamily || '—');
         fillSelect('yc-almacen', meta.warehouses, null);
-        skuOutput.textContent = meta.nextSku;
+        updateSkuPreview();
     }
+
+    // SKU is <FAMILIA>-NNNN: the preview follows the selected family
+    function updateSkuPreview() {
+        if (!currentMeta) {
+            return;
+        }
+        var cod = document.getElementById('yc-familia').value;
+        var family = (currentMeta.families || []).find(function (f) { return f.cod === cod; });
+        skuOutput.textContent = (family && family.nextSku) ? family.nextSku : currentMeta.nextSku;
+    }
+
+    document.getElementById('yc-familia').addEventListener('change', updateSkuPreview);
 
     function fillSelect(id, items, emptyLabel) {
         var select = document.getElementById(id);

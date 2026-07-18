@@ -50,7 +50,11 @@
                         {% for item in fsc.cartItems %}
                         <tr>
                             <td>
+                                {% if item.slug is defined and item.slug is not empty %}
+                                <a href="{{ asset('producto') }}?url={{ item.slug }}">{{ item.referencia }} - {{ item.product_name }}</a>
+                                {% else %}
                                 {{ item.referencia }} - {{ item.product_name }}
+                                {% endif %}
                                 {% if item.isTableros is defined and item.isTableros %}
                                 <br><small class="text-muted">
                                     {{ fsc.t('largo') }}: {{ item.largo_cm }} cm ×

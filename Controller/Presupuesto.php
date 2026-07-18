@@ -540,6 +540,7 @@ class Presupuesto extends StoreControllerBase
                 $this->cartItems[] = (object) [
                     'id' => $item->id,
                     'referencia' => $info->referencia,
+                    'slug' => $info->slug ?? '',
                     'product_name' => $info->name,
                     'net_price' => $netPrice,
                     'tax_rate' => $taxRate,
