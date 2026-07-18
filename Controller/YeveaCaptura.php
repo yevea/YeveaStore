@@ -439,10 +439,22 @@ class YeveaCaptura extends StoreControllerBase
         return round($candidates[0]['precio'] * $areaM2, 2);
     }
 
-    /** SKU prefix from the family code ("TABLONES-"), fallback "YV-". */
+    /**
+     * SKU prefix from the family NAME ("TABLONES-"), not the code: codfamilia
+     * can be a bare number ("1") which would make unreadable SKUs ("1-0001").
+     * Fallback "YV-" when there is no family.
+     */
     private function skuPrefix(string $codfamilia): string
     {
-        $clean = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $codfamilia));
+        $name = '';
+        if ($codfamilia !== '') {
+            $familia = new Familia();
+            if ($familia->loadFromCode($codfamilia)) {
+                $name = self::generateSlug($familia->descripcion);
+            }
+        }
+
+        $clean = substr(strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $name)), 0, 20);
         return ($clean !== '' ? $clean : self::SKU_PREFIX) . '-';
     }
 
