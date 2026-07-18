@@ -201,7 +201,8 @@ abstract class StoreControllerBase extends Controller
      */
     protected function redirectAfterPost(string $extraParam = ''): void
     {
-        $uri = $this->request()->getRequestUri();
+        // $_SERVER directly: FS's own Request class has no getRequestUri()
+        $uri = $_SERVER['REQUEST_URI'] ?? ('/' . $this->publicPath());
         if ($extraParam !== '') {
             $uri .= (str_contains($uri, '?') ? '&' : '?') . $extraParam;
         }

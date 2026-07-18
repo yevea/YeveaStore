@@ -11,8 +11,8 @@ use FacturaScripts\Core\Where;
 use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\AttachedFileRelation;
 use FacturaScripts\Dinamic\Model\ProductoImagen;
+use FacturaScripts\Core\UploadedFile;
 use FacturaScripts\Plugins\YeveaStore\Lib\StoreControllerBase;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * YeveaCaptura: installable mobile-first PWA to capture wood planks and
@@ -512,12 +512,15 @@ class YeveaCaptura extends StoreControllerBase
      */
     private function savePhotos(Producto $producto, string $sku, $user): int
     {
-        $files = $this->request()->files->get('photos');
+        // FS RequestFiles: photos[] arrives as an array (getArray); a single
+        // non-array upload would come via get()
+        $files = $this->request()->files->getArray('photos');
         if (empty($files)) {
-            return 0;
-        }
-        if (!is_array($files)) {
-            $files = [$files];
+            $single = $this->request()->files->get('photos');
+            if ($single === null) {
+                return 0;
+            }
+            $files = [$single];
         }
 
         $slugBase = $this->photoSlugBase($producto, $sku);
@@ -544,10 +547,9 @@ class YeveaCaptura extends StoreControllerBase
                 $name = $base . '-' . $bump . '.' . $ext;
             }
 
-            try {
-                $upload->move(FS_FOLDER . '/MyFiles', $name);
-            } catch (\Throwable $exc) {
-                Tools::log()->error('yeveacaptura photo move: ' . $exc->getMessage());
+            // FS UploadedFile::move() returns bool (it does not throw)
+            if (false === $upload->move(FS_FOLDER . '/MyFiles', $name)) {
+                Tools::log()->error('yeveacaptura photo move failed: ' . $name);
                 continue;
             }
 
