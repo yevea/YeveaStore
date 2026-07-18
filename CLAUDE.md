@@ -78,6 +78,7 @@ cd ~/public_html/cat && php -r 'require "vendor/autoload.php"; const FS_FOLDER=_
 - Trait constants requieren PHP 8.2; min del proyecto 8.1 → strings locales.
 - Template\Controller NO auto-renderiza: run() debe terminar en `$this->view('X.html.twig')` (o echo+exit para raw). Sin ello → 200 con 0 bytes.
 - `php -l` no detecta imports `use` ausentes → clase de otro namespace peta solo en runtime (AdminPlugins). Revisar extends/new vs use al crear controllers.
+- Core\Request y Core\UploadedFile de FS NO son Symfony: no hay getRequestUri() (usar $_SERVER); files->get() da null para inputs array (usar files->getArray('x')); UploadedFile::move() devuelve bool, no lanza.
 
 ## Estado / pendientes → memoria [[project-migration]]
 - noindex ON hasta orden de lanzamiento. Productos aún sin marcar públicos (catálogo/sitemap/llms vacíos hasta entonces).
