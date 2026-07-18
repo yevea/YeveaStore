@@ -73,7 +73,9 @@ class YeveaCaptura extends StoreControllerBase
             return;
         }
 
-        // plain GET: the YeveaCaptura.html.twig app shell renders
+        // plain GET: render the app shell (Template\Controller does not
+        // auto-render — every store controller calls view() explicitly)
+        $this->view('YeveaCaptura.html.twig');
     }
 
     /** Next SKU that save() would assign right now (preview for the form). */
