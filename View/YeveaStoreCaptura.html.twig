@@ -73,7 +73,8 @@
                                 <form method="post" class="d-inline">
                                     <input type="hidden" name="action" value="approve-capture">
                                     <input type="hidden" name="idproducto" value="{{ p.idproducto }}">
-                                    <input type="hidden" name="multireqtoken" value="{{ formToken() }}">
+                                    {# formToken() emits the whole hidden <input>, not just the value #}
+                                    {{ formToken() }}
                                     <button type="submit" class="btn btn-sm btn-success">
                                         <i class="fa-solid fa-check"></i> {{ trans('capture-approve') }}
                                     </button>

@@ -2,7 +2,7 @@
     <form method="post">
         <input type="hidden" name="action" value="save-yeveastore-doc">
         <input type="hidden" name="doc" value="content-plan">
-        <input type="hidden" name="multireqtoken" value="{{ formToken() }}">
+        {{ formToken() }}
         <p class="text-muted mb-2">
             <i class="fa-solid fa-pen-to-square"></i> {{ trans('yevea-doc-help') }}
         </p>
