@@ -11,6 +11,7 @@ use FacturaScripts\Core\Where;
 use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\AttachedFileRelation;
 use FacturaScripts\Dinamic\Model\ProductoImagen;
+use FacturaScripts\Plugins\YeveaStore\Lib\StoreControllerBase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
