@@ -39,12 +39,13 @@
                 <div class="row">
                     <div class="col-12 col-md-4 mb-3">
                         <label class="form-label">{{ trans('calc-price-label') }}</label>
-                        <input type="text" class="form-control" name="price_label" value="{{ calc.price_label }}"
-                               placeholder="Precio por m²">
+                        <input type="text" class="form-control" name="price_label" id="price_label"
+                               value="{{ calc.price_label }}" placeholder="Precio por m²">
                     </div>
                     <div class="col-6 col-md-2 mb-3">
                         <label class="form-label">{{ trans('calc-price-unit') }}</label>
-                        <input type="text" class="form-control" name="price_unit" value="{{ calc.price_unit }}">
+                        <input type="text" class="form-control" name="price_unit" id="price_unit"
+                               value="{{ calc.price_unit }}" placeholder="m²">
                     </div>
                     <div class="col-6 col-md-2 mb-3">
                         <label class="form-label">{{ trans('calc-overage') }}</label>

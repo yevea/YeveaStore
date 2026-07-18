@@ -61,7 +61,7 @@
                                     {{ fsc.t('ancho') }}: {{ item.ancho_cm }} cm
                                     {% if item.alto_cm is defined and item.alto_cm %}
                                     × {{ fsc.t('alto') }}: {{ item.alto_cm }} cm
-                                    ({{ (item.largo_cm * item.ancho_cm * item.alto_cm / 1000) | number_format(2, ',', '.') }} l)
+                                    ({{ (item.largo_cm * item.ancho_cm * item.alto_cm / 1000000) | number_format(4, ',', '.') }} m³)
                                     {% else %}
                                     ({{ (item.largo_cm * item.ancho_cm / 10000) | number_format(4, ',', '.') }} m²)
                                     {% endif %}

@@ -11,12 +11,37 @@
         return;
     }
 
+    var UNIT_DEFAULTS = { area: 'm²', volume: 'm³' };
+    var LABEL_DEFAULTS = { area: 'Precio por m²', volume: 'Precio por m³' };
+
     function toggleSections() {
         var mode = modeSelect.value;
         document.querySelectorAll('.yc-calc-section').forEach(function (section) {
             var modes = (section.getAttribute('data-modes') || '').split(' ');
             section.style.display = modes.indexOf(mode) === -1 ? 'none' : '';
         });
+
+        // Keep the price unit/label defaults in sync with the mode: update
+        // placeholders always, and swap the value only when it is empty or
+        // still the default of the other mode.
+        if (mode === 'area' || mode === 'volume') {
+            var unitInput = document.getElementById('price_unit');
+            var labelInput = document.getElementById('price_label');
+            var knownUnits = ['', 'm2', 'm²', 'm3', 'm³', 'l'];
+            if (unitInput) {
+                unitInput.placeholder = UNIT_DEFAULTS[mode];
+                if (knownUnits.indexOf(unitInput.value.trim()) !== -1) {
+                    unitInput.value = UNIT_DEFAULTS[mode];
+                }
+            }
+            if (labelInput) {
+                labelInput.placeholder = LABEL_DEFAULTS[mode];
+                var knownLabels = ['', 'Precio por m²', 'Precio por m³', 'Precio per m2'];
+                if (knownLabels.indexOf(labelInput.value.trim()) !== -1) {
+                    labelInput.value = LABEL_DEFAULTS[mode];
+                }
+            }
+        }
     }
 
     modeSelect.addEventListener('change', toggleSections);

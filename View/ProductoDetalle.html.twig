@@ -331,7 +331,7 @@
 
                 <div class="mb-3" id="tableros-calc" style="display:none;">
                     {% if fsc.calcConfig.mode == 'volume' %}
-                    <p class="mb-1"><strong>{{ fsc.t('volume') }}:</strong> <span id="tableros-area">0</span> l</p>
+                    <p class="mb-1"><strong>{{ fsc.t('volume') }}:</strong> <span id="tableros-area">0</span> m³</p>
                     {% else %}
                     <p class="mb-1"><strong>{{ fsc.t('area') }}:</strong> <span id="tableros-area">0</span> m²</p>
                     {% endif %}
@@ -651,7 +651,7 @@ function calculateTablerosPrice() {
     if (complete) {
         // measure: m² for area mode, litres for volume mode (+ overage)
         var measure = (calcMode === 'volume')
-            ? largo * ancho * alto / 1000
+            ? largo * ancho * alto / 1000000
             : largo * ancho / 10000;
         measure = measure * (1 + calcOverage / 100);
 
@@ -674,7 +674,7 @@ function calculateTablerosPrice() {
             }
         }
 
-        if (areaSpan) areaSpan.textContent = measure.toFixed(calcMode === 'volume' ? 2 : 4);
+        if (areaSpan) areaSpan.textContent = measure.toFixed(4);
         if (totalSpan) totalSpan.textContent = formatMoney(unitPrice * measure);
         if (weightSpan) weightSpan.textContent = (productWeight * measure).toFixed(1);
         if (calcDiv) calcDiv.style.display = '';

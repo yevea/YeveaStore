@@ -20,7 +20,7 @@ use FacturaScripts\Core\Model\Familia;
  * }
  *
  * - mode area:   price = product €/m² × (L×W in m²) × (1 + overage%)
- * - mode volume: price = product €/litre × (L×W×H in litres) × (1 + overage%)
+ * - mode volume: price = product €/m³ × (L×W×H in m³) × (1 + overage%)
  * - "options" restricts customer input to a fixed set ("60-99" range and/or
  *   "60;61" list); empty means free input bounded by the familia min/max.
  * - capture_rates: €/m² per thickness range, used by YeveaCaptura to price
@@ -104,7 +104,7 @@ class YeveaMeasure
         return (object) [
             'mode' => $mode,
             'price_label' => trim((string) ($raw['price_label'] ?? '')),
-            'price_unit' => trim((string) ($raw['price_unit'] ?? '')) ?: ($mode === 'volume' ? 'l' : 'm²'),
+            'price_unit' => trim((string) ($raw['price_unit'] ?? '')) ?: ($mode === 'volume' ? 'm³' : 'm²'),
             'show_unit_price' => (bool) ($raw['show_unit_price'] ?? true),
             'calc_weight' => (bool) ($raw['calc_weight'] ?? false),
             'overage_pct' => max(0.0, (float) ($raw['overage_pct'] ?? 0)),
@@ -153,7 +153,7 @@ class YeveaMeasure
         $base = null;
         if ($config->mode === 'volume') {
             if ($largoCm > 0 && $anchoCm > 0 && $altoCm > 0) {
-                $base = $largoCm * $anchoCm * $altoCm / 1000; // cm³ → litres
+                $base = $largoCm * $anchoCm * $altoCm / 1000000; // cm³ → m³
             }
         } elseif ($largoCm > 0 && $anchoCm > 0) {
             // area mode, and legacy fallback for mode none with dims present
