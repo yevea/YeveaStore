@@ -198,5 +198,8 @@
     "capture-pending-title": "Warten auf Freigabe",
     "capture-approve": "Freigeben",
     "capture-no-pending": "Keine Erfassungen zur Freigabe.",
-    "captura-pendiente": "Wartet auf Freigabe (Erfassung)"
+    "captura-pendiente": "Wartet auf Freigabe (Erfassung)",
+    "alto": "Höhe",
+    "volume": "Volumen",
+    "price-table": "Preistabelle"
 }

@@ -216,12 +216,10 @@ class Presupuesto extends StoreControllerBase
 
             $priceWithTax = $info->price * (1 + $info->tax_rate / 100);
 
-            // For Tableros: area-based pricing
-            $largoCm = $item->largo_cm ?? null;
-            $anchoCm = $item->ancho_cm ?? null;
-            $area = $this->calculateTablerosArea($largoCm, $anchoCm);
-            $subtotal = ($area !== null)
-                ? $priceWithTax * $area * $item->quantity
+            // Custom-dimension items (area/volume calculator): price by factor
+            $factor = $this->measureFactor($info, $item);
+            $subtotal = ($factor !== null)
+                ? $priceWithTax * $factor * $item->quantity
                 : $priceWithTax * $item->quantity;
             $total += $subtotal;
 
@@ -231,8 +229,9 @@ class Presupuesto extends StoreControllerBase
             $line->quantity = $item->quantity;
             $line->price = $priceWithTax;
             $line->subtotal = $subtotal;
-            $line->largo_cm = $largoCm;
-            $line->ancho_cm = $anchoCm;
+            $line->largo_cm = $item->largo_cm ?? null;
+            $line->ancho_cm = $item->ancho_cm ?? null;
+            $line->alto_cm = $item->alto_cm ?? null;
             $orderLines[] = $line;
         }
 
@@ -364,13 +363,11 @@ class Presupuesto extends StoreControllerBase
                 $linea->descripcion = $info->name;
                 $linea->pvpunitario = $info->price;
 
-                // For Tableros: adjust price by area
-                $largoCm = $item->largo_cm ?? null;
-                $anchoCm = $item->ancho_cm ?? null;
-                $area = $this->calculateTablerosArea($largoCm, $anchoCm);
-                if ($area !== null) {
-                    $linea->pvpunitario = $info->price * $area;
-                    $linea->descripcion .= ' (' . $largoCm . 'x' . $anchoCm . ' cm)';
+                // Custom-dimension items (area/volume calculator): price by factor
+                $factor = $this->measureFactor($info, $item);
+                if ($factor !== null) {
+                    $linea->pvpunitario = $info->price * $factor;
+                    $linea->descripcion .= $this->dimsSuffix($item);
                 }
 
                 // For Tablones: append product dimensions to description
@@ -407,14 +404,12 @@ class Presupuesto extends StoreControllerBase
             if ($info !== null) {
                 $unitAmountWithTax = $info->price * (1 + $info->tax_rate / 100);
 
-                // For Tableros: area-based pricing
-                $largoCm = $item->largo_cm ?? null;
-                $anchoCm = $item->ancho_cm ?? null;
+                // Custom-dimension items (area/volume calculator): price by factor
                 $itemName = $info->name;
-                $area = $this->calculateTablerosArea($largoCm, $anchoCm);
-                if ($area !== null) {
-                    $totalAmount = (int) round($unitAmountWithTax * $area * 100);
-                    $itemName .= ' (' . $largoCm . 'x' . $anchoCm . ' cm)';
+                $factor = $this->measureFactor($info, $item);
+                if ($factor !== null) {
+                    $totalAmount = (int) round($unitAmountWithTax * $factor * 100);
+                    $itemName .= $this->dimsSuffix($item);
                     $lineItems[] = [
                         'price_data' => [
                             'currency' => 'eur',
@@ -523,13 +518,14 @@ class Presupuesto extends StoreControllerBase
                 $netPrice = $info->price;
                 $taxRate = $info->tax_rate;
 
-                // For Tableros: price is per m², calculate based on area
+                // Custom-dimension items (area/volume calculator): price by factor
                 $largoCm = $item->largo_cm ?? null;
                 $anchoCm = $item->ancho_cm ?? null;
+                $altoCm = $item->alto_cm ?? null;
                 $isTableros = false;
-                $area = $this->calculateTablerosArea($largoCm, $anchoCm);
-                if ($area !== null) {
-                    $neto = $netPrice * $area * $item->quantity;
+                $factor = $this->measureFactor($info, $item);
+                if ($factor !== null) {
+                    $neto = $netPrice * $factor * $item->quantity;
                     $isTableros = true;
                 } else {
                     $neto = $netPrice * $item->quantity;
@@ -551,6 +547,7 @@ class Presupuesto extends StoreControllerBase
                     'product_price' => $netPrice * (1 + $taxRate / 100),
                     'largo_cm' => $largoCm,
                     'ancho_cm' => $anchoCm,
+                    'alto_cm' => $altoCm,
                     'isTableros' => $isTableros,
                     'isTablones' => $info->familyType === 'tablones',
                     'largo' => $info->largo,

@@ -222,12 +222,14 @@ abstract class StoreControllerBase extends Controller
 
         $isPublic = false;
         $familyType = 'mercancia';
+        $codfamilia = '';
         $product = new Producto();
         $where = [Where::eq('referencia', $productReferencia)];
         if ($product->loadWhere($where)) {
             $isPublic = empty($product->captura_pendiente)
                 && ($product->publico || $this->isFamilyPublic($product->codfamilia));
             $familyType = $this->getFamilyTypeForProduct($product);
+            $codfamilia = (string) ($product->codfamilia ?? '');
         } else {
             // Product not found by referencia — try looking up via Variante for non-primary variants
             $varianteClass = '\FacturaScripts\Core\Model\Variante';
@@ -240,6 +242,7 @@ abstract class StoreControllerBase extends Controller
                         $isPublic = empty($parent->captura_pendiente)
                             && ($parent->publico || $this->isFamilyPublic($parent->codfamilia));
                         $familyType = $this->getFamilyTypeForProduct($parent);
+                        $codfamilia = (string) ($parent->codfamilia ?? '');
                     }
                 }
             }
@@ -256,13 +259,18 @@ abstract class StoreControllerBase extends Controller
             $qty = 1;
         }
 
-        // For Tableros, get customer dimensions
+        // Customer dimensions for families with an area/volume calculator
+        // (legacy tableros families behave as area mode — see YeveaMeasure)
         $largoCm = null;
         $anchoCm = null;
-        if ($familyType === 'tableros') {
+        $altoCm = null;
+        $calc = YeveaMeasure::configFor($codfamilia);
+        $hasCustomDims = $calc->mode !== 'none';
+        if ($hasCustomDims) {
             $largoCm = (float) $this->request()->request->get('largo_cm', 0);
             $anchoCm = (float) $this->request()->request->get('ancho_cm', 0);
-            if ($largoCm <= 0 || $anchoCm <= 0) {
+            $altoCm = (float) $this->request()->request->get('alto_cm', 0) ?: null;
+            if (false === YeveaMeasure::validateDims($calc, $largoCm, $anchoCm, $altoCm)) {
                 Tools::log()->warning('invalid-dimensions');
                 return false;
             }
@@ -277,8 +285,8 @@ abstract class StoreControllerBase extends Controller
             Where::eq('product_referencia', $productReferencia),
         ];
 
-        // For Tableros, each dimension combination is a separate cart item
-        if ($familyType !== 'tableros') {
+        // Custom-dimension items: each dimension combination is a separate cart item
+        if (!$hasCustomDims) {
             $existing = $cartItem->all($where);
             if (!empty($existing)) {
                 if ($familyType === 'artesania' || $familyType === 'tablones') {
@@ -297,6 +305,7 @@ abstract class StoreControllerBase extends Controller
         $cartItem->quantity = $qty;
         $cartItem->largo_cm = $largoCm;
         $cartItem->ancho_cm = $anchoCm;
+        $cartItem->alto_cm = $altoCm;
         $result = $cartItem->save();
 
         if ($result) {
@@ -378,6 +387,7 @@ abstract class StoreControllerBase extends Controller
                 'codfamilia' => $familia->codfamilia,
                 'descripcion' => $translated['descripcion'],
                 'tipofamilia' => $tipo,
+                'calc_mode' => YeveaMeasure::configFor($familia->codfamilia)->mode,
                 'largo_min' => (float) ($familia->largo_min ?? 0),
                 'largo_max' => (float) ($familia->largo_max ?? 0),
                 'ancho_min' => (float) ($familia->ancho_min ?? 0),

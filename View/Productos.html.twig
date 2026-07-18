@@ -86,8 +86,8 @@
     {% endblock %}
 
     {% block category_filters %}
-    {# Dimension filters for Tablones category #}
-    {% if fsc.selectedCategoryType == 'tablones' %}
+    {# Dimension filters: tablones categories and families with a measurement calculator #}
+    {% if fsc.selectedCategoryType == 'tablones' or (fsc.selectedCategoryFamily and fsc.selectedCategoryFamily.calc_mode is defined and fsc.selectedCategoryFamily.calc_mode != 'none') %}
     <div class="card mb-3">
         <div class="card-body">
             <h6 class="card-title"><i class="fa-solid fa-filter"></i> {{ fsc.t('filter-dimensions') }}</h6>

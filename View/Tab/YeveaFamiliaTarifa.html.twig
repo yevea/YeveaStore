@@ -1,0 +1,141 @@
+{#
+/**
+ * "Tabla de Precios" tab on EditFamilia: per-family measurement price
+ * calculator (None / Area L×W / Volume L×W×H) + capture thickness rates.
+ * Stored as JSON in familias.calc_config — see Lib/YeveaMeasure.
+ */
+#}
+{% set familia = fsc.views | first %}
+{% set familia = familia.model %}
+{% set calc = fsc.getYeveaCalcConfig() %}
+
+<div class="container-fluid mt-3 mb-4">
+{% if familia.codfamilia is empty %}
+    <div class="alert alert-info">
+        <i class="fa-solid fa-circle-info"></i> {{ trans('calc-save-family-first') }}
+    </div>
+{% else %}
+    <form method="post">
+        {{ formToken() }}
+        <input type="hidden" name="action" value="save-yevea-calc-config">
+        <input type="hidden" name="codfamilia" value="{{ familia.codfamilia }}">
+
+        <div class="row">
+            <div class="col-12 col-md-4 mb-3">
+                <label class="form-label fw-bold" for="calc_mode">{{ trans('calc-mode') }}</label>
+                <select class="form-select" name="calc_mode" id="calc_mode">
+                    <option value="none" {{ calc.mode == 'none' ? 'selected' }}>{{ trans('calc-mode-none') }}</option>
+                    <option value="area" {{ calc.mode == 'area' ? 'selected' }}>{{ trans('calc-mode-area') }}</option>
+                    <option value="volume" {{ calc.mode == 'volume' ? 'selected' }}>{{ trans('calc-mode-volume') }}</option>
+                </select>
+                <div class="form-text">{{ trans('calc-mode-help') }}</div>
+            </div>
+        </div>
+
+        {# ---- Pricing options (area/volume) ---- #}
+        <div class="card mb-3 yc-calc-section" data-modes="area volume">
+            <div class="card-header">{{ trans('calc-pricing') }}</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3">
+                        <label class="form-label">{{ trans('calc-price-label') }}</label>
+                        <input type="text" class="form-control" name="price_label" value="{{ calc.price_label }}"
+                               placeholder="Precio por m²">
+                    </div>
+                    <div class="col-6 col-md-2 mb-3">
+                        <label class="form-label">{{ trans('calc-price-unit') }}</label>
+                        <input type="text" class="form-control" name="price_unit" value="{{ calc.price_unit }}">
+                    </div>
+                    <div class="col-6 col-md-2 mb-3">
+                        <label class="form-label">{{ trans('calc-overage') }}</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="overage_pct" step="0.1" min="0"
+                                   value="{{ calc.overage_pct }}">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mb-3">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" name="show_unit_price" value="1"
+                                   id="show_unit_price" {{ calc.show_unit_price ? 'checked' }}>
+                            <label class="form-check-label" for="show_unit_price">{{ trans('calc-show-unit-price') }}</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="calc_weight" value="1"
+                                   id="calc_weight" {{ calc.calc_weight ? 'checked' }}>
+                            <label class="form-check-label" for="calc_weight">{{ trans('calc-weight') }}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ---- Customer dimensions ---- #}
+        {% set dimDefs = [
+            {key: 'length', title: trans('calc-dim-length'), cfg: calc.dims.length, modes: 'area volume'},
+            {key: 'width', title: trans('calc-dim-width'), cfg: calc.dims.width, modes: 'area volume'},
+            {key: 'height', title: trans('calc-dim-height'), cfg: calc.dims.height, modes: 'volume'}
+        ] %}
+        {% for dim in dimDefs %}
+        <div class="card mb-3 yc-calc-section" data-modes="{{ dim.modes }}">
+            <div class="card-header">{{ dim.title }}</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">{{ trans('calc-dim-label') }}</label>
+                        <input type="text" class="form-control" name="{{ dim.key }}_label" value="{{ dim.cfg.label }}">
+                    </div>
+                    <div class="col-6 col-md-2 mb-3">
+                        <label class="form-label">{{ trans('calc-dim-unit') }}</label>
+                        <input type="text" class="form-control" name="{{ dim.key }}_unit" value="{{ dim.cfg.unit }}">
+                    </div>
+                    <div class="col-12 col-md-7 mb-3">
+                        <label class="form-label">{{ trans('calc-dim-options') }}</label>
+                        <input type="text" class="form-control" name="{{ dim.key }}_options"
+                               value="{{ dim.cfg.options_spec }}" placeholder="60-99  |  35; 40; 45-50">
+                        <div class="form-text">{{ trans('calc-dim-options-help') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {# ---- Capture thickness rates (€/m² per grosor range) ---- #}
+        <div class="card mb-3">
+            <div class="card-header">{{ trans('calc-capture-rates') }}</div>
+            <div class="card-body">
+                <p class="text-muted small mb-2">{{ trans('calc-capture-rates-help') }}</p>
+                <table class="table table-sm align-middle" style="max-width: 560px;" id="yc-rates-table">
+                    <thead>
+                        <tr>
+                            <th>{{ trans('calc-rate-from') }} (cm)</th>
+                            <th>{{ trans('calc-rate-to') }} (cm)</th>
+                            <th>€/m²</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rate in calc.capture_rates %}
+                        <tr>
+                            <td><input type="number" class="form-control form-control-sm" name="rate_desde[]" step="0.1" min="0" value="{{ rate.desde }}"></td>
+                            <td><input type="number" class="form-control form-control-sm" name="rate_hasta[]" step="0.1" min="0" value="{{ rate.hasta }}"></td>
+                            <td><input type="number" class="form-control form-control-sm" name="rate_precio[]" step="0.01" min="0" value="{{ rate.precio }}"></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger yc-rate-del"><i class="fa-solid fa-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="yc-rate-add">
+                    <i class="fa-solid fa-plus"></i> {{ trans('calc-rate-add') }}
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-save"></i> {{ trans('save') }}
+        </button>
+    </form>
+
+    <script src="{{ asset('Plugins/YeveaStore/Assets/JS/YeveaFamiliaTarifa.js') }}" defer></script>
+{% endif %}
+</div>

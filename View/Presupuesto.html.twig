@@ -59,7 +59,12 @@
                                 <br><small class="text-muted">
                                     {{ fsc.t('largo') }}: {{ item.largo_cm }} cm ×
                                     {{ fsc.t('ancho') }}: {{ item.ancho_cm }} cm
+                                    {% if item.alto_cm is defined and item.alto_cm %}
+                                    × {{ fsc.t('alto') }}: {{ item.alto_cm }} cm
+                                    ({{ (item.largo_cm * item.ancho_cm * item.alto_cm / 1000) | number_format(2, ',', '.') }} l)
+                                    {% else %}
                                     ({{ (item.largo_cm * item.ancho_cm / 10000) | number_format(4, ',', '.') }} m²)
+                                    {% endif %}
                                 </small>
                                 {% elseif item.isTablones is defined and item.isTablones and (item.largo is not null or item.ancho is not null or item.espesor is not null) %}
                                 <br><small class="text-muted">

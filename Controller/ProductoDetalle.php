@@ -6,6 +6,7 @@ use FacturaScripts\Core\Model\Familia;
 use FacturaScripts\Core\Model\Producto;
 use FacturaScripts\Core\Where;
 use FacturaScripts\Plugins\YeveaStore\Lib\StoreControllerBase;
+use FacturaScripts\Plugins\YeveaStore\Lib\YeveaMeasure;
 
 class ProductoDetalle extends StoreControllerBase
 {
@@ -32,6 +33,9 @@ class ProductoDetalle extends StoreControllerBase
 
     /** @var object|null Family data including dimension limits for tableros */
     public $familyData = null;
+
+    /** @var object|null Normalized measurement-calculator config of the family (YeveaMeasure) */
+    public $calcConfig = null;
 
     /** @var string|null '1' after a successful add-to-cart redirect, '0' after a failed one */
     public $addedToCart = null;
@@ -151,8 +155,9 @@ class ProductoDetalle extends StoreControllerBase
             return;
         }
 
-        // Load family type
+        // Load family type and measurement-calculator config
         $this->loadFamilyType($p);
+        $this->calcConfig = YeveaMeasure::configFor($p->codfamilia ?? null);
 
         $isSold = false;
         if (($this->familyType === 'artesania' || $this->familyType === 'tablones') && $p->stockfis <= 0) {

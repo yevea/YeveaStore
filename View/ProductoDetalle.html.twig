@@ -190,8 +190,8 @@
             <div class="d-flex align-items-center gap-3 mb-3">
                 <span id="variant-price" class="mb-0">
                     {{ fsc.formatMoney(currentPrice) }}
-                    {% if fsc.familyType == 'tableros' %}
-                    <small class="text-muted">/m²</small>
+                    {% if fsc.calcConfig and fsc.calcConfig.mode != 'none' and fsc.calcConfig.show_unit_price %}
+                    <small class="text-muted">/{{ fsc.calcConfig.price_unit }}</small>
                     {% endif %}
                 </span>
                 {% if (fsc.familyType == 'artesania' or fsc.familyType == 'tablones') and fsc.product.isSold %}
@@ -275,8 +275,8 @@
                 <i class="fa-solid fa-tag"></i> {{ fsc.t('sold') }}
             </div>
 
-            {# === TABLEROS: custom dimension input === #}
-            {% elseif fsc.familyType == 'tableros' %}
+            {# === Measurement calculator (area L×W / volume L×W×H): custom dimension input === #}
+            {% elseif fsc.calcConfig and fsc.calcConfig.mode != 'none' %}
             {% set showForm = fsc.product.nostock or fsc.product.stock > 0 %}
             {% if showForm %}
             <form method="post" action="{{ asset('producto') }}?url={{ fsc.product.slug }}" id="tableros-form">
@@ -289,34 +289,56 @@
                 {% if fsc.familyData %}
                 <p class="text-muted small">
                     {% if fsc.familyData.largo_min > 0 or fsc.familyData.largo_max > 0 %}
-                    {{ fsc.t('largo') }}: {{ fsc.familyData.largo_min }} - {{ fsc.familyData.largo_max }} cm<br>
+                    {{ fsc.calcConfig.dims.length.label ?: fsc.t('largo') }}: {{ fsc.familyData.largo_min }} - {{ fsc.familyData.largo_max }} cm<br>
                     {% endif %}
                     {% if fsc.familyData.ancho_min > 0 or fsc.familyData.ancho_max > 0 %}
-                    {{ fsc.t('ancho') }}: {{ fsc.familyData.ancho_min }} - {{ fsc.familyData.ancho_max }} cm
+                    {{ fsc.calcConfig.dims.width.label ?: fsc.t('ancho') }}: {{ fsc.familyData.ancho_min }} - {{ fsc.familyData.ancho_max }} cm
                     {% endif %}
                 </p>
                 {% endif %}
 
+                {% set dimInputs = [
+                    {cfg: fsc.calcConfig.dims.length, id: 'largo_cm', fallback: fsc.t('largo')},
+                    {cfg: fsc.calcConfig.dims.width, id: 'ancho_cm', fallback: fsc.t('ancho')}
+                ] %}
+                {% if fsc.calcConfig.mode == 'volume' %}
+                    {% set dimInputs = dimInputs | merge([{cfg: fsc.calcConfig.dims.height, id: 'alto_cm', fallback: fsc.t('alto')}]) %}
+                {% endif %}
+
                 <div class="row g-2 mb-3">
+                    {% for dim in dimInputs %}
                     <div class="col-auto">
-                        <label class="form-label" for="largo_cm">{{ fsc.t('largo') }}</label>
-                        <input type="number" id="largo_cm" name="largo_cm" class="form-control" step="0.01"
-                            min="{{ fsc.familyData and fsc.familyData.largo_min > 0 ? fsc.familyData.largo_min : '0.01' }}"
-                            {% if fsc.familyData and fsc.familyData.largo_max > 0 %}max="{{ fsc.familyData.largo_max }}"{% endif %}
+                        <label class="form-label" for="{{ dim.id }}">
+                            {{ dim.cfg.label ?: dim.fallback }} ({{ dim.cfg.unit }})
+                        </label>
+                        {% if dim.cfg.options is not empty %}
+                        <select id="{{ dim.id }}" name="{{ dim.id }}" class="form-select" required
+                                onchange="calculateTablerosPrice()">
+                            <option value="">—</option>
+                            {% for value in dim.cfg.options %}
+                            <option value="{{ value }}">{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <input type="number" id="{{ dim.id }}" name="{{ dim.id }}" class="form-control" step="0.01"
+                            min="{{ dim.cfg.min > 0 ? dim.cfg.min : '0.01' }}"
+                            {% if dim.cfg.max > 0 %}max="{{ dim.cfg.max }}"{% endif %}
                             required oninput="calculateTablerosPrice()">
+                        {% endif %}
                     </div>
-                    <div class="col-auto">
-                        <label class="form-label" for="ancho_cm">{{ fsc.t('ancho') }}</label>
-                        <input type="number" id="ancho_cm" name="ancho_cm" class="form-control" step="0.01"
-                            min="{{ fsc.familyData and fsc.familyData.ancho_min > 0 ? fsc.familyData.ancho_min : '0.01' }}"
-                            {% if fsc.familyData and fsc.familyData.ancho_max > 0 %}max="{{ fsc.familyData.ancho_max }}"{% endif %}
-                            required oninput="calculateTablerosPrice()">
-                    </div>
+                    {% endfor %}
                 </div>
 
                 <div class="mb-3" id="tableros-calc" style="display:none;">
+                    {% if fsc.calcConfig.mode == 'volume' %}
+                    <p class="mb-1"><strong>{{ fsc.t('volume') }}:</strong> <span id="tableros-area">0</span> l</p>
+                    {% else %}
                     <p class="mb-1"><strong>{{ fsc.t('area') }}:</strong> <span id="tableros-area">0</span> m²</p>
+                    {% endif %}
                     <p class="mb-1"><strong>{{ fsc.t('calculated-price') }}:</strong> <span id="tableros-total-price">0,00 €</span></p>
+                    {% if fsc.calcConfig.calc_weight and fsc.product.peso %}
+                    <p class="mb-1"><strong>{{ fsc.t('capture-weight') }}:</strong> <span id="tableros-weight">0</span> kg</p>
+                    {% endif %}
                 </div>
 
                 <button type="submit" id="add-to-cart-btn" class="btn btn-primary btn-lg">
@@ -411,6 +433,12 @@ var inStockLabel = {{ fsc.t('in-stock') | json_encode | raw }};
 var outOfStockLabel = {{ fsc.t('out-of-stock') | json_encode | raw }};
 var soldLabel = {{ fsc.t('sold') | json_encode | raw }};
 var familyType = {{ fsc.familyType | json_encode | raw }};
+var calcMode = "{{ fsc.calcConfig ? fsc.calcConfig.mode : 'none' }}";
+var hasCalc = calcMode !== 'none';
+var calcOverage = {{ fsc.calcConfig ? fsc.calcConfig.overage_pct : 0 }};
+var calcUnit = {{ fsc.calcConfig ? (fsc.calcConfig.price_unit | json_encode | raw) : '"m²"' }};
+var calcShowUnit = {{ fsc.calcConfig and fsc.calcConfig.show_unit_price ? 'true' : 'false' }};
+var productWeight = {{ fsc.product and fsc.product.peso ? fsc.product.peso : 0 }};
 
 function formatMoney(amount) {
     return amount.toFixed(2).replace('.', ',') + ' \u20ac';
@@ -502,13 +530,13 @@ function updateVariantFromAttributes() {
         var priceEl = document.getElementById('variant-price');
         if (priceEl) {
             priceEl.textContent = formatMoney(parseFloat(match.price));
-            if (familyType === 'tableros') priceEl.innerHTML += ' <small class="text-muted">/m²</small>';
+            if (hasCalc && calcShowUnit) priceEl.innerHTML += ' <small class="text-muted">/' + calcUnit + '</small>';
         }
 
         var inStock = parseFloat(match.stock) > 0;
         var badge = document.getElementById('variant-stock-badge');
         if (badge) {
-            if (familyType === 'tableros') {
+            if ((familyType === 'tableros' || hasCalc)) {
                 // Tableros: stock not controlled, no badge
                 badge.className = '';
                 badge.textContent = '';
@@ -523,7 +551,7 @@ function updateVariantFromAttributes() {
 
         var addBtn = document.getElementById('add-to-cart-btn');
         if (addBtn) {
-            if (familyType === 'tableros') {
+            if ((familyType === 'tableros' || hasCalc)) {
                 addBtn.disabled = false;
             } else if (familyType === 'artesania' && !inStock) {
                 addBtn.disabled = true;
@@ -540,7 +568,7 @@ function updateVariantFromAttributes() {
         updateDimensionsTable(match);
 
         // Recalculate Tableros price if applicable
-        if (familyType === 'tableros') calculateTablerosPrice();
+        if ((familyType === 'tableros' || hasCalc)) calculateTablerosPrice();
     }
 }
 
@@ -553,14 +581,14 @@ function updateVariant(select) {
     var priceEl = document.getElementById('variant-price');
     if (priceEl) {
         priceEl.textContent = formatMoney(price);
-        if (familyType === 'tableros') priceEl.innerHTML += ' <small class="text-muted">/m²</small>';
+        if (hasCalc && calcShowUnit) priceEl.innerHTML += ' <small class="text-muted">/' + calcUnit + '</small>';
     }
 
     var stock = parseFloat(option.dataset.stock);
     var inStock = stock > 0;
     var badge = document.getElementById('variant-stock-badge');
     if (badge) {
-        if (familyType === 'tableros') {
+        if ((familyType === 'tableros' || hasCalc)) {
             // Tableros: stock not controlled, no badge
             badge.className = '';
             badge.textContent = '';
@@ -575,7 +603,7 @@ function updateVariant(select) {
 
     var addBtn = document.getElementById('add-to-cart-btn');
     if (addBtn) {
-        if (familyType === 'tableros') {
+        if ((familyType === 'tableros' || hasCalc)) {
             addBtn.disabled = false;
         } else if (familyType === 'artesania' && !inStock) {
             addBtn.disabled = true;
@@ -601,46 +629,54 @@ function updateVariant(select) {
     }
 
     // Recalculate Tableros price if applicable
-    if (familyType === 'tableros') calculateTablerosPrice();
+    if ((familyType === 'tableros' || hasCalc)) calculateTablerosPrice();
 }
 
 function calculateTablerosPrice() {
     var largoInput = document.getElementById('largo_cm');
     var anchoInput = document.getElementById('ancho_cm');
+    var altoInput = document.getElementById('alto_cm');
     var calcDiv = document.getElementById('tableros-calc');
     var areaSpan = document.getElementById('tableros-area');
     var totalSpan = document.getElementById('tableros-total-price');
+    var weightSpan = document.getElementById('tableros-weight');
 
     if (!largoInput || !anchoInput) return;
 
     var largo = parseFloat(largoInput.value) || 0;
     var ancho = parseFloat(anchoInput.value) || 0;
+    var alto = altoInput ? (parseFloat(altoInput.value) || 0) : 0;
 
-    if (largo > 0 && ancho > 0) {
-        var areaCm2 = largo * ancho;
-        var areaM2 = areaCm2 / 10000;
-        // Get current variant price (€/m²)
-        var pricePerM2 = 0;
+    var complete = largo > 0 && ancho > 0 && (calcMode !== 'volume' || alto > 0);
+    if (complete) {
+        // measure: m² for area mode, litres for volume mode (+ overage)
+        var measure = (calcMode === 'volume')
+            ? largo * ancho * alto / 1000
+            : largo * ancho / 10000;
+        measure = measure * (1 + calcOverage / 100);
+
+        // Current per-unit price (variant, falling back to the shown price)
+        var unitPrice = 0;
         var refInput = document.getElementById('add-referencia');
         if (refInput) {
             for (var i = 0; i < variantData.length; i++) {
                 if (variantData[i].referencia === refInput.value) {
-                    pricePerM2 = parseFloat(variantData[i].price);
+                    unitPrice = parseFloat(variantData[i].price);
                     break;
                 }
             }
         }
-        // Fallback to product price if no variant found
-        if (pricePerM2 === 0) {
+        if (unitPrice === 0) {
             var priceEl = document.getElementById('variant-price');
             if (priceEl) {
                 var priceText = priceEl.textContent.replace(/[^\d,.-]/g, '').replace(',', '.');
-                pricePerM2 = parseFloat(priceText) || 0;
+                unitPrice = parseFloat(priceText) || 0;
             }
         }
-        var totalPrice = pricePerM2 * areaM2;
-        if (areaSpan) areaSpan.textContent = areaM2.toFixed(4);
-        if (totalSpan) totalSpan.textContent = formatMoney(totalPrice);
+
+        if (areaSpan) areaSpan.textContent = measure.toFixed(calcMode === 'volume' ? 2 : 4);
+        if (totalSpan) totalSpan.textContent = formatMoney(unitPrice * measure);
+        if (weightSpan) weightSpan.textContent = (productWeight * measure).toFixed(1);
         if (calcDiv) calcDiv.style.display = '';
     } else {
         if (calcDiv) calcDiv.style.display = 'none';

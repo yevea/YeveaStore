@@ -136,13 +136,11 @@ trait OrderFulfillmentTrait
                 $linea->descripcion = $yeveastoreLine->product_name;
                 $linea->pvpunitario = $info->price;
 
-                // For Tableros: adjust price by area
-                $largoCm = $yeveastoreLine->largo_cm ?? null;
-                $anchoCm = $yeveastoreLine->ancho_cm ?? null;
-                $area = $this->calculateTablerosArea($largoCm, $anchoCm);
-                if ($area !== null) {
-                    $linea->pvpunitario = $info->price * $area;
-                    $linea->descripcion .= ' (' . $largoCm . 'x' . $anchoCm . ' cm)';
+                // Custom-dimension items (area/volume calculator): price by factor
+                $factor = $this->measureFactor($info, $yeveastoreLine);
+                if ($factor !== null) {
+                    $linea->pvpunitario = $info->price * $factor;
+                    $linea->descripcion .= $this->dimsSuffix($yeveastoreLine);
                 }
 
                 // For Tablones: append product dimensions to description
@@ -228,6 +226,7 @@ trait OrderFulfillmentTrait
                         'name' => $name,
                         'price' => $variante->precio,
                         'referencia' => $parent->referencia,
+                        'codfamilia' => (string) ($parent->codfamilia ?? ''),
                         'slug' => (string) ($parent->slug ?? ''),
                         'tax_rate' => $this->getTaxRate($parent->codimpuesto ?? ''),
                         'largo' => $parent->largo ?? null,
@@ -248,6 +247,7 @@ trait OrderFulfillmentTrait
                 'name' => $translated['name'],
                 'price' => $product->precio,
                 'referencia' => $product->referencia,
+                'codfamilia' => (string) ($product->codfamilia ?? ''),
                 'slug' => (string) ($product->slug ?? ''),
                 'tax_rate' => $this->getTaxRate($product->codimpuesto ?? ''),
                 'largo' => $product->largo ?? null,
@@ -298,6 +298,37 @@ trait OrderFulfillmentTrait
             return $largoCm * $anchoCm / 10000;
         }
         return null;
+    }
+
+    /**
+     * Price multiplier for a cart/order line with customer dimensions,
+     * following the familia's calculator config (area m² / volume litres,
+     * overage included). Null for normal items without dimensions.
+     *
+     * @param object|null $info line info from resolveProductInfoByRef()
+     * @param object $item cart item or order line carrying largo_cm/ancho_cm/alto_cm
+     */
+    protected function measureFactor(?object $info, object $item): ?float
+    {
+        return YeveaMeasure::factorFor(
+            $info->codfamilia ?? '',
+            isset($item->largo_cm) ? (float) $item->largo_cm : null,
+            isset($item->ancho_cm) ? (float) $item->ancho_cm : null,
+            isset($item->alto_cm) ? (float) $item->alto_cm : null
+        );
+    }
+
+    /** ' (LxW cm)' or ' (LxWxH cm)' suffix for line descriptions. */
+    protected function dimsSuffix(object $item): string
+    {
+        if (empty($item->largo_cm) || empty($item->ancho_cm)) {
+            return '';
+        }
+        $suffix = ' (' . $item->largo_cm . 'x' . $item->ancho_cm;
+        if (!empty($item->alto_cm)) {
+            $suffix .= 'x' . $item->alto_cm;
+        }
+        return $suffix . ' cm)';
     }
 
     protected function getFamilyType(?string $codfamilia): string

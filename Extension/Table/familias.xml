@@ -42,4 +42,8 @@
         <name>category_outro</name>
         <type>text</type>
     </column>
+    <column>
+        <name>calc_config</name>
+        <type>text</type>
+    </column>
 </table>

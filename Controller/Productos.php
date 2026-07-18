@@ -94,8 +94,10 @@ class Productos extends StoreControllerBase
     {
         parent::loadProducts();
 
-        // Apply dimension filtering for Tablones categories
-        if ($this->selectedCategoryType !== 'tablones') {
+        // Dimension filtering: tablones categories and any family with a
+        // measurement calculator configured (area/volume)
+        $calcMode = $this->selectedCategoryFamily->calc_mode ?? 'none';
+        if ($this->selectedCategoryType !== 'tablones' && $calcMode === 'none') {
             return;
         }
 

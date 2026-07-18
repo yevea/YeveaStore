@@ -13,6 +13,7 @@ use FacturaScripts\Dinamic\Model\AttachedFileRelation;
 use FacturaScripts\Dinamic\Model\ProductoImagen;
 use FacturaScripts\Core\UploadedFile;
 use FacturaScripts\Plugins\YeveaStore\Lib\StoreControllerBase;
+use FacturaScripts\Plugins\YeveaStore\Lib\YeveaMeasure;
 
 /**
  * YeveaCaptura: installable mobile-first PWA to capture wood planks and
@@ -241,10 +242,14 @@ class YeveaCaptura extends StoreControllerBase
             }
         }
 
-        // Auto-price from the store's per-m² table (tableros products);
-        // 0 when dimensions are missing or no rate matches — the admin
-        // then sets the price manually before approving.
-        $precio = $this->calculateSlabPrice($grueso, $largo, $ancho);
+        // Auto-price: first from the family's own thickness-rate table
+        // ("Tabla de Precios" tab), falling back to the tableros products
+        // scan. 0 when nothing matches — the admin then sets the price
+        // manually before approving.
+        $precio = YeveaMeasure::capturePrice($codfamilia, $grueso, $largo, $ancho);
+        if ($precio <= 0) {
+            $precio = $this->calculateSlabPrice($grueso, $largo, $ancho);
+        }
 
         $db = new DataBase();
         $db->beginTransaction();
