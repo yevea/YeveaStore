@@ -20,21 +20,16 @@
 namespace FacturaScripts\Plugins\YeveaStore\Extension\Controller;
 
 use Closure;
-use FacturaScripts\Core\Lib\AssetManager;
 use FacturaScripts\Core\Model\Familia;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Plugins\YeveaStore\Lib\YeveaMeasure;
 
 /**
- * Extension for EditFamilia controller.
- *
- * - Hides dimension-limit columns (largo_min, largo_max, ancho_min, ancho_max)
- *   server-side when the family type is not "tableros".
- * - Registers a JavaScript asset for client-side dynamic toggling of the
- *   dimension-limits section based on the "Tipo de Familia" dropdown.
- * - Adds the "Tabla de Precios" tab: per-family measurement price calculator
- *   (None / Area L×W / Volume L×W×H) + capture thickness rates, stored as
- *   JSON in familias.calc_config (see Lib/YeveaMeasure).
+ * Extension for EditFamilia controller: adds the "Tabla de Precios" tab —
+ * per-family measurement price calculator (None / Area L×W / Volume L×W×H)
+ * + capture thickness rates, stored as JSON in familias.calc_config (see
+ * Lib/YeveaMeasure). The dimension-limit fields (largo/ancho min-max) bound
+ * the calculator's free inputs.
  */
 class EditFamilia
 {
@@ -129,23 +124,8 @@ class EditFamilia
                 return;
             }
 
-            if ($viewName !== 'EditFamilia') {
-                return;
-            }
-
-            // Register the JS asset for dynamic toggle of the dimensions section
-            $pluginPath = FS_FOLDER . '/Plugins/YeveaStore/Assets/JS/EditFamilia.js';
-            if (file_exists($pluginPath)) {
-                AssetManager::addJs(FS_ROUTE . '/Plugins/YeveaStore/Assets/JS/EditFamilia.js');
-            }
-
-            // Server-side: hide dimension columns when tipofamilia is not "tableros"
-            $tipofamilia = $view->model->tipofamilia ?? 'mercancia';
-            if ($tipofamilia !== 'tableros') {
-                foreach (['largo-min', 'largo-max', 'ancho-min', 'ancho-max'] as $col) {
-                    $view->disableColumn($col);
-                }
-            }
+            // The dimension-limit fields stay visible for every family: they
+            // bound the free inputs of the measurement calculator (YeveaMeasure)
         };
     }
 }

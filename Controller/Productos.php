@@ -21,6 +21,9 @@ class Productos extends StoreControllerBase
     /** @var string|null Current category slug (e.g. "TablerosMesa") */
     public $categorySlug = null;
 
+    /** @var bool True when the loaded product list contains dimensioned products (shows the filter) */
+    public $hasDimensionedProducts = false;
+
     public function getPageData(): array
     {
         $pageData = parent::getPageData();
@@ -94,11 +97,13 @@ class Productos extends StoreControllerBase
     {
         parent::loadProducts();
 
-        // Dimension filtering: tablones categories and any family with a
-        // measurement calculator configured (area/volume)
-        $calcMode = $this->selectedCategoryFamily->calc_mode ?? 'none';
-        if ($this->selectedCategoryType !== 'tablones' && $calcMode === 'none') {
-            return;
+        // The dimension filter only concerns products that carry dimensions;
+        // computed BEFORE filtering so the form stays visible on empty results
+        foreach ($this->products as $p) {
+            if ($p->largo !== null || $p->ancho !== null || $p->espesor !== null) {
+                $this->hasDimensionedProducts = true;
+                break;
+            }
         }
 
         $hasFilter = false;

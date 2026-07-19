@@ -232,5 +232,7 @@
     "calc-rate-from": "Grueso desde",
     "calc-rate-to": "hasta",
     "calc-rate-add": "Añadir rango",
-    "calc-save-family-first": "Guarda primero la familia para poder configurar su Tabla de Precios."
+    "calc-save-family-first": "Guarda primero la familia para poder configurar su Tabla de Precios.",
+    "family-type-standard": "Producto estándar",
+    "family-type-unique": "Pieza única"
 }

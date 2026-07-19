@@ -201,5 +201,7 @@
     "captura-pendiente": "Wartet auf Freigabe (Erfassung)",
     "alto": "Höhe",
     "volume": "Volumen",
-    "price-table": "Preistabelle"
+    "price-table": "Preistabelle",
+    "family-type-standard": "Standardprodukt",
+    "family-type-unique": "Einzelstück"
 }

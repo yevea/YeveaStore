@@ -8,7 +8,7 @@
     <column>
         <name>tipofamilia</name>
         <type>character varying(20)</type>
-        <default>'mercancia'</default>
+        <default>'estandar'</default>
     </column>
     <column>
         <name>largo_min</name>

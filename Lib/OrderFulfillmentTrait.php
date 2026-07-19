@@ -292,13 +292,6 @@ trait OrderFulfillmentTrait
      * Calculates the area in m² for Tableros items.
      * Returns null if this is not a Tableros item (no valid dimensions).
      */
-    protected function calculateTablerosArea(?float $largoCm, ?float $anchoCm): ?float
-    {
-        if ($largoCm !== null && $anchoCm !== null && $largoCm > 0 && $anchoCm > 0) {
-            return $largoCm * $anchoCm / 10000;
-        }
-        return null;
-    }
 
     /**
      * Price multiplier for a cart/order line with customer dimensions,
@@ -334,15 +327,15 @@ trait OrderFulfillmentTrait
     protected function getFamilyType(?string $codfamilia): string
     {
         if (empty($codfamilia)) {
-            return 'mercancia';
+            return 'estandar';
         }
 
         $familia = new Familia();
         if ($familia->loadFromCode($codfamilia)) {
-            return $familia->tipofamilia ?? 'mercancia';
+            return $familia->tipofamilia ?? 'estandar';
         }
 
-        return 'mercancia';
+        return 'estandar';
     }
 
     /**
@@ -369,7 +362,7 @@ trait OrderFulfillmentTrait
      */
     protected function appendTablonesDimensions(string $descripcion, object $info): string
     {
-        if ($info->familyType === 'tablones') {
+        if ($info->familyType === 'pieza_unica') {
             $dims = $this->formatProductDimensions($info->largo, $info->ancho, $info->espesor);
             if ($dims !== '') {
                 $descripcion .= ' (' . $dims . ')';

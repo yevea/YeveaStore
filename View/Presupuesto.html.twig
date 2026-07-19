@@ -66,7 +66,7 @@
                                     ({{ (item.largo_cm * item.ancho_cm / 10000) | number_format(4, ',', '.') }} m²)
                                     {% endif %}
                                 </small>
-                                {% elseif item.isTablones is defined and item.isTablones and (item.largo is not null or item.ancho is not null or item.espesor is not null) %}
+                                {% elseif item.isUnique is defined and item.isUnique and (item.largo is not null or item.ancho is not null or item.espesor is not null) %}
                                 <br><small class="text-muted">
                                     ({% if item.largo is not null %}{{ item.largo }}{% endif %}{% if item.ancho is not null %}{% if item.largo is not null %}×{% endif %}{{ item.ancho }}{% endif %}{% if item.espesor is not null %}{% if item.largo is not null or item.ancho is not null %}×{% endif %}{{ item.espesor }}{% endif %} cm)
                                 </small>

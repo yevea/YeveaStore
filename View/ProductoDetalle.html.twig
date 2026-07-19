@@ -48,14 +48,15 @@
             "name": "{{ fsc.t('sawmill') }}",
             "description": "{{ fsc.t('sawmill-desc') }}"
         },
-        "category": "{% if fsc.familyType == 'tableros' %}{{ fsc.t('olive-wood-boards') }}{% elseif fsc.familyType == 'tablones' %}{{ fsc.t('wood-planks') }}{% elseif fsc.familyType == 'artesania' %}{{ fsc.t('olive-wood-crafts') }}{% else %}{{ fsc.t('olive-wood') }}{% endif %}",
+        "category": "{{ (fsc.familyData ? fsc.familyData.descripcion : fsc.t('olive-wood')) | e('js') }}",
         "offers": {
             "@type": "Offer",
             "price": "{{ fsc.defaultVariant ? fsc.defaultVariant.price : fsc.product.price }}",
             "priceCurrency": "EUR",
-            {% if fsc.familyType == 'tableros' %}"unitCode": "MTK",
-            "unitText": "m²",{% endif %}
-            "availability": "{% if (fsc.familyType == 'artesania' or fsc.familyType == 'tablones') and fsc.product.isSold %}https://schema.org/SoldOut{% elseif fsc.product.nostock %}https://schema.org/InStock{% elseif (fsc.defaultVariant ? fsc.defaultVariant.stock : fsc.product.stock) > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+            {% if fsc.calcConfig and fsc.calcConfig.mode == 'area' %}"unitCode": "MTK",
+            "unitText": "m²",{% elseif fsc.calcConfig and fsc.calcConfig.mode == 'volume' %}"unitCode": "MTQ",
+            "unitText": "m³",{% endif %}
+            "availability": "{% if fsc.familyType == 'pieza_unica' and fsc.product.isSold %}https://schema.org/SoldOut{% elseif fsc.product.nostock %}https://schema.org/InStock{% elseif (fsc.defaultVariant ? fsc.defaultVariant.stock : fsc.product.stock) > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
             "areaServed": [
                 {"@type": "Country", "name": "Spain"},
                 {"@type": "Country", "name": "France"},
@@ -194,7 +195,7 @@
                     <small class="text-muted">/{{ fsc.calcConfig.price_unit }}</small>
                     {% endif %}
                 </span>
-                {% if (fsc.familyType == 'artesania' or fsc.familyType == 'tablones') and fsc.product.isSold %}
+                {% if fsc.familyType == 'pieza_unica' and fsc.product.isSold %}
                 <span id="variant-stock-badge" class="badge bg-warning text-dark fs-6">{{ fsc.t('sold') }}</span>
                 {% elseif fsc.product.nostock %}
                 <span id="variant-stock-badge"></span>
@@ -213,7 +214,7 @@
             {% endif %}
 
             {# Tablones: Show product dimensions (non-editable) #}
-            {% if fsc.familyType == 'tablones' %}
+            {% if fsc.product.largo is not null or fsc.product.ancho is not null or fsc.product.espesor is not null %}
             <div class="mb-3" id="tablones-dimensions">
                 <h6>{{ fsc.t('dimensions') }}</h6>
                 {% if fsc.product.largo is not null or fsc.product.ancho is not null or fsc.product.espesor is not null %}
@@ -270,7 +271,7 @@
             {% endif %}
 
             {# === ARTESANÍA / TABLONES: sold overlay === #}
-            {% if (fsc.familyType == 'artesania' or fsc.familyType == 'tablones') and fsc.product.isSold %}
+            {% if fsc.familyType == 'pieza_unica' and fsc.product.isSold %}
             <div class="alert alert-warning">
                 <i class="fa-solid fa-tag"></i> {{ fsc.t('sold') }}
             </div>
@@ -352,7 +353,7 @@
             {% endif %}
 
             {# === TABLONES: unique slab, quantity always 1 === #}
-            {% elseif fsc.familyType == 'tablones' %}
+            {% elseif fsc.familyType == 'pieza_unica' %}
             {% set showForm = fsc.product.stock > 0 or fsc.product.nostock %}
             {% if showForm %}
             <form method="post" action="{{ asset('producto') }}?url={{ fsc.product.slug }}">
@@ -382,7 +383,7 @@
                     value="{{ fsc.defaultVariant ? fsc.defaultVariant.referencia : fsc.product.referencia }}">
                 <input type="hidden" name="multireqtoken" value="{{ fsc.multiRequestProtection.newToken() }}">
 
-                {% if fsc.familyType != 'artesania' %}
+                {% if fsc.familyType != 'pieza_unica' %}
                 <div class="input-group mb-3" style="max-width: 200px;">
                     <label class="input-group-text" for="qty">{{ fsc.t('quantity') }}</label>
                     <input type="number" id="qty" name="quantity" value="1" min="1" {% if fsc.product.nostock %}max="999"{% else %}max="{{ currentStock }}"{% endif %} class="form-control">
@@ -536,11 +537,11 @@ function updateVariantFromAttributes() {
         var inStock = parseFloat(match.stock) > 0;
         var badge = document.getElementById('variant-stock-badge');
         if (badge) {
-            if ((familyType === 'tableros' || hasCalc)) {
+            if (hasCalc) {
                 // Tableros: stock not controlled, no badge
                 badge.className = '';
                 badge.textContent = '';
-            } else if (familyType === 'artesania' && !inStock) {
+            } else if (familyType === 'pieza_unica' && !inStock) {
                 badge.className = 'badge bg-warning text-dark fs-6';
                 badge.textContent = soldLabel;
             } else {
@@ -551,9 +552,9 @@ function updateVariantFromAttributes() {
 
         var addBtn = document.getElementById('add-to-cart-btn');
         if (addBtn) {
-            if ((familyType === 'tableros' || hasCalc)) {
+            if (hasCalc) {
                 addBtn.disabled = false;
-            } else if (familyType === 'artesania' && !inStock) {
+            } else if (familyType === 'pieza_unica' && !inStock) {
                 addBtn.disabled = true;
             } else {
                 addBtn.disabled = !inStock;
@@ -568,7 +569,7 @@ function updateVariantFromAttributes() {
         updateDimensionsTable(match);
 
         // Recalculate Tableros price if applicable
-        if ((familyType === 'tableros' || hasCalc)) calculateTablerosPrice();
+        if (hasCalc) calculateTablerosPrice();
     }
 }
 
@@ -588,11 +589,11 @@ function updateVariant(select) {
     var inStock = stock > 0;
     var badge = document.getElementById('variant-stock-badge');
     if (badge) {
-        if ((familyType === 'tableros' || hasCalc)) {
+        if (hasCalc) {
             // Tableros: stock not controlled, no badge
             badge.className = '';
             badge.textContent = '';
-        } else if (familyType === 'artesania' && !inStock) {
+        } else if (familyType === 'pieza_unica' && !inStock) {
             badge.className = 'badge bg-warning text-dark fs-6';
             badge.textContent = soldLabel;
         } else {
@@ -603,9 +604,9 @@ function updateVariant(select) {
 
     var addBtn = document.getElementById('add-to-cart-btn');
     if (addBtn) {
-        if ((familyType === 'tableros' || hasCalc)) {
+        if (hasCalc) {
             addBtn.disabled = false;
-        } else if (familyType === 'artesania' && !inStock) {
+        } else if (familyType === 'pieza_unica' && !inStock) {
             addBtn.disabled = true;
         } else {
             addBtn.disabled = !inStock;
@@ -619,7 +620,7 @@ function updateVariant(select) {
     updateCarouselForVariant(option.dataset.idvariante || null);
 
     // Update Tablones dimensions from data attributes
-    if (familyType === 'tablones') {
+    if (familyType === 'pieza_unica') {
         var variant = {
             largo: option.dataset.largo !== '' ? option.dataset.largo : null,
             ancho: option.dataset.ancho !== '' ? option.dataset.ancho : null,
@@ -629,7 +630,7 @@ function updateVariant(select) {
     }
 
     // Recalculate Tableros price if applicable
-    if ((familyType === 'tableros' || hasCalc)) calculateTablerosPrice();
+    if (hasCalc) calculateTablerosPrice();
 }
 
 function calculateTablerosPrice() {

@@ -49,7 +49,7 @@ class LlmsTxt extends StoreControllerBase
         $out[] = '';
         foreach (array_slice($this->products, 0, self::MAX_PRODUCTS) as $product) {
             $line = '- [' . $product->name . '](' . $base . '/producto?url=' . rawurlencode($product->slug) . ')';
-            if ($product->familyType === 'tableros') {
+            if (\FacturaScripts\Plugins\YeveaStore\Lib\YeveaMeasure::configFor($product->codfamilia ?? '')->mode !== 'none') {
                 $line .= ' — precio por m², corte a medida / price per m², custom cut';
             }
             $out[] = $line;

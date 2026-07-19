@@ -201,5 +201,7 @@
     "captura-pendiente": "En attente d’approbation (capture)",
     "alto": "Hauteur",
     "volume": "Volume",
-    "price-table": "Tableau de Prix"
+    "price-table": "Tableau de Prix",
+    "family-type-standard": "Produit standard",
+    "family-type-unique": "Pièce unique"
 }

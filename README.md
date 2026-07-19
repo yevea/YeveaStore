@@ -41,10 +41,10 @@ The storefront and product detail pages include:
 ## Features
 
 - **Product Management** — Create and manage products with name, reference, description, price, stock, and images
-- **Category Management** — Organise products into families with type-specific behaviour (mercancia, tablones, tableros, artesania)
+- **Category Management** — Organise products into families; two family types: **standard product** and **unique piece** (qty 1, "Sold" when gone, dimensions on the product, default stock 1)
 - **Storefront** — Public-facing product catalogue with category filtering and Schema.org structured data
 - **Shopping Cart** — Session-based cart with add, update quantity, and remove functionality
-- **Measurement Price Calculator** — per-family "Tabla de Precios" tab (None / Area L×W at €/m² / Volume L×W×H at €/m³): customer enters dimensions on the product page (free input within family limits, or a fixed dropdown of allowed values), price is computed live and re-validated server-side; configurable labels/units, overage % and calculated weight. Legacy `tableros` families keep working as Area mode with no config
+- **Measurement Price Calculator** — per-family "Tabla de Precios" tab (None / Area L×W at €/m² / Volume L×W×H at €/m³): customer enters dimensions on the product page (free input within family limits, or a fixed dropdown of allowed values), price is computed live and re-validated server-side; configurable labels/units, overage % and calculated weight. Pricing by measurements is configured ONLY here — family types no longer carry pricing behaviour
 - **Warehouse Capture PWA** — installable mobile app at `/capturar` (no login — the selected warehouse identifies the operator): camera multi-photo capture, auto SKU (`FAMILYNAME-NNNN`), dimensions/weight/pile, stock 1 (unique pieces), price auto-calculated from the family's thickness-rate table. Works offline (IndexedDB queue + Background Sync, deduped server-side by capture id). Captured products stay hidden everywhere until approved in Admin → YeveaStore → YeveaCaptura
 - **Order Processing** — Checkout flow that converts cart items into orders with full customer details
 - **Native FS Integration** — Automatically creates FacturaScripts `Cliente` and `PedidoCliente` records
@@ -62,7 +62,6 @@ YeveaStore/
 │   │   └── yeveastore.css           # Public storefront styles
 │   ├── Images/                      # Capture PWA icons (SVG + 192/512 PNG)
 │   └── JS/
-│       ├── EditFamilia.js           # Dynamic family-type UI
 │       ├── SettingsScrollTop.js     # Admin settings scroll fix
 │       ├── YeveaCaptura.js          # Capture PWA app (camera, offline queue, install)
 │       ├── YeveaCapturaQueue.js     # Shared IndexedDB queue (page + service worker)
@@ -77,9 +76,7 @@ YeveaStore/
 │   ├── Productos.php                # Product catalogue (frontend)
 │   ├── SettingsYeveaStore.php        # Admin settings (5 tabs: Dashboard/Ajustes/Plan/Reseñas/Captura)
 │   ├── Sitemap.php                  # /sitemap.xml
-│   ├── StoreFront.php               # Legacy route: 301 → /productos
 │   ├── StripeWebhook.php            # Stripe webhook (checkout.session.completed)
-│   ├── Tableros.php                 # Legacy route: 301 → /productos
 │   └── YeveaCaptura.php             # /capturar — warehouse capture PWA (no login; captures await admin approval)
 ├── Extension/
 │   ├── Controller/
@@ -239,7 +236,7 @@ When a customer completes a payment via Stripe, the plugin automatically:
 
 ### Storefront
 - Public routes are lowercase for SEO: `/productos` (catalogue), `/producto` (product detail), `/presupuesto` (quote/cart), `/sitemap.xml`, `/llms.txt`, plus `/capturar` (warehouse capture PWA — no login; captured products stay hidden until approved in Admin → YeveaStore → Captura)
-- The legacy CamelCase routes (`/StoreFront`, `/Tableros`, `/Presupuesto`, `/ProductoDetalle`) 301-redirect to their lowercase equivalent on GET requests
+- The CamelCase controller routes (`/Productos`, `/Presupuesto`, `/ProductoDetalle`…) 301-redirect to their lowercase equivalent on GET requests
 - Browse products, filter by category, add items to cart
 - Switch language with the header selector (`?lang=es_ES|en_EN|fr_FR|de_DE`); the choice is remembered in a cookie and reflected in `hreflang` tags
 - Complete checkout by entering customer details (name, NIF/CIF, email, phone, address, city, postal code, province, country) and clicking **Realizar Pedido**

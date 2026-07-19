@@ -56,6 +56,9 @@ abstract class StoreControllerBase extends Controller
     /** @var array Map of codfamilia => slug for all categories */
     public $slugMap = [];
 
+    /** @var array Map of codfamilia => price unit ('m²'/'m³') for families with a visible calculator, '' otherwise */
+    public $calcUnitMap = [];
+
     /**
      * Default page registration for all public store controllers: grouped under
      * the 'yeveastore' menu and hidden from the admin menu bar. Without this,
@@ -221,7 +224,7 @@ abstract class StoreControllerBase extends Controller
         }
 
         $isPublic = false;
-        $familyType = 'mercancia';
+        $familyType = 'estandar';
         $codfamilia = '';
         $product = new Producto();
         $where = [Where::eq('referencia', $productReferencia)];
@@ -255,7 +258,7 @@ abstract class StoreControllerBase extends Controller
         $qty = max(1, (int) $this->request()->request->get('quantity', 1));
 
         // For Artesanía and Tablones, quantity is always 1 (unique pieces)
-        if ($familyType === 'artesania' || $familyType === 'tablones') {
+        if ($familyType === 'pieza_unica') {
             $qty = 1;
         }
 
@@ -289,7 +292,7 @@ abstract class StoreControllerBase extends Controller
         if (!$hasCustomDims) {
             $existing = $cartItem->all($where);
             if (!empty($existing)) {
-                if ($familyType === 'artesania' || $familyType === 'tablones') {
+                if ($familyType === 'pieza_unica') {
                     // Artesanía / Tablones: unique pieces, don't add more, quantity stays at 1
                     return true;
                 }
@@ -358,6 +361,11 @@ abstract class StoreControllerBase extends Controller
                 ? $translatedName
                 : $cat->descripcion;
             $this->slugMap[$cat->codfamilia] = self::generateSlug($cat->descripcion);
+
+            $calc = YeveaMeasure::configFor($cat->codfamilia);
+            $this->calcUnitMap[$cat->codfamilia] = ($calc->mode !== 'none' && $calc->show_unit_price)
+                ? $calc->price_unit
+                : '';
         }
     }
 
@@ -372,7 +380,7 @@ abstract class StoreControllerBase extends Controller
 
         $familia = new Familia();
         if ($familia->loadFromCode($this->selectedCategory)) {
-            $tipo = $familia->tipofamilia ?? 'mercancia';
+            $tipo = $familia->tipofamilia ?? 'estandar';
             $this->selectedCategoryType = $tipo;
 
             // Translate category content via translation keys (fallback to DB Spanish)
@@ -461,7 +469,7 @@ abstract class StoreControllerBase extends Controller
         // Build a map of family codes to types for efficient lookup
         $familyTypeMap = [];
         foreach ($this->categories as $cat) {
-            $familyTypeMap[$cat->codfamilia] = $cat->tipofamilia ?? 'mercancia';
+            $familyTypeMap[$cat->codfamilia] = $cat->tipofamilia ?? 'estandar';
         }
 
         // Batch-load the first image of every product in one query (avoids N+1)
@@ -487,16 +495,17 @@ abstract class StoreControllerBase extends Controller
 
             $imageUrl = $firstImageMap[$p->idproducto] ?? null;
 
-            $familyType = $familyTypeMap[$p->codfamilia] ?? 'mercancia';
+            $familyType = $familyTypeMap[$p->codfamilia] ?? 'estandar';
 
             // For Artesanía and Tablones: unique pieces are sold out when stock <= 0
-            $isSold = in_array($familyType, ['artesania', 'tablones'], true) && $p->stockfis <= 0;
+            $isSold = ($familyType === 'pieza_unica') && $p->stockfis <= 0;
 
             // Translate product name/description via translation keys (fallback to DB Spanish)
             $translated = $this->translateProduct($p->referencia, $p->descripcion, $p->observaciones ?? '');
 
             $this->products[] = (object) [
                 'referencia' => $p->referencia,
+                'codfamilia' => $p->codfamilia,
                 'slug' => !empty($p->slug) ? $p->slug : self::generateProductSlug($p->descripcion),
                 'name' => $translated['name'],
                 'description' => $translated['description'],
@@ -537,15 +546,15 @@ abstract class StoreControllerBase extends Controller
     protected function getFamilyTypeForProduct(Producto $product): string
     {
         if (empty($product->codfamilia)) {
-            return 'mercancia';
+            return 'estandar';
         }
 
         $familia = new Familia();
         if ($familia->loadFromCode($product->codfamilia)) {
-            return $familia->tipofamilia ?? 'mercancia';
+            return $familia->tipofamilia ?? 'estandar';
         }
 
-        return 'mercancia';
+        return 'estandar';
     }
 
     protected function isFamilyPublic(?string $codfamilia): bool

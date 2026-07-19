@@ -232,5 +232,7 @@
     "calc-rate-from": "Thickness from",
     "calc-rate-to": "to",
     "calc-rate-add": "Add range",
-    "calc-save-family-first": "Save the family first to configure its Price Table."
+    "calc-save-family-first": "Save the family first to configure its Price Table.",
+    "family-type-standard": "Standard product",
+    "family-type-unique": "Unique piece"
 }

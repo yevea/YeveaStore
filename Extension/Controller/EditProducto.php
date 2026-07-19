@@ -30,14 +30,14 @@ use FacturaScripts\Dinamic\Model\ProductoImagen;
 /**
  * Extension for EditProducto controller to fix observations on product images,
  * save short descriptions (alt text) and rename uploaded files for SEO,
- * and hide dimension fields (largo, ancho, espesor) for non-tablones families.
+ * and hide dimension fields (largo, ancho, espesor) for non-unique-piece families.
  */
 class EditProducto
 {
     protected function loadData(): Closure
     {
         return function ($viewName, $view) {
-            // Hide dimension columns on EditVariante (dimensions live on the product for tablones)
+            // Hide dimension columns on EditVariante (dimensions live on the product for unique pieces)
             if ($viewName === 'EditVariante') {
                 foreach (['largo', 'ancho', 'espesor'] as $col) {
                     $view->disableColumn($col);
@@ -48,14 +48,14 @@ class EditProducto
             // Show/hide product-level dimension fields based on family type
             if ($viewName === 'EditProducto') {
                 $codfamilia = $this->getViewModelValue('EditProducto', 'codfamilia');
-                $isTablones = false;
+                $isUnique = false;
                 if (!empty($codfamilia)) {
                     $familia = new Familia();
-                    if ($familia->loadFromCode($codfamilia) && ($familia->tipofamilia ?? '') === 'tablones') {
-                        $isTablones = true;
+                    if ($familia->loadFromCode($codfamilia) && ($familia->tipofamilia ?? '') === 'pieza_unica') {
+                        $isUnique = true;
                     }
                 }
-                if (!$isTablones) {
+                if (!$isUnique) {
                     foreach (['largo', 'ancho', 'espesor'] as $col) {
                         $view->disableColumn($col);
                     }
@@ -144,14 +144,14 @@ class EditProducto
     protected function execAfterAction(): Closure
     {
         return function ($action) {
-            // Set default stock to 1 for new tablones products (each slab is a unique piece)
+            // Set default stock to 1 for new unique-piece products (each slab is a unique piece)
             if ($action === 'insert') {
                 $idproducto = $this->getViewModelValue('EditProducto', 'idproducto');
                 $codfamilia = $this->getViewModelValue('EditProducto', 'codfamilia');
 
                 if (!empty($codfamilia) && !empty($idproducto)) {
                     $familia = new Familia();
-                    if ($familia->loadFromCode($codfamilia) && ($familia->tipofamilia ?? '') === 'tablones') {
+                    if ($familia->loadFromCode($codfamilia) && ($familia->tipofamilia ?? '') === 'pieza_unica') {
                         $varianteClass = '\FacturaScripts\Dinamic\Model\Variante';
                         if (class_exists($varianteClass)) {
                             $variante = new $varianteClass();

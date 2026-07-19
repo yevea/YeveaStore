@@ -52,7 +52,7 @@
                 "url": "{{ asset('producto') }}?url={{ product.slug }}",
                 {% if product.image %}"image": "{{ product.image }}",{% endif %}
                 "material": "{{ fsc.t('olive-wood') }}",
-                "category": "{% if product.familyType is defined and product.familyType == 'tableros' %}{{ fsc.t('olive-wood-boards') }}{% elseif product.familyType is defined and product.familyType == 'tablones' %}{{ fsc.t('wood-planks') }}{% elseif product.familyType is defined and product.familyType == 'artesania' %}{{ fsc.t('olive-wood-crafts') }}{% else %}{{ fsc.t('olive-wood') }}{% endif %}",
+                "category": "{{ (fsc.categoryNames[product.codfamilia] ?? fsc.t('olive-wood')) | e('js') }}",
                 "offers": {
                     "@type": "Offer",
                     "price": "{{ product.price }}",
@@ -86,8 +86,8 @@
     {% endblock %}
 
     {% block category_filters %}
-    {# Dimension filters: tablones categories and families with a measurement calculator #}
-    {% if fsc.selectedCategoryType == 'tablones' or (fsc.selectedCategoryFamily and fsc.selectedCategoryFamily.calc_mode is defined and fsc.selectedCategoryFamily.calc_mode != 'none') %}
+    {# Dimension filters: shown whenever the listed products carry dimensions #}
+    {% if fsc.hasDimensionedProducts %}
     <div class="card mb-3">
         <div class="card-body">
             <h6 class="card-title"><i class="fa-solid fa-filter"></i> {{ fsc.t('filter-dimensions') }}</h6>
@@ -150,7 +150,7 @@
                     {% endif %}
                     <div class="card-body d-flex flex-column">
                         <h2 class="card-title h5" itemprop="name">{{ product.name }}</h2>
-                        {% set hasDimensions = product.familyType is defined and product.familyType == 'tablones' and (product.largo is not null or product.ancho is not null or product.espesor is not null) %}
+                        {% set hasDimensions = product.largo is not null or product.ancho is not null or product.espesor is not null %}
                         {% if hasDimensions %}
                         <p class="card-text small mb-1">
                             <i class="fa-solid fa-ruler-combined"></i>
@@ -167,8 +167,8 @@
                             <meta itemprop="priceCurrency" content="EUR">
                             <span class="mb-0" itemprop="price" content="{{ product.price }}">
                                 {{ fsc.formatMoney(product.price) }}
-                                {% if product.familyType is defined and product.familyType == 'tableros' %}
-                                <small class="text-muted">/m²</small>
+                                {% if fsc.calcUnitMap[product.codfamilia] is defined and fsc.calcUnitMap[product.codfamilia] is not empty %}
+                                <small class="text-muted">/{{ fsc.calcUnitMap[product.codfamilia] }}</small>
                                 {% endif %}
                             </span>
                             {% if product.isSold is defined and product.isSold %}

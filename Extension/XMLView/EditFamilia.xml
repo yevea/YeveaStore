@@ -7,10 +7,8 @@
             </column>
             <column name="family-type" numcolumns="12" order="115">
                 <widget type="select" fieldname="tipofamilia">
-                    <values title="mercancia">mercancia</values>
-                    <values title="artesania">artesania</values>
-                    <values title="tablones">tablones</values>
-                    <values title="tableros">tableros</values>
+                    <values title="family-type-standard">estandar</values>
+                    <values title="family-type-unique">pieza_unica</values>
                 </widget>
             </column>
         </group>

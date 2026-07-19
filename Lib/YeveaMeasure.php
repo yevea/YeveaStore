@@ -25,9 +25,6 @@ use FacturaScripts\Core\Model\Familia;
  *   "60;61" list); empty means free input bounded by the familia min/max.
  * - capture_rates: €/m² per thickness range, used by YeveaCaptura to price
  *   slabs at capture time.
- *
- * Legacy: a familia of tipo 'tableros' with no calc_config behaves as mode
- * "area" (that was the hard-coded behaviour before this class existed).
  */
 class YeveaMeasure
 {
@@ -66,11 +63,6 @@ class YeveaMeasure
         }
 
         $mode = in_array($raw['mode'] ?? '', ['area', 'volume'], true) ? $raw['mode'] : 'none';
-
-        // legacy behaviour: tableros families are area-priced by default
-        if ($mode === 'none' && empty($raw) && $familia !== null && ($familia->tipofamilia ?? '') === 'tableros') {
-            $mode = 'area';
-        }
 
         $dims = [];
         $familiaLimits = [
@@ -141,10 +133,9 @@ class YeveaMeasure
     }
 
     /**
-     * Multiplier for the product's per-unit price: m² for area mode, litres
-     * for volume mode, overage included. Null when the needed dimensions are
-     * missing. Mode 'none' keeps the legacy behaviour: items that carry
-     * dimensions (old tableros cart lines) are still priced by area.
+     * Multiplier for the product's per-unit price: m² for area mode, m³ for
+     * volume mode, overage included. Null when the family has no calculator
+     * or the needed dimensions are missing.
      */
     public static function factorFor(?string $codfamilia, ?float $largoCm, ?float $anchoCm, ?float $altoCm = null): ?float
     {
@@ -155,16 +146,13 @@ class YeveaMeasure
             if ($largoCm > 0 && $anchoCm > 0 && $altoCm > 0) {
                 $base = $largoCm * $anchoCm * $altoCm / 1000000; // cm³ → m³
             }
-        } elseif ($largoCm > 0 && $anchoCm > 0) {
-            // area mode, and legacy fallback for mode none with dims present
-            $base = $largoCm * $anchoCm / 10000; // cm² → m²
+        } elseif ($config->mode === 'area') {
+            if ($largoCm > 0 && $anchoCm > 0) {
+                $base = $largoCm * $anchoCm / 10000; // cm² → m²
+            }
         }
 
-        if ($base === null) {
-            return null;
-        }
-        $overage = ($config->mode === 'none') ? 0.0 : $config->overage_pct;
-        return $base * (1 + $overage / 100);
+        return $base === null ? null : $base * (1 + $config->overage_pct / 100);
     }
 
     /**

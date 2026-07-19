@@ -549,7 +549,7 @@ class Presupuesto extends StoreControllerBase
                     'ancho_cm' => $anchoCm,
                     'alto_cm' => $altoCm,
                     'isTableros' => $isTableros,
-                    'isTablones' => $info->familyType === 'tablones',
+                    'isUnique' => $info->familyType === 'pieza_unica',
                     'largo' => $info->largo,
                     'ancho' => $info->ancho,
                     'espesor' => $info->espesor,

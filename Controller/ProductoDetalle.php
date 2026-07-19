@@ -29,7 +29,7 @@ class ProductoDetalle extends StoreControllerBase
     public $defaultVariant = null;
 
     /** @var string Family type of this product */
-    public $familyType = 'mercancia';
+    public $familyType = 'estandar';
 
     /** @var object|null Family data including dimension limits for tableros */
     public $familyData = null;
@@ -160,7 +160,7 @@ class ProductoDetalle extends StoreControllerBase
         $this->calcConfig = YeveaMeasure::configFor($p->codfamilia ?? null);
 
         $isSold = false;
-        if (($this->familyType === 'artesania' || $this->familyType === 'tablones') && $p->stockfis <= 0) {
+        if (($this->familyType === 'pieza_unica') && $p->stockfis <= 0) {
             $isSold = true;
         }
 
@@ -190,7 +190,7 @@ class ProductoDetalle extends StoreControllerBase
 
     private function loadFamilyType(Producto $p): void
     {
-        $this->familyType = 'mercancia';
+        $this->familyType = 'estandar';
         $this->familyData = null;
 
         if (empty($p->codfamilia)) {
@@ -199,10 +199,11 @@ class ProductoDetalle extends StoreControllerBase
 
         $familia = new Familia();
         if ($familia->loadFromCode($p->codfamilia)) {
-            $this->familyType = $familia->tipofamilia ?? 'mercancia';
+            $this->familyType = $familia->tipofamilia ?? 'estandar';
+            $translated = $this->translateCategory($familia->codfamilia, $familia->descripcion, '', '');
             $this->familyData = (object) [
                 'codfamilia' => $familia->codfamilia,
-                'descripcion' => $familia->descripcion,
+                'descripcion' => $translated['descripcion'],
                 'tipofamilia' => $this->familyType,
                 'largo_min' => (float) ($familia->largo_min ?? 0),
                 'largo_max' => (float) ($familia->largo_max ?? 0),
@@ -281,13 +282,9 @@ class ProductoDetalle extends StoreControllerBase
         $where = [Where::eq('idproducto', $p->idproducto)];
         $variants = $variante->all($where, ['referencia' => 'ASC'], 0, 0);
 
-        // For Tableros, always build variant list (even single variant) for thickness selection
-        $isTablones = $this->familyType === 'tablones';
-        $isTableros = $this->familyType === 'tableros';
-
-        // Tablones: each slab is unique, no variant selectors needed.
-        // Dimensions are stored on the product, not the variant.
-        if ($isTablones) {
+        // Unique pieces: no variant selectors — dimensions live on the product
+        $hasCalc = $this->calcConfig !== null && $this->calcConfig->mode !== 'none';
+        if ($this->familyType === 'pieza_unica' && !$hasCalc) {
             if (count($variants) >= 1) {
                 $v = $variants[0];
                 $this->defaultVariant = (object) [
@@ -302,8 +299,10 @@ class ProductoDetalle extends StoreControllerBase
             return;
         }
 
-        // Single-variant product: no selector needed (unless Tableros)
-        if (count($variants) <= 1 && !$isTableros) {
+        // Calculator families (cut-to-size): always build the variant list,
+        // even with a single variant, so the thickness selector renders.
+        // Otherwise a single-variant product needs no selector.
+        if (count($variants) <= 1 && !$hasCalc) {
             return;
         }
 
