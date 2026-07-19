@@ -10,13 +10,11 @@ A YeveaStore / shopping cart plugin for FacturaScripts, built for a Spanish oliv
 
 | Category (ES) | Category (EN) | Category (FR) | Category (DE) | Family Type |
 |---|---|---|---|---|
-| Madera de Olivo | Olive Wood | Bois d'Olivier | Olivenholz | mercancia |
-| Tablones de Madera | Wood Planks | Planches de Bois | Holzbohlen | tablones |
-| Tableros de Madera de Olivo | Olive Wood Boards | Plateaux en Bois d'Olivier | Olivenholzplatten | tableros |
-| Encimeras de Baño Rústicas | Rustic Bathroom Countertops | Plans de Toilette Rustiques | Rustikale Badezimmer-Waschtischplatten | tableros |
-| Encimeras de Cocina | Kitchen Countertops | Plans de Travail de Cuisine | Küchenarbeitsplatten | tableros |
-| Tablas de Cocina | Cutting Boards | Planches à Découper | Schneidebretter | artesania |
-| Artesanía de Madera de Olivo | Olive Wood Crafts | Artisanat en Bois d'Olivier | Olivenholz-Kunsthandwerk | artesania |
+| Tablones de Madera | Wood Planks | Planches de Bois | Holzbohlen | pieza_unica |
+| Tableros de Madera de Olivo | Olive Wood Boards | Plateaux en Bois d'Olivier | Olivenholzplatten | estandar + Area calculator |
+| Encimeras (baño/cocina) | Countertops | Plans de travail | Arbeitsplatten | estandar + Area calculator |
+| Tablas de Cocina | Cutting Boards | Planches à Découper | Schneidebretter | pieza_unica |
+| Artesanía de Madera de Olivo | Olive Wood Crafts | Artisanat en Bois d'Olivier | Olivenholz-Kunsthandwerk | pieza_unica |
 
 ## Target Markets
 
