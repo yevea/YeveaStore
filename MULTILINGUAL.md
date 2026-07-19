@@ -4,7 +4,7 @@ The store supports Spanish, English, French and German across both UI strings an
 
 ## What's implemented
 
-- **UI translations** — 4 JSON files (`Translation/{es_ES,en_EN,fr_FR,de_DE}.json`), ~139 keys, no hardcoded UI text in public Twig templates.
+- **UI translations** — 4 JSON files (`Translation/{es_ES,en_EN,fr_FR,de_DE}.json`), ~230 keys, no hardcoded UI text in public Twig templates. Customer-facing keys (store + capture PWA) exist in all four languages; admin-only keys (the `calc-*` price-table tab) are complete in es/en only — the admin UI runs in Spanish.
 - **Visitor language selection** — `Lib/LanguageTrait.php::detectAndSetLanguage()`, called early by `Lib/StoreControllerBase.php`. Priority: `?lang=` query param → `yeveastore_lang` cookie (1 year, functional, no GDPR consent needed) → fallback `es_ES`.
 - **Language switcher widget** — in `View/Header.html.twig`, links to the current page with `?lang=` set via `langSwitchUrl()`.
 - **Product content translation** — `LanguageTrait::translateProduct()` looks up `product-{REFERENCIA}-name` / `-desc` keys, falling back to the Spanish DB value (`productos.descripcion` / `observaciones`) when a key is missing.

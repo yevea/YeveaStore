@@ -44,7 +44,8 @@ The storefront and product detail pages include:
 - **Category Management** — Organise products into families with type-specific behaviour (mercancia, tablones, tableros, artesania)
 - **Storefront** — Public-facing product catalogue with category filtering and Schema.org structured data
 - **Shopping Cart** — Session-based cart with add, update quantity, and remove functionality
-- **Custom Dimensions** — Tableros (boards/countertops) support customer-specified length × width with price per m²
+- **Measurement Price Calculator** — per-family "Tabla de Precios" tab (None / Area L×W at €/m² / Volume L×W×H at €/m³): customer enters dimensions on the product page (free input within family limits, or a fixed dropdown of allowed values), price is computed live and re-validated server-side; configurable labels/units, overage % and calculated weight. Legacy `tableros` families keep working as Area mode with no config
+- **Warehouse Capture PWA** — installable mobile app at `/capturar` (no login — the selected warehouse identifies the operator): camera multi-photo capture, auto SKU (`FAMILYNAME-NNNN`), dimensions/weight/pile, stock 1 (unique pieces), price auto-calculated from the family's thickness-rate table. Works offline (IndexedDB queue + Background Sync, deduped server-side by capture id). Captured products stay hidden everywhere until approved in Admin → YeveaStore → YeveaCaptura
 - **Order Processing** — Checkout flow that converts cart items into orders with full customer details
 - **Native FS Integration** — Automatically creates FacturaScripts `Cliente` and `PedidoCliente` records
 - **Stripe Payments** — Integrated Stripe checkout for card payments
@@ -56,8 +57,17 @@ The storefront and product detail pages include:
 ```
 YeveaStore/
 ├── Assets/
+│   ├── CSS/
+│   │   ├── yeveacaptura.css         # Capture PWA styles (mobile-first)
+│   │   └── yeveastore.css           # Public storefront styles
+│   ├── Images/                      # Capture PWA icons (SVG + 192/512 PNG)
 │   └── JS/
-│       └── EditFamilia.js           # Dynamic family-type UI
+│       ├── EditFamilia.js           # Dynamic family-type UI
+│       ├── SettingsScrollTop.js     # Admin settings scroll fix
+│       ├── YeveaCaptura.js          # Capture PWA app (camera, offline queue, install)
+│       ├── YeveaCapturaQueue.js     # Shared IndexedDB queue (page + service worker)
+│       ├── YeveaCapturaSW.js        # Service worker (shell cache + Background Sync)
+│       └── YeveaFamiliaTarifa.js    # Price-table tab editor UI
 ├── Controller/
 │   ├── EditYeveaStoreOrder.php       # Edit order (admin)
 │   ├── ListYeveaStoreOrder.php       # List orders (admin)
@@ -73,7 +83,7 @@ YeveaStore/
 │   └── YeveaCaptura.php             # /capturar — warehouse capture PWA (no login; captures await admin approval)
 ├── Extension/
 │   ├── Controller/
-│   │   ├── EditFamilia.php          # Family type + dimension limits
+│   │   ├── EditFamilia.php          # Family type + dimension limits + "Tabla de Precios" tab
 │   │   ├── EditProducto.php         # Product image fixes + nostock
 │   │   └── EditSettings.php         # Registers YeveaStore settings tab
 │   ├── Table/
@@ -90,7 +100,8 @@ YeveaStore/
 │   ├── LanguageTrait.php            # Visitor language detection (?lang=/cookie) + content translation
 │   ├── OrderFulfillmentTrait.php    # Shared order-completion logic (Presupuesto + StripeWebhook)
 │   ├── SlugTrait.php                # Product/category slug generation (always from Spanish)
-│   └── StoreControllerBase.php      # Abstract base for public controllers (Productos, ProductoDetalle, Presupuesto)
+│   ├── StoreControllerBase.php      # Abstract base for public controllers (Productos, ProductoDetalle, Presupuesto)
+│   └── YeveaMeasure.php             # Measurement calculator: calc_config parsing, area/volume factor, capture rates
 ├── Model/
 │   ├── YeveaStoreCartItem.php        # Cart item model
 │   ├── YeveaStoreOrder.php           # Order model
@@ -117,7 +128,9 @@ YeveaStore/
 │   ├── YeveaStoreDashboard.html.twig # Admin: AI-bot traffic dashboard tab
 │   ├── YeveaStorePlan.html.twig     # Admin: content plan tab
 │   ├── YeveaStoreResenas.html.twig  # Admin: reviews tab
-│   └── Tab/                        # Admin panel tab partials
+│   └── Tab/
+│       ├── ProductoImagen.html.twig  # Product images tab override (observations field)
+│       └── YeveaFamiliaTarifa.html.twig # "Tabla de Precios" tab (calculator config + capture rates)
 ├── XMLView/
 │   ├── EditYeveaStoreOrder.xml       # Order editor view
 │   ├── EditYeveaStoreOrderLine.xml   # Order line editor view
@@ -209,6 +222,20 @@ When a customer completes a payment via Stripe, the plugin automatically:
 - Access the **YeveaStore** menu in the admin panel to manage categories, products, and orders
 - Create categories first, then add products assigned to those categories
 - Orders are created automatically when customers complete the checkout process
+
+### Price Table (per family)
+- Edit any familia → **Tabla de Precios** tab: pick a calculator mode (None / Area L×W / Volume L×W×H)
+- Per dimension: label, unit and optional allowed values (`60-99` ranges and/or `35; 40; 45` lists → rendered as a dropdown; empty = free input within the family min/max limits)
+- Pricing label/unit, "show price per unit", overage % and calculated weight (product weight × measure)
+- **Capture rates**: thickness ranges → €/m², used by the capture PWA to auto-price slabs
+- The product's price (or its variant's) is the per-unit price (€/m² or €/m³); the checkout recalculates and validates everything server-side
+
+### Warehouse Capture (PWA)
+- Open `/capturar` on the warehouse phone (no login needed) and install it from the browser prompt or ⋮ menu
+- Capture flow: photos (camera or gallery) → family → name → warehouse → pile → weight → L×W×T → save
+- Auto SKU `FAMILYNAME-NNNN`, stock 1, photos stored as product images named `family-product-N.jpg`, price from the family's capture rates
+- Offline: captures queue locally and auto-send when coverage returns (Background Sync on Android; on reopen elsewhere)
+- Every capture lands in **Admin → YeveaStore → YeveaCaptura** awaiting approval (invisible in catalogue, product page, sitemap, llms.txt and cart until approved); review price/photos via **Editar**, then **Aprobar**
 
 ### Storefront
 - Public routes are lowercase for SEO: `/productos` (catalogue), `/producto` (product detail), `/presupuesto` (quote/cart), `/sitemap.xml`, `/llms.txt`, plus `/capturar` (warehouse capture PWA — no login; captured products stay hidden until approved in Admin → YeveaStore → Captura)
