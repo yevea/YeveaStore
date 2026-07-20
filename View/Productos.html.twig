@@ -213,16 +213,6 @@
         </a>
     </div>
     {% endif %}
-
-    {# Admin-only launcher for the YeveaCaptura warehouse PWA (validated via
-       fsNick/fsLogkey cookies — invisible to regular visitors) #}
-    {% if fsc.isAdminVisitor() %}
-    <div class="capturar-admin-btn">
-        <a href="{{ asset('capturar') }}?install=1" class="btn btn-dark shadow">
-            <i class="fa-solid fa-camera"></i> {{ fsc.t('capture-app') }}
-        </a>
-    </div>
-    {% endif %}
 </div>
 {% include 'Footer.html.twig' %}
 {% endblock %}
