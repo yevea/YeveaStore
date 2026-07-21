@@ -8,13 +8,9 @@ A YeveaStore / shopping cart plugin for FacturaScripts, built for a Spanish oliv
 
 ## Product Categories
 
-| Category (ES) | Category (EN) | Category (FR) | Category (DE) | Family Type |
+| Category (ES) | Category (EN) | Category (FR) | Category (DE) |
 |---|---|---|---|---|
-| Tablones de Madera | Wood Planks | Planches de Bois | Holzbohlen | pieza_unica |
-| Tableros de Madera de Olivo | Olive Wood Boards | Plateaux en Bois d'Olivier | Olivenholzplatten | estandar + Area calculator |
-| Encimeras (baño/cocina) | Countertops | Plans de travail | Arbeitsplatten | estandar + Area calculator |
-| Tablas de Cocina | Cutting Boards | Planches à Découper | Schneidebretter | pieza_unica |
-| Artesanía de Madera de Olivo | Olive Wood Crafts | Artisanat en Bois d'Olivier | Olivenholz-Kunsthandwerk | pieza_unica |
+| Tablones de Madera | Wood Planks | Planches de Bois | Holzbohlen | etc. to be updated
 
 ## Target Markets
 

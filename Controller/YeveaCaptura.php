@@ -389,31 +389,41 @@ class YeveaCaptura extends StoreControllerBase
 
 
     /**
-     * SKU prefix from the family NAME ("TABLONES-"), not the code: codfamilia
-     * can be a bare number ("1") which would make unreadable SKUs ("1-0001").
-     * Fallback "YV-" when there is no family.
+     * SKU prefix for the family: familias.sku_prefix when set (e.g. "TLN-2",
+     * edited by the admin in EditFamilia — see Extension/XMLView/EditFamilia.xml),
+     * combined with a 2-digit auto-assigned suffix ("TLN-200", "TLN-201"…).
+     * Falls back to the legacy family-NAME-derived prefix ("TABLONES-", 4-digit
+     * suffix) when the family has no sku_prefix configured yet, so nothing
+     * breaks for families the admin hasn't set up. codfamilia can be a bare
+     * number ("1") which is why the legacy fallback uses the name, not the code.
      */
-    private function skuPrefix(string $codfamilia): string
+    private function skuPrefix(string $codfamilia): array
     {
-        $name = '';
+        $familia = null;
         if ($codfamilia !== '') {
-            $familia = new Familia();
-            if ($familia->loadFromCode($codfamilia)) {
-                $name = self::generateSlug($familia->descripcion);
+            $candidate = new Familia();
+            if ($candidate->loadFromCode($codfamilia)) {
+                $familia = $candidate;
             }
         }
 
+        $configured = trim((string) ($familia?->sku_prefix ?? ''));
+        if ($configured !== '') {
+            return [strtoupper($configured), 2];
+        }
+
+        $name = $familia !== null ? self::generateSlug($familia->descripcion) : '';
         $clean = substr(strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $name)), 0, 20);
-        return ($clean !== '' ? $clean : self::SKU_PREFIX) . '-';
+        return [($clean !== '' ? $clean : self::SKU_PREFIX) . '-', 4];
     }
 
     /**
-     * Next sequential SKU: <FAMILIA>-NNNN, scanning both productos and
+     * Next sequential SKU: <prefix><NN>, scanning both productos and
      * variantes so it never collides with a manually created referencia.
      */
     private function generateSku(DataBase $db, string $codfamilia = ''): string
     {
-        $prefix = $this->skuPrefix($codfamilia);
+        [$prefix, $digits] = $this->skuPrefix($codfamilia);
         $pattern = '/^' . preg_quote($prefix, '/') . '(\d+)$/';
         $max = 0;
         foreach ([Producto::tableName(), 'variantes'] as $table) {
@@ -428,7 +438,7 @@ class YeveaCaptura extends StoreControllerBase
                 }
             }
         }
-        return $prefix . str_pad((string) ($max + 1), 4, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) ($max + 1), $digits, '0', STR_PAD_LEFT);
     }
 
     /**

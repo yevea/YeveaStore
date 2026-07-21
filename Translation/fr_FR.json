@@ -203,5 +203,7 @@
     "volume": "Volume",
     "price-table": "Tableau de Prix",
     "family-type-standard": "Produit standard",
-    "family-type-unique": "Pièce unique"
+    "family-type-unique": "Pièce unique",
+    "sku-prefix": "Préfixe SKU",
+    "sku-prefix-help": "Ex : TLN-2 → les produits de cette famille seront numérotés TLN-200, TLN-201… (les 2 derniers chiffres sont attribués automatiquement). Vide = utilise le nom de la famille."
 }

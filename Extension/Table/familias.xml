@@ -46,4 +46,8 @@
         <name>calc_config</name>
         <type>text</type>
     </column>
+    <column>
+        <name>sku_prefix</name>
+        <type>character varying(10)</type>
+    </column>
 </table>

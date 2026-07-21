@@ -234,5 +234,7 @@
     "calc-rate-add": "Add range",
     "calc-save-family-first": "Save the family first to configure its Price Table.",
     "family-type-standard": "Standard product",
-    "family-type-unique": "Unique piece"
+    "family-type-unique": "Unique piece",
+    "sku-prefix": "SKU prefix",
+    "sku-prefix-help": "E.g: TLN-2 → products in this family will be numbered TLN-200, TLN-201… (the last 2 digits are auto-assigned). Empty = uses the family name."
 }

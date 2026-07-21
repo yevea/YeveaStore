@@ -11,6 +11,9 @@
                     <values title="family-type-unique">pieza_unica</values>
                 </widget>
             </column>
+            <column name="sku-prefix" order="116" description="sku-prefix-help">
+                <widget type="text" fieldname="sku_prefix" maxlength="10"/>
+            </column>
         </group>
         <group name="dimension-limits" id="dimension-limits" numcolumns="12" title="dimension-limits" order="200">
             <column name="largo-min" order="120">
