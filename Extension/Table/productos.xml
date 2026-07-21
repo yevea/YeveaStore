@@ -30,4 +30,9 @@
         <type>boolean</type>
         <default>false</default>
     </column>
+    <column>
+        <name>pieza_unica</name>
+        <type>boolean</type>
+        <null>YES</null>
+    </column>
 </table>

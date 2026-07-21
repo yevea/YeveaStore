@@ -98,7 +98,7 @@
     "visit-site": "Website besuchen",
     "abrir-sitio": "Website öffnen",
     "publica": "Öffentlich (im Shop sichtbar)",
-    "family-type": "Familientyp",
+    "ajustes": "Einstellungen",
     "mercancia": "Ware",
     "artesania": "Kunsthandwerk",
     "tablones": "Bohlen",
@@ -199,11 +199,11 @@
     "capture-approve": "Freigeben",
     "capture-no-pending": "Keine Erfassungen zur Freigabe.",
     "captura-pendiente": "Wartet auf Freigabe (Erfassung)",
+    "pieza-unica": "Einzelstück",
+    "pieza-unica-help": "Aktiviert (Standard): ein einzelnes physisches Stück, Bestand immer 1; zeigt „Verkauft“, sobald ausverkauft, bleibt aber veröffentlicht. Deaktiviert: Standardprodukt, Bestand größer als 1 möglich.",
     "alto": "Höhe",
     "volume": "Volumen",
     "price-table": "Preistabelle",
-    "family-type-standard": "Standardprodukt",
-    "family-type-unique": "Einzelstück",
     "sku-prefix": "SKU-Präfix",
     "sku-prefix-help": "Z. B.: TLN-2 → Produkte dieser Familie werden TLN-200, TLN-201… nummeriert (die letzten 2 Ziffern werden automatisch vergeben). Leer = Familienname wird verwendet."
 }

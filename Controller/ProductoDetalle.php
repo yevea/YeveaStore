@@ -190,7 +190,7 @@ class ProductoDetalle extends StoreControllerBase
 
     private function loadFamilyType(Producto $p): void
     {
-        $this->familyType = 'estandar';
+        $this->familyType = !empty($p->pieza_unica) ? 'pieza_unica' : 'estandar';
         $this->familyData = null;
 
         if (empty($p->codfamilia)) {
@@ -199,12 +199,10 @@ class ProductoDetalle extends StoreControllerBase
 
         $familia = new Familia();
         if ($familia->loadFromCode($p->codfamilia)) {
-            $this->familyType = $familia->tipofamilia ?? 'estandar';
             $translated = $this->translateCategory($familia->codfamilia, $familia->descripcion, '', '');
             $this->familyData = (object) [
                 'codfamilia' => $familia->codfamilia,
                 'descripcion' => $translated['descripcion'],
-                'tipofamilia' => $this->familyType,
                 'largo_min' => (float) ($familia->largo_min ?? 0),
                 'largo_max' => (float) ($familia->largo_max ?? 0),
                 'ancho_min' => (float) ($familia->ancho_min ?? 0),

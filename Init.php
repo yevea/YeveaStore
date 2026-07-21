@@ -55,6 +55,7 @@ class Init extends InitClass
     public function update(): void
     {
         $this->migrateFamilyTypes();
+        $this->migrateProductUniqueFlag();
         $this->backfillProductSlugs();
         $this->registerLowercaseRoutes();
     }
@@ -79,6 +80,29 @@ class Init extends InitClass
             . " WHERE tipofamilia IN ('mercancia', 'tableros') OR tipofamilia IS NULL");
         $db->exec("UPDATE familias SET tipofamilia = 'pieza_unica'"
             . " WHERE tipofamilia IN ('tablones', 'artesania')");
+    }
+
+    /**
+     * One-time backfill: "unique piece" used to live on the family
+     * (tipofamilia); now it's a per-product flag (productos.pieza_unica) set
+     * in EditProducto and defaulted to true for new products. Existing
+     * products inherit it from their family's old tipofamilia so nothing
+     * changes behaviour on deploy. Only touches rows still NULL (never
+     * explicitly set), so it never overwrites an admin's later per-product
+     * choice — same guard pattern as backfillProductSlugs(). Safe to keep
+     * running on every deploy.
+     */
+    private function migrateProductUniqueFlag(): void
+    {
+        $db = new DataBase();
+        if (false === $db->tableExists('productos') || false === $db->tableExists('familias')) {
+            return;
+        }
+
+        $db->exec('UPDATE ' . Producto::tableName() . ' SET pieza_unica = ('
+            . ' SELECT CASE WHEN familias.tipofamilia = ' . $db->var2str('pieza_unica') . ' THEN TRUE ELSE FALSE END'
+            . ' FROM familias WHERE familias.codfamilia = ' . Producto::tableName() . '.codfamilia'
+            . ') WHERE pieza_unica IS NULL');
     }
 
     /**

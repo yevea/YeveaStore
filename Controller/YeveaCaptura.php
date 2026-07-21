@@ -255,6 +255,8 @@ class YeveaCaptura extends StoreControllerBase
             // becoming visible anywhere on the public store
             $producto->captura_pendiente = true;
             $producto->publico = false;
+            // Every captured item is a single physical piece from the warehouse
+            $producto->pieza_unica = true;
             $producto->slug = $this->uniqueSlug($nombre, $sku);
             if ($peso > 0) {
                 $producto->peso = $peso;

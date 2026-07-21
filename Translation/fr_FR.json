@@ -98,7 +98,7 @@
     "visit-site": "Voir le site",
     "abrir-sitio": "Ouvrir le site",
     "publica": "Publique (visible en boutique)",
-    "family-type": "Type de Famille",
+    "ajustes": "Paramètres",
     "mercancia": "Marchandise",
     "artesania": "Artisanat",
     "tablones": "Planches",
@@ -199,11 +199,11 @@
     "capture-approve": "Approuver",
     "capture-no-pending": "Aucune capture en attente.",
     "captura-pendiente": "En attente d’approbation (capture)",
+    "pieza-unica": "Pièce unique",
+    "pieza-unica-help": "Coché (par défaut) : pièce physique unique, stock toujours à 1 ; affiche « Vendu » une fois épuisé mais reste publié. Décoché : produit standard, stock supérieur à 1 possible.",
     "alto": "Hauteur",
     "volume": "Volume",
     "price-table": "Tableau de Prix",
-    "family-type-standard": "Produit standard",
-    "family-type-unique": "Pièce unique",
     "sku-prefix": "Préfixe SKU",
     "sku-prefix-help": "Ex : TLN-2 → les produits de cette famille seront numérotés TLN-200, TLN-201… (les 2 derniers chiffres sont attribués automatiquement). Vide = utilise le nom de la famille."
 }

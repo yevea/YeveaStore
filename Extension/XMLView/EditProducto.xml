@@ -2,6 +2,9 @@
 <view>
     <columns>
         <group name="dimensions" id="tablones-dimensions" numcolumns="12" title="dimensions" order="200">
+            <column name="pieza-unica" order="199" description="pieza-unica-help">
+                <widget type="checkbox" fieldname="pieza_unica"/>
+            </column>
             <column name="largo" order="200">
                 <widget type="number" fieldname="largo" decimal="2" min="0"/>
             </column>

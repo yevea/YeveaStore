@@ -20,7 +20,6 @@
 namespace FacturaScripts\Plugins\YeveaStore\Extension\Controller;
 
 use Closure;
-use FacturaScripts\Core\Model\Familia;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Core\Where;
 use FacturaScripts\Dinamic\Model\AttachedFile;
@@ -30,7 +29,7 @@ use FacturaScripts\Dinamic\Model\ProductoImagen;
 /**
  * Extension for EditProducto controller to fix observations on product images,
  * save short descriptions (alt text) and rename uploaded files for SEO,
- * and hide dimension fields (largo, ancho, espesor) for non-unique-piece families.
+ * and hide dimension fields (largo, ancho, espesor) for non-unique-piece products.
  */
 class EditProducto
 {
@@ -45,17 +44,18 @@ class EditProducto
                 return;
             }
 
-            // Show/hide product-level dimension fields based on family type
+            // Show/hide product-level dimension fields based on the product's own "pieza única" flag
             if ($viewName === 'EditProducto') {
-                $codfamilia = $this->getViewModelValue('EditProducto', 'codfamilia');
-                $isUnique = false;
-                if (!empty($codfamilia)) {
-                    $familia = new Familia();
-                    if ($familia->loadFromCode($codfamilia) && ($familia->tipofamilia ?? '') === 'pieza_unica') {
-                        $isUnique = true;
-                    }
+                $idproducto = $this->getViewModelValue('EditProducto', 'idproducto');
+                $piezaUnica = $this->getViewModelValue('EditProducto', 'pieza_unica');
+
+                // New product: pre-check the box (unique piece is the default)
+                if (empty($idproducto) && $piezaUnica === null) {
+                    $view->model->pieza_unica = true;
+                    $piezaUnica = true;
                 }
-                if (!$isUnique) {
+
+                if (empty($piezaUnica)) {
                     foreach (['largo', 'ancho', 'espesor'] as $col) {
                         $view->disableColumn($col);
                     }
@@ -147,29 +147,26 @@ class EditProducto
             // Set default stock to 1 for new unique-piece products (each slab is a unique piece)
             if ($action === 'insert') {
                 $idproducto = $this->getViewModelValue('EditProducto', 'idproducto');
-                $codfamilia = $this->getViewModelValue('EditProducto', 'codfamilia');
+                $piezaUnica = $this->getViewModelValue('EditProducto', 'pieza_unica');
 
-                if (!empty($codfamilia) && !empty($idproducto)) {
-                    $familia = new Familia();
-                    if ($familia->loadFromCode($codfamilia) && ($familia->tipofamilia ?? '') === 'pieza_unica') {
-                        $varianteClass = '\FacturaScripts\Dinamic\Model\Variante';
-                        if (class_exists($varianteClass)) {
-                            $variante = new $varianteClass();
-                            $varWhere = [Where::eq('idproducto', (int)$idproducto)];
-                            foreach ($variante->all($varWhere, [], 0, 0) as $v) {
-                                if ($v->stockfis <= 0) {
-                                    $v->stockfis = 1;
-                                    $v->save();
-                                }
+                if (!empty($piezaUnica) && !empty($idproducto)) {
+                    $varianteClass = '\FacturaScripts\Dinamic\Model\Variante';
+                    if (class_exists($varianteClass)) {
+                        $variante = new $varianteClass();
+                        $varWhere = [Where::eq('idproducto', (int)$idproducto)];
+                        foreach ($variante->all($varWhere, [], 0, 0) as $v) {
+                            if ($v->stockfis <= 0) {
+                                $v->stockfis = 1;
+                                $v->save();
                             }
                         }
+                    }
 
-                        $productoClass = '\FacturaScripts\Core\Model\Producto';
-                        $producto = new $productoClass();
-                        if ($producto->loadFromCode($idproducto) && $producto->stockfis <= 0) {
-                            $producto->stockfis = 1;
-                            $producto->save();
-                        }
+                    $productoClass = '\FacturaScripts\Core\Model\Producto';
+                    $producto = new $productoClass();
+                    if ($producto->loadFromCode($idproducto) && $producto->stockfis <= 0) {
+                        $producto->stockfis = 1;
+                        $producto->save();
                     }
                 }
             }

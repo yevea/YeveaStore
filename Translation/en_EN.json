@@ -98,7 +98,7 @@
     "visit-site": "Visit site",
     "abrir-sitio": "Open site",
     "publica": "Public (visible on storefront)",
-    "family-type": "Family Type",
+    "ajustes": "Settings",
     "mercancia": "Merchandise",
     "artesania": "Craftsmanship",
     "tablones": "Planks",
@@ -206,6 +206,8 @@
     "capture-approve": "Approve",
     "capture-no-pending": "No captures awaiting approval.",
     "captura-pendiente": "Awaiting approval (capture)",
+    "pieza-unica": "Unique piece",
+    "pieza-unica-help": "Checked (default): a single physical piece, stock always 1; shows \"Sold\" when it runs out but stays published. Unchecked: standard product, stock can be greater than 1.",
     "alto": "Height",
     "volume": "Volume",
     "price-table": "Price Table",
@@ -233,8 +235,6 @@
     "calc-rate-to": "to",
     "calc-rate-add": "Add range",
     "calc-save-family-first": "Save the family first to configure its Price Table.",
-    "family-type-standard": "Standard product",
-    "family-type-unique": "Unique piece",
     "sku-prefix": "SKU prefix",
     "sku-prefix-help": "E.g: TLN-2 → products in this family will be numbered TLN-200, TLN-201… (the last 2 digits are auto-assigned). Empty = uses the family name."
 }

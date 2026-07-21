@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <view>
     <columns>
-        <group name="advanced">
+        <group name="ajustes" id="ajustes" numcolumns="12" title="ajustes" order="100">
             <column name="publica" order="110">
                 <widget type="checkbox" fieldname="publica"/>
-            </column>
-            <column name="family-type" numcolumns="12" order="115">
-                <widget type="select" fieldname="tipofamilia">
-                    <values title="family-type-standard">estandar</values>
-                    <values title="family-type-unique">pieza_unica</values>
-                </widget>
             </column>
             <column name="sku-prefix" order="116" description="sku-prefix-help">
                 <widget type="text" fieldname="sku_prefix" maxlength="10"/>

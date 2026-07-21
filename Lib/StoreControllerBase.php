@@ -41,9 +41,6 @@ abstract class StoreControllerBase extends Controller
     /** @var string|null */
     public $selectedCategory = null;
 
-    /** @var string|null Family type of the selected category */
-    public $selectedCategoryType = null;
-
     /** @var object|null Family data for the selected category (includes dimension limits for tableros) */
     public $selectedCategoryFamily = null;
 
@@ -257,7 +254,7 @@ abstract class StoreControllerBase extends Controller
 
         $qty = max(1, (int) $this->request()->request->get('quantity', 1));
 
-        // For Artesanía and Tablones, quantity is always 1 (unique pieces)
+        // Unique pieces (pieza_unica checked on the product): quantity is always 1
         if ($familyType === 'pieza_unica') {
             $qty = 1;
         }
@@ -293,7 +290,7 @@ abstract class StoreControllerBase extends Controller
             $existing = $cartItem->all($where);
             if (!empty($existing)) {
                 if ($familyType === 'pieza_unica') {
-                    // Artesanía / Tablones: unique pieces, don't add more, quantity stays at 1
+                    // Unique piece: don't add more, quantity stays at 1
                     return true;
                 }
                 $existing[0]->quantity += $qty;
@@ -371,7 +368,6 @@ abstract class StoreControllerBase extends Controller
 
     protected function loadSelectedCategoryType(): void
     {
-        $this->selectedCategoryType = null;
         $this->selectedCategoryFamily = null;
 
         if ($this->selectedCategory === null) {
@@ -380,9 +376,6 @@ abstract class StoreControllerBase extends Controller
 
         $familia = new Familia();
         if ($familia->loadFromCode($this->selectedCategory)) {
-            $tipo = $familia->tipofamilia ?? 'estandar';
-            $this->selectedCategoryType = $tipo;
-
             // Translate category content via translation keys (fallback to DB Spanish)
             $translated = $this->translateCategory(
                 $familia->codfamilia,
@@ -394,7 +387,6 @@ abstract class StoreControllerBase extends Controller
             $this->selectedCategoryFamily = (object) [
                 'codfamilia' => $familia->codfamilia,
                 'descripcion' => $translated['descripcion'],
-                'tipofamilia' => $tipo,
                 'calc_mode' => YeveaMeasure::configFor($familia->codfamilia)->mode,
                 'largo_min' => (float) ($familia->largo_min ?? 0),
                 'largo_max' => (float) ($familia->largo_max ?? 0),
@@ -466,12 +458,6 @@ abstract class StoreControllerBase extends Controller
             usort($nativeProducts, fn($a, $b) => strcmp($a->descripcion, $b->descripcion));
         }
 
-        // Build a map of family codes to types for efficient lookup
-        $familyTypeMap = [];
-        foreach ($this->categories as $cat) {
-            $familyTypeMap[$cat->codfamilia] = $cat->tipofamilia ?? 'estandar';
-        }
-
         // Batch-load the first image of every product in one query (avoids N+1)
         $firstImageMap = [];
         $imgModelClass = '\FacturaScripts\Core\Model\ProductoImagen';
@@ -495,9 +481,9 @@ abstract class StoreControllerBase extends Controller
 
             $imageUrl = $firstImageMap[$p->idproducto] ?? null;
 
-            $familyType = $familyTypeMap[$p->codfamilia] ?? 'estandar';
+            $familyType = !empty($p->pieza_unica) ? 'pieza_unica' : 'estandar';
 
-            // For Artesanía and Tablones: unique pieces are sold out when stock <= 0
+            // For unique pieces: sold out when stock <= 0
             $isSold = ($familyType === 'pieza_unica') && $p->stockfis <= 0;
 
             // Translate product name/description via translation keys (fallback to DB Spanish)
@@ -545,16 +531,7 @@ abstract class StoreControllerBase extends Controller
 
     protected function getFamilyTypeForProduct(Producto $product): string
     {
-        if (empty($product->codfamilia)) {
-            return 'estandar';
-        }
-
-        $familia = new Familia();
-        if ($familia->loadFromCode($product->codfamilia)) {
-            return $familia->tipofamilia ?? 'estandar';
-        }
-
-        return 'estandar';
+        return !empty($product->pieza_unica) ? 'pieza_unica' : 'estandar';
     }
 
     protected function isFamilyPublic(?string $codfamilia): bool

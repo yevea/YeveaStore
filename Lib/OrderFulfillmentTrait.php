@@ -1,7 +1,6 @@
 <?php
 namespace FacturaScripts\Plugins\YeveaStore\Lib;
 
-use FacturaScripts\Core\Model\Familia;
 use FacturaScripts\Core\Model\Producto;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Core\Where;
@@ -232,7 +231,7 @@ trait OrderFulfillmentTrait
                         'largo' => $parent->largo ?? null,
                         'ancho' => $parent->ancho ?? null,
                         'espesor' => $parent->espesor ?? null,
-                        'familyType' => $this->getFamilyType($parent->codfamilia),
+                        'familyType' => $this->getFamilyType($parent),
                     ];
                 }
             }
@@ -253,7 +252,7 @@ trait OrderFulfillmentTrait
                 'largo' => $product->largo ?? null,
                 'ancho' => $product->ancho ?? null,
                 'espesor' => $product->espesor ?? null,
-                'familyType' => $this->getFamilyType($product->codfamilia),
+                'familyType' => $this->getFamilyType($product),
             ];
         }
 
@@ -324,18 +323,9 @@ trait OrderFulfillmentTrait
         return $suffix . ' cm)';
     }
 
-    protected function getFamilyType(?string $codfamilia): string
+    protected function getFamilyType(Producto $product): string
     {
-        if (empty($codfamilia)) {
-            return 'estandar';
-        }
-
-        $familia = new Familia();
-        if ($familia->loadFromCode($codfamilia)) {
-            return $familia->tipofamilia ?? 'estandar';
-        }
-
-        return 'estandar';
+        return !empty($product->pieza_unica) ? 'pieza_unica' : 'estandar';
     }
 
     /**
