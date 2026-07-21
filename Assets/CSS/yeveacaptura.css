@@ -1,13 +1,19 @@
-/* YeveaCaptura PWA — mobile-first, minimalist, big touch targets */
+/* YeveaCaptura PWA — mobile-first, minimalist, big touch targets
+ * Palette aligned with the YeveaStore grey theme (see yeveastore.css):
+ *   #f8f9fa  #e9ecef  #dee2e6  #ced4da
+ *   #adb5bd  #6c757d  #495057  #343a40  #212529  #000
+ */
 
 :root {
-    --yc-brown: #4e3b25;
-    --yc-brown-light: #6b543a;
-    --yc-bg: #f6f2ea;
+    --yc-black: #000;
+    --yc-dark: #212529;
+    --yc-mid: #495057;
+    --yc-mid-hover: #343a40;
+    --yc-muted: #6c757d;
+    --yc-bg: #f8f9fa;
     --yc-card: #ffffff;
-    --yc-border: #d9cfc0;
-    --yc-green: #2e7d32;
-    --yc-red: #c62828;
+    --yc-border: #dee2e6;
+    --yc-border-strong: #ced4da;
     --yc-radius: 14px;
 }
 
@@ -18,7 +24,7 @@
 body {
     margin: 0;
     background: var(--yc-bg);
-    color: #2b2317;
+    color: var(--yc-dark);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 17px;
     padding-bottom: env(safe-area-inset-bottom);
@@ -28,7 +34,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: var(--yc-brown);
+    background: var(--yc-black);
     color: #fff;
     padding: 12px 16px;
     padding-top: calc(12px + env(safe-area-inset-top));
@@ -45,12 +51,14 @@ body {
 }
 
 .yc-logo {
-    font-size: 1.4rem;
+    height: 22px;
+    width: auto;
+    display: block;
 }
 
 .yc-install-btn {
     background: #fff;
-    color: var(--yc-brown);
+    color: var(--yc-dark);
     border: 0;
     border-radius: 999px;
     padding: 8px 14px;
@@ -67,7 +75,7 @@ main {
 /* SKU box */
 .yc-sku {
     background: var(--yc-card);
-    border: 2px dashed var(--yc-border);
+    border: 2px dashed var(--yc-border-strong);
     border-radius: var(--yc-radius);
     padding: 10px 14px;
     margin-bottom: 16px;
@@ -78,14 +86,14 @@ main {
 
 .yc-sku label {
     font-size: 0.8rem;
-    color: #7a6a52;
+    color: var(--yc-muted);
 }
 
 .yc-sku output {
     font-family: ui-monospace, Menlo, monospace;
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--yc-brown);
+    color: var(--yc-dark);
 }
 
 /* Photos */
@@ -96,7 +104,7 @@ main {
 .yc-camera-btn {
     display: block;
     width: 100%;
-    background: var(--yc-brown);
+    background: var(--yc-mid);
     color: #fff;
     border: 0;
     border-radius: var(--yc-radius);
@@ -107,7 +115,7 @@ main {
 }
 
 .yc-camera-btn:active {
-    background: var(--yc-brown-light);
+    background: var(--yc-mid-hover);
 }
 
 .yc-gallery-btn {
@@ -115,8 +123,8 @@ main {
     width: 100%;
     margin-top: 8px;
     background: transparent;
-    color: var(--yc-brown);
-    border: 2px solid var(--yc-border);
+    color: var(--yc-mid);
+    border: 2px solid var(--yc-border-strong);
     border-radius: var(--yc-radius);
     padding: 12px;
     font-size: 1rem;
@@ -158,7 +166,7 @@ main {
     height: 28px;
     border-radius: 50%;
     border: 0;
-    background: var(--yc-red);
+    background: var(--yc-mid);
     color: #fff;
     font-size: 0.9rem;
     line-height: 1;
@@ -176,7 +184,7 @@ main {
     display: block;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #5d4d36;
+    color: var(--yc-mid);
     margin-bottom: 5px;
 }
 
@@ -186,7 +194,7 @@ select,
 textarea {
     width: 100%;
     background: var(--yc-card);
-    border: 1.5px solid var(--yc-border);
+    border: 1.5px solid var(--yc-border-strong);
     border-radius: var(--yc-radius);
     padding: 14px;
     font-size: 1.05rem;
@@ -196,7 +204,7 @@ textarea {
 }
 
 select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%234e3b25' stroke-width='2'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23495057' stroke-width='2'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 14px center;
     padding-right: 38px;
@@ -205,13 +213,13 @@ select {
 input:focus,
 select:focus,
 textarea:focus {
-    outline: 2px solid var(--yc-brown-light);
-    border-color: var(--yc-brown-light);
+    outline: 2px solid var(--yc-mid);
+    border-color: var(--yc-mid);
 }
 
 /* Dimensions: [Largo] | [Ancho] | [Grueso] */
 .yc-dims {
-    border: 1.5px solid var(--yc-border);
+    border: 1.5px solid var(--yc-border-strong);
     border-radius: var(--yc-radius);
     background: var(--yc-card);
     padding: 10px 12px 14px;
@@ -233,7 +241,7 @@ textarea:focus {
 .yc-save-btn {
     display: block;
     width: 100%;
-    background: var(--yc-green);
+    background: var(--yc-dark);
     color: #fff;
     border: 0;
     border-radius: var(--yc-radius);
@@ -244,13 +252,18 @@ textarea:focus {
     margin-top: 6px;
 }
 
+.yc-save-btn:active {
+    background: var(--yc-black);
+}
+
 .yc-save-btn:disabled {
     opacity: 0.6;
 }
 
 .yc-error {
-    background: #fdecea;
-    color: var(--yc-red);
+    background: var(--yc-border);
+    color: var(--yc-dark);
+    border: 1px solid var(--yc-border-strong);
     border-radius: var(--yc-radius);
     padding: 12px 14px;
     margin-top: 12px;
@@ -267,7 +280,7 @@ textarea:focus {
     height: 84px;
     margin: 0 auto 16px;
     border-radius: 50%;
-    background: var(--yc-green);
+    background: var(--yc-dark);
     color: #fff;
     font-size: 2.4rem;
     line-height: 84px;
@@ -277,12 +290,12 @@ textarea:focus {
     font-family: ui-monospace, Menlo, monospace;
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--yc-brown);
+    color: var(--yc-dark);
     margin: 8px 0 4px;
 }
 
 .yc-success-photos {
-    color: #7a6a52;
+    color: var(--yc-muted);
     margin: 0 0 24px;
 }
 
@@ -301,20 +314,24 @@ textarea:focus {
 
 .yc-link-btn {
     background: transparent;
-    color: var(--yc-brown);
-    border: 2px solid var(--yc-border);
+    color: var(--yc-dark);
+    border: 2px solid var(--yc-border-strong);
 }
 
 .yc-again-btn {
-    background: var(--yc-brown);
+    background: var(--yc-dark);
     color: #fff;
     border: 0;
 }
 
+.yc-again-btn:active {
+    background: var(--yc-black);
+}
+
 /* Pending offline-queue badge in the header */
 .yc-pending {
-    background: #e8a33d;
-    color: #2b2317;
+    background: var(--yc-border-strong);
+    color: var(--yc-dark);
     border-radius: 999px;
     padding: 6px 12px;
     font-size: 0.85rem;
@@ -323,5 +340,5 @@ textarea:focus {
 
 /* Queued-offline panel icon */
 .yc-queued-icon {
-    background: #e8a33d;
+    background: var(--yc-mid);
 }

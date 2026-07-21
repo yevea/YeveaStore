@@ -123,8 +123,8 @@ class YeveaCaptura extends StoreControllerBase
             'scope' => $route . '/capturar',
             'display' => 'standalone',
             'orientation' => 'portrait',
-            'background_color' => '#f6f2ea',
-            'theme_color' => '#4e3b25',
+            'background_color' => '#f8f9fa',
+            'theme_color' => '#000000',
             'icons' => $icons,
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         exit;
