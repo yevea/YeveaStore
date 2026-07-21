@@ -14,7 +14,10 @@
     --yc-card: #ffffff;
     --yc-border: #dee2e6;
     --yc-border-strong: #ced4da;
-    --yc-radius: 14px;
+    /* Bootstrap 5 defaults used by yeveastore.css: 0.375rem for cards/
+       inputs/table rows, 0.5rem for buttons (see .sticky-cart-btn .btn) */
+    --yc-radius: 0.5rem;
+    --yc-radius-sm: 0.375rem;
 }
 
 * {
@@ -25,7 +28,11 @@ body {
     margin: 0;
     background: var(--yc-bg);
     color: var(--yc-dark);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* Bootstrap 5 default stack — yeveastore.css never overrides
+       font-family, so this is the font the storefront actually renders in */
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji",
+        "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     font-size: 17px;
     padding-bottom: env(safe-area-inset-bottom);
 }
@@ -75,8 +82,8 @@ main {
 /* SKU box */
 .yc-sku {
     background: var(--yc-card);
-    border: 2px dashed var(--yc-border-strong);
-    border-radius: var(--yc-radius);
+    border: 1px dashed var(--yc-border-strong);
+    border-radius: var(--yc-radius-sm);
     padding: 10px 14px;
     margin-bottom: 16px;
     display: flex;
@@ -124,7 +131,7 @@ main {
     margin-top: 8px;
     background: transparent;
     color: var(--yc-mid);
-    border: 2px solid var(--yc-border-strong);
+    border: 1px solid var(--yc-border-strong);
     border-radius: var(--yc-radius);
     padding: 12px;
     font-size: 1rem;
@@ -153,7 +160,7 @@ main {
     width: 92px;
     height: 92px;
     object-fit: cover;
-    border-radius: 10px;
+    border-radius: var(--yc-radius-sm);
     border: 1px solid var(--yc-border);
     display: block;
 }
@@ -194,8 +201,8 @@ select,
 textarea {
     width: 100%;
     background: var(--yc-card);
-    border: 1.5px solid var(--yc-border-strong);
-    border-radius: var(--yc-radius);
+    border: 1px solid var(--yc-border-strong);
+    border-radius: var(--yc-radius-sm);
     padding: 14px;
     font-size: 1.05rem;
     color: inherit;
@@ -219,8 +226,8 @@ textarea:focus {
 
 /* Dimensions: [Largo] | [Ancho] | [Grueso] */
 .yc-dims {
-    border: 1.5px solid var(--yc-border-strong);
-    border-radius: var(--yc-radius);
+    border: 1px solid var(--yc-border-strong);
+    border-radius: var(--yc-radius-sm);
     background: var(--yc-card);
     padding: 10px 12px 14px;
     margin: 0 0 14px;
@@ -264,7 +271,7 @@ textarea:focus {
     background: var(--yc-border);
     color: var(--yc-dark);
     border: 1px solid var(--yc-border-strong);
-    border-radius: var(--yc-radius);
+    border-radius: var(--yc-radius-sm);
     padding: 12px 14px;
     margin-top: 12px;
 }
@@ -315,7 +322,7 @@ textarea:focus {
 .yc-link-btn {
     background: transparent;
     color: var(--yc-dark);
-    border: 2px solid var(--yc-border-strong);
+    border: 1px solid var(--yc-border-strong);
 }
 
 .yc-again-btn {
